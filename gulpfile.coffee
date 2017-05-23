@@ -1,5 +1,4 @@
 # inspired by https://github.com/KyleAMathews/coffee-react-quickstart
-# 
 fs = require 'fs'
 path = require 'path'
 
