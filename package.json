@@ -86,9 +86,11 @@
     "xml2js-parseonly": "umeboshi2/node-xml2js"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.0",
     "bookshelf": "^0.10.3",
+    "bookshelf-bcrypt": "^2.1.0",
     "bookshelf-json-columns": "^2.1.0",
     "bookshelf-jsonapi-params": "^0.6.2",
     "coffee-script": "^1.12.4",
