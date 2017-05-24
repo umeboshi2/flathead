@@ -19,7 +19,7 @@ pages = require './pages'
 
 webpackManifest = require '../build/manifest.json'
 
-#eprouter = require './endpoints'
+eprouter = require './endpoints'
 
 
 UseMiddleware = false or process.env.__DEV_MIDDLEWARE__ is 'true'
@@ -27,7 +27,7 @@ PORT = process.env.NODE_PORT or 8081
 HOST = process.env.NODE_IP or 'localhost'
 #HOST = process.env.NODE_IP or '0.0.0.0'
 
-# create express app 
+# create express app
 app = express()
 app.use favicon path.join __dirname, '../assets/favicon.ico'
 
@@ -48,7 +48,7 @@ ApiRoutes = require './apiroutes'
 ApiRoutes.setup app
 
 APIPATH = config.apipath
-#app.use "#{APIPATH}/ep", eprouter
+app.use "#{APIPATH}/ep", eprouter
 
 
 app.use '/assets', express.static(path.join __dirname, '../assets')
