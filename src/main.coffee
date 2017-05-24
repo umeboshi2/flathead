@@ -5,8 +5,13 @@ http = require 'http'
 express = require 'express'
 gzipStatic = require 'connect-gzip-static'
 favicon = require 'serve-favicon'
+knex = require 'knex'
 
-#passport = require 'passport'
+# Set the default environment to be `development`
+process.env.NODE_ENV = process.env.NODE_ENV || 'development'
+
+env = process.env.NODE_ENV or 'development'
+config = require('../config')[env]
 
 Middleware = require './middleware'
 #UserAuth = require './userauth'
@@ -14,12 +19,13 @@ pages = require './pages'
 
 webpackManifest = require '../build/manifest.json'
 
-# Set the default environment to be `development`
-process.env.NODE_ENV = process.env.NODE_ENV || 'development'
+#eprouter = require './endpoints'
+
 
 UseMiddleware = false or process.env.__DEV_MIDDLEWARE__ is 'true'
 PORT = process.env.NODE_PORT or 8081
 HOST = process.env.NODE_IP or 'localhost'
+#HOST = process.env.NODE_IP or '0.0.0.0'
 
 # create express app 
 app = express()
