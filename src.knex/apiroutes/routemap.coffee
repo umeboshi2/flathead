@@ -8,15 +8,14 @@ module.exports =
   # an authenticated user can use all of the
   # routes for these models.
   basic:
-    yards: 'yard'
-    todos: 'todo'
-    yardroutines: 'yardroutine'
-    sunnyclients: 'sunnyclient'
+    titles: 'ms_titles'
+    chapters: 'ms_chapters'
+    sections: 'ms_sections'
     sitedocuments: 'document'
-    geopositions: 'geoposition'
-  lgrmodel:
-    meetings: 'lgr_meetings'
-    items: 'lgr_items'
-    actions: 'lgr_actions'
-    
+  bookRoutes:
+    User: 'User'
+    Post: 'Post'
+    Comment: 'Comment'
+    DbDoc: 'DbDoc'
+    objects: 'GenObject'
     

@@ -5,135 +5,138 @@ http = require 'http'
 express = require 'express'
 gzipStatic = require 'connect-gzip-static'
 favicon = require 'serve-favicon'
-knex = require 'knex'
 
-# Set the default environment to be `development`
-process.env.NODE_ENV = process.env.NODE_ENV || 'development'
-
-env = process.env.NODE_ENV or 'development'
-config = require('../config')[env]
+passport = require 'passport'
 
 Middleware = require './middleware'
-
+#UserAuth = require './userauth'
 pages = require './pages'
 
 webpackManifest = require '../build/manifest.json'
 
-eprouter = require './endpoints'
-
+# Set the default environment to be `development`
+# this needs to be set before booting ghost
+process.env.NODE_ENV = process.env.NODE_ENV || 'development'
 
 UseMiddleware = false or process.env.__DEV_MIDDLEWARE__ is 'true'
 PORT = process.env.NODE_PORT or 8081
 HOST = process.env.NODE_IP or 'localhost'
-#HOST = process.env.NODE_IP or '0.0.0.0'
 
-# create express app
+# create express app 
 app = express()
 app.use favicon path.join __dirname, '../assets/favicon.ico'
 
-{ knex
-  bookshelf
-  models } = require './kmodels'
-      
+# FIXME
+#kdb = require './kmodels'
+kdb = require 'ghost/core/server/data/db'
+
+# FIXME use express template render
+#app.set "views", "./views"
+#app.set 'view_engine', 'teacup/lib/express'
+ 
+#app.configure ->
+#  app.engine "coffee", tc.renderFile
 
 
-app.locals.config = config
-app.locals.knex = knex
-app.locals.bookshelf = bookshelf
-app.locals.models = models
+setup_after_ghost = (ghost) ->
 
-Middleware.setup app
+  passport = require 'passport'
+  app.use passport.initialize()
   
-ApiRoutes = require './apiroutes'
-ApiRoutes.setup app
+  db = require './models'
+  sql = db.sequelize
 
-APIPATH = config.apipath
-app.use "#{APIPATH}/ep", eprouter
-
-
-app.use '/assets', express.static(path.join __dirname, '../assets')
-if UseMiddleware
-  #require 'coffee-script/register'
-  webpack = require 'webpack'
-  middleware = require 'webpack-dev-middleware'
-  config = require '../webpack.config'
-  compiler = webpack config
-  app.use middleware compiler,
-    #publicPath: config.output.publicPath
-    # FIXME using abosule path?
-    publicPath: '/build/'
-    stats:
-      colors: true
-      modules: false
-      chunks: true
-      #reasons: true
-      maxModules: 9999
-  console.log "Using webpack middleware"
-else
-  app.use '/build', gzipStatic(path.join __dirname, '../build')
-
-# serve thumbnails
-if process.env.NODE_ENV == 'development'
-  thumbsdir = path.join __dirname, '../thumbs'
-else
-  thumbsdir = "#{process.env.OPENSHIFT_DATA_DIR}thumbs"
-app.use '/thumbs', express.static(thumbsdir)
+  if process.env.NODE_ENV == 'development' and false
+    console.log db
+    
+  Middleware.setup app
   
-app.get '/', pages.make_page 'index'
-app.get '/oldindex', pages.make_page 'oldindex'
+  ApiRoutes = require './apiroutes'
+  ApiRoutes.setup app
+  # FIXME
+  # make a bearer strategy similar to ghost strategy
 
-check_for_admin_user = (app, cb) ->
-  console.log "User model", app.locals.models.User
-  user = new app.locals.models.User
-  users = app.locals.models.User.collection().count()
-  .then (count) ->
-    if not count
-      admin = new app.locals.models.User
-      console.log "admin is", admin
-      #admin.forge
-      app.locals.models.User.forge
-        name: 'Admin User'
-        username: 'admin'
-        password: 'admin'
-      .save()
-      .then (user) ->
-        cb count
-    else
-      cb count
-      
+  
+  # health url required for openshift
+  app.get '/health', (req, res, next) ->
+    res.end()
 
-server = http.createServer app
-serving_msg = "#{config.brand} server running on #{HOST}:#{PORT}."
+  app.use '/assets', express.static(path.join __dirname, '../assets')
+  if UseMiddleware
+    #require 'coffee-script/register'
+    webpack = require 'webpack'
+    middleware = require 'webpack-dev-middleware'
+    config = require '../webpack.config'
+    compiler = webpack config
+    app.use middleware compiler,
+      #publicPath: config.output.publicPath
+      # FIXME using abosule path?
+      publicPath: '/build/'
+      stats:
+        colors: true
+        modules: false
+        chunks: true
+        #reasons: true
+        maxModules: 9999
+    console.log "Using webpack middleware"
+  else
+    app.use '/build', gzipStatic(path.join __dirname, '../build')
 
-check_for_admin_and_start = ->
-  check_for_admin_user app, (count) ->
-    console.log "There are #{count} users."
-    if not count
-      console.log "admin account created."
+  auth = require 'ghost/core/server/middleware/auth'
+
+  app.get '/', pages.make_page 'index'
+  app.get '/sunny', pages.make_page 'sunny'
+
+  server = http.createServer app
+  if process.env.NO_DB_SYNC
     server.listen PORT, HOST, ->
-      console.log serving_msg
-  
+      console.log "Infidel server running on #{HOST}:#{PORT}."
+  else
+    console.log "calling sql.sync()"
+    sql.sync().then ->
+      console.log "sql.sync() finished."
+      server.listen PORT, HOST, -> 
+        console.log "Infidel server running on #{HOST}:#{PORT}."
+    
+    
 
-if process.env.NO_DB_SYNC
-  server.listen PORT, HOST, ->
-    console.log serving_msg
-else
-  console.log "calling knex.migrate()"
-  knex.migrate.latest config.database
-  .then ->
-    console.log "Migration finished"
-    knex.seed.run config.database
-    .then ->
-      console.log "Seed finished"
-      check_for_admin_and_start()
-    .catch (err) ->
-      if err.message.startsWith 'insert into "photos"'
-        console.log "fantasy seed not needed"
-        check_for_admin_and_start()
-      else
-        console.log "EM IS", err.message
-        throw err
-          
+bootghost = require('./bootghost')
+
+processBuffer = (buffer, app) ->
+  while buffer.length
+    request = buffer.pop()
+    app request[0], request[1]
+  return
+
+#ghostServer = undefined
+
+makeGhostMiddleware = (options) ->
+  requestBuffer = []
+  exapp = false
+  bootghost.init(options).then (ghost) ->
+    setup_after_ghost ghost
+    exapp = ghost.rootApp
+    #console.log "global.ghostServer", global.ghostServer
+    console.log "bootghost.init"
+    processBuffer requestBuffer, exapp
+    return
+  (req, res) ->
+    if !exapp
+      requestBuffer.unshift [
+        req
+        res
+      ]
+    else
+      exapp req, res
+    return
+
+ghostOptions =
+  config: path.join __dirname, '..', 'ghost-config.js'
+ghost_middleware = makeGhostMiddleware ghostOptions
+app.use '/blog', ghost_middleware
+
+  
 module.exports =
   app: app
+  kdb: kdb
   

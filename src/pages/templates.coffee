@@ -1,37 +1,17 @@
 tc = require 'teacup'
 
-script = (src) ->
-  tc.script
-    type: 'text/javascript'
-    charset:'utf-8'
-    src: src
-
-if process.env.NODE_ENV == 'production'
-  font_families = [
-    'Rambla'
-    'Play'
-    'Source Sans Pro'
-  ]
-  
-    
-
-base_page = tc.renderable (appfile, manifest, theme) ->
+base_page = tc.renderable (appfile, manifest, theme, clients) ->
   tc.doctype()
   tc.html xmlns:'http://www.w3.org/1999/xhtml', ->
     tc.head ->
       tc.meta charset:'utf-8'
       tc.meta name:'viewport', content:"width=device-width, initial-scale=1"
+      tc.meta name:'client-id', value:'ghost-admin'
+      tc.meta name:'client-secret', value:clients['ghost-admin']
       tc.link rel:'stylesheet', type:'text/css',
       href:"assets/stylesheets/font-awesome.css"
       tc.link rel:'stylesheet', type:'text/css',
       href:"assets/stylesheets/bootstrap-#{theme}.css"
-      if process.env.NODE_ENV == 'production'
-        tc.link rel:'stylesheet', type:'text/css',
-        href:"https://fonts.googleapis.com/css?family=Rambla"
-        tc.link rel:'stylesheet', type:'text/css',
-        href:"https://fonts.googleapis.com/css?family=Play"
-        tc.link rel:'stylesheet', type:'text/css',
-        href:"https://fonts.googleapis.com/css?family=Source+Sans+Pro"
     tc.body ->
       tc.div '.container-fluid', ->
         tc.div '.row', ->
@@ -41,36 +21,30 @@ base_page = tc.renderable (appfile, manifest, theme) ->
               tc.text 'Loading ...'
               tc.i '.fa.fa-spinner.fa-spin'
           tc.div '.col-sm-2'
-      chunks = ['vendor.js', 'common.js']
-      #chunks = ['vendor.js']
-      for chunk in chunks
-        tc.script
-          type: 'text/javascript'
-          charset: 'utf-8'
-          src: "build/#{manifest[chunk]}"
       tc.script
         type: 'text/javascript'
         charset: 'utf-8'
-        # FIXME
+        src: "build/#{manifest['vendor.js']}"
+      tc.script
+        type: 'text/javascript'
+        charset: 'utf-8'
+        src: "build/#{manifest['agate.js']}"
+      tc.script
+        type: 'text/javascript'
+        charset: 'utf-8'
         src: "build/#{manifest[appfile]}"
-        #src: "//bard:8080/build/#{manifest[appfile]}"
               
 
-index = (manifest, theme) ->
-  base_page 'index.js', manifest, theme
-
-oldindex = (manifest, theme) ->
-  base_page 'oldindex.js', manifest, theme
-
-template = (name) ->
-  (manifest, theme) ->
-    base_page "#{name}.js", manifest, theme
-    
-module.exports =
-  index: template 'index'
-  admin: template 'admin'
-  oldindex: template 'oldindex'
-
+index = (manifest, theme, clients) ->
+  base_page 'index.js', manifest, theme, clients
+sunny = (manifest, theme, clients) ->
+  base_page 'sunny.js', manifest, theme, clients
+admin = (manifest, theme, clients) ->
+  base_page 'admin.js', manifest, theme, clients
   
-
+module.exports =
+  index: index
+  sunny: sunny
+  admin: admin
+  
   

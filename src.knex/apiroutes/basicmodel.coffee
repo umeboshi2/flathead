@@ -1,19 +1,14 @@
 Promise = require 'bluebird'
 express = require 'express'
 
-db = require '../models'
-{ hasUserAuth } = require './base'
 routemap = require('./routemap').basic
 
-sql = db.sequelize
 router = express.Router()
-
-Model = sql.models.yard
 
 ignored_fields = ['id', 'created_at', 'updated_at']
 
 
-router.use hasUserAuth
+#router.use hasUserAuth
 
 router.param 'models', (req, res, next, value) ->
   req.ModelClass = sql.models[routemap[value]]
