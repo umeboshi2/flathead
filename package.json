@@ -77,7 +77,6 @@
     "stats-webpack-plugin": "^0.4.3",
     "style-loader": "^0.13.1",
     "tbirds": "^0.3.2",
-    "underscore": "^1.8.3",
     "url-loader": "^0.5.7",
     "webpack": "^2.2.1",
     "webpack-dev-middleware": "^1.10.0",
@@ -121,6 +120,7 @@
     "request": "^2.80.0",
     "serve-favicon": "^2.3.2",
     "sqlite3": "^3.1.8",
-    "teacup": "^2.0.0"
+    "teacup": "^2.0.0",
+    "underscore": "^1.8.3"
   }
 }
