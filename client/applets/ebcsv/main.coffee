@@ -11,11 +11,11 @@ ResourceChannel = Backbone.Radio.channel 'resources'
 
 class Router extends Marionette.AppRouter
   appRoutes:
-    'ebcsv': 'config_view'
-    #'ebcsv/documents': 'list_pages'
-    #'ebcsv/documents/new': 'new_page'
-    #'ebcsv/documents/view/:id': 'view_page'
-    #'ebcsv/documents/edit/:id': 'edit_page'
+    'ebcsv': 'list_configs'
+    'ebcsv/listconfigs': 'list_configs'
+    'ebcsv/addcfg': 'add_new_config'
+    'ebcsv/viewcfg/:name': 'view_config'
+    'ebcsv/editcfg/:name': 'edit_config'
     
 class Applet extends TkApplet
   Controller: Controller

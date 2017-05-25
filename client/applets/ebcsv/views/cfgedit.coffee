@@ -75,34 +75,18 @@ class BaseFormDataView extends BootstrapFormView
     @model.set data
 
   onSuccess: (model) ->
-    #console.log 'onSuccess called'
-    navigate_to_url '#'
-
-cfg_template = tc.renderable (model) ->
-  tc.div '#edit-cfg-btn.btn.btn-default', 'Edit Config'
-  tc.article '.document-view.content', ->
-    tc.div '.body', ->
-      tc.dl '.dl-horizontal', ->
-        for field in ReqFieldNames
-          tc.dt field
-          tc.dd model[field]
-      tc.dl '.dl-horizontal', ->
-        for field in OptFieldNames
-          tc.dt field
-          tc.dd model[field]
-  
+    name = @model.id.split('cfg_')[1]
+    console.log "navigate_to_url", name
+    navigate_to_url "#ebcsv/viewcfg/#{name}"
+    
+  # model should be set by controller
+  createModel: ->
+    @model
 
 ########################################
-class CfgView extends Backbone.Marionette.View
-  template: cfg_template
-  ui:
-    edit_btn: '#edit-cfg-btn'
-  events:
-    'click @ui.edit_btn': 'edit_config'
-  edit_config: ->
-    name = @model.id.split('cfg_')[1]
-    console.log "NAME", name
-    navigate_to_url "#ebcsv/editcfg/#{name}"
+class FormView extends BaseFormDataView
+  template: csvfields_form
+  form_data: csvfields_form_data
     
-module.exports = CfgView
+module.exports = FormView
 

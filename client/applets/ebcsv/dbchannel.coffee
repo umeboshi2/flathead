@@ -58,7 +58,44 @@ class BaseLocalStorageModel extends Backbone.Model
     localStorage.removeItem @id
   isEmpty: () ->
     _.size @attributes <= 1
+
+
+class BaseLocalStorageCollection extends Backbone.Collection
+  local_storage_key: null
+  initialize: () ->
+    #console.log "initialize DocumentCollection"
+    @fetch()
+    @on 'change', @save, @
     
+  fetch: () ->
+    #console.log 'fetching documents'
+    docs = JSON.parse(localStorage.getItem(@local_storage_key)) || []
+    @set docs
+
+  # FIXME!
+  save: (collection) ->
+    #console.log 'saving documents'
+    localStorage.setItem(@local_storage_key, JSON.stringify(@toJSON()))
+
+
+class LocalCfgCollection extends BaseLocalStorageCollection
+  local_storage_key: 'csv_configlist'
+  model: BaseLocalStorageModel
+   # FIXME: This is ugly!
+  add_cfg: (name) ->
+    sitename = "#{name}.tumblr.com"
+    model = new BaseLocalStorageModel
+      id: "cfg_#{name}"
+    model.set 'name', name
+    @add model
+    @save()
+    model.fetch()
+    return model
+  
+local_configs = new LocalCfgCollection
+AppChannel.reply 'get_local_configs', ->
+  local_configs
+      
 ReqFieldNames = [
   'format'
   'location'
@@ -96,16 +133,21 @@ class BaseOptFieldsModel extends BaseCsvFieldsModel
 
 
 
+AppChannel.reply 'get-ebcsv-config', (name) ->
+  model = new BaseLocalStorageModel
+    id: "cfg_#{name}"
+  model.fetch()
+  return model
+  
 
+#class EbCsvSettings extends BaseLocalStorageModel
+#  id: 'ebcsv_settings'
+#
+#consumer_key = '4mhV8B1YQK6PUA2NW8eZZXVHjU55TPJ3UZnZGrbSoCnqJaxDyH'
+#ebcsv_settings = new EbCsvSettings consumer_key:consumer_key
 
-class EbCsvSettings extends BaseLocalStorageModel
-  id: 'ebcsv_settings'
-
-consumer_key = '4mhV8B1YQK6PUA2NW8eZZXVHjU55TPJ3UZnZGrbSoCnqJaxDyH'
-ebcsv_settings = new EbCsvSettings consumer_key:consumer_key
-
-AppChannel.reply 'get_ebcsv_settings', ->
-  ebcsv_settings
+#AppChannel.reply 'get_ebcsv_settings', ->
+#  ebcsv_settings
 
 
 module.exports = {}
