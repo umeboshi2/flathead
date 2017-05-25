@@ -8,6 +8,10 @@ misc_menu =
   label: 'Misc Applets'
   menu: [
     {
+      label: 'Ebcsv'
+      url: '#ebcsv'
+    }
+    {
       label: 'Bumblr'
       url: '#bumblr'
     }
@@ -21,6 +25,10 @@ config.navbarEntries = [
   {
     label: 'Admin'
     url: '/admin'
+  }
+  {
+    label: 'Ebcsv'
+    url: '#ebcsv'
   }
   {
     label: 'Themes'
