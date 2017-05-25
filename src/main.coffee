@@ -17,7 +17,7 @@ config = require('../config')[env]
 #global.window = global
 #window.AppConfig = config
 global.AppRootPath = path.resolve path.join __dirname, '..'
-console.log "AppRootPath", AppRootPath
+#console.log "AppRootPath", AppRootPath
 
 set_clientjs_route = require './clientjs'
 
