@@ -5,8 +5,13 @@ http = require 'http'
 express = require 'express'
 gzipStatic = require 'connect-gzip-static'
 favicon = require 'serve-favicon'
+knex = require 'knex'
 
-passport = require 'passport'
+# Set the default environment to be `development`
+process.env.NODE_ENV = process.env.NODE_ENV || 'development'
+
+env = process.env.NODE_ENV or 'development'
+config = require('../config')[env]
 
 Middleware = require './middleware'
 #UserAuth = require './userauth'
@@ -14,48 +19,24 @@ pages = require './pages'
 
 webpackManifest = require '../build/manifest.json'
 
-# Set the default environment to be `development`
-# this needs to be set before booting ghost
-process.env.NODE_ENV = process.env.NODE_ENV || 'development'
+#eprouter = require './endpoints'
+
 
 UseMiddleware = false or process.env.__DEV_MIDDLEWARE__ is 'true'
 PORT = process.env.NODE_PORT or 8081
 HOST = process.env.NODE_IP or 'localhost'
+#HOST = process.env.NODE_IP or '0.0.0.0'
 
 # create express app 
 app = express()
 app.use favicon path.join __dirname, '../assets/favicon.ico'
 
-# FIXME
-#kdb = require './kmodels'
-kdb = require 'ghost/core/server/data/db'
-
-# FIXME use express template render
-#app.set "views", "./views"
-#app.set 'view_engine', 'teacup/lib/express'
- 
-#app.configure ->
-#  app.engine "coffee", tc.renderFile
 
 
-setup_after_ghost = (ghost) ->
+run_server = () ->
 
-  passport = require 'passport'
-  app.use passport.initialize()
-  
-  db = require './models'
-  sql = db.sequelize
-
-  if process.env.NODE_ENV == 'development' and false
-    console.log db
-    
   Middleware.setup app
   
-  ApiRoutes = require './apiroutes'
-  ApiRoutes.setup app
-  # FIXME
-  # make a bearer strategy similar to ghost strategy
-
   
   # health url required for openshift
   app.get '/health', (req, res, next) ->
@@ -78,65 +59,29 @@ setup_after_ghost = (ghost) ->
         chunks: true
         #reasons: true
         maxModules: 9999
+        progress: true
+        
     console.log "Using webpack middleware"
   else
     app.use '/build', gzipStatic(path.join __dirname, '../build')
 
-  auth = require 'ghost/core/server/middleware/auth'
+  # serve thumbnails
+  if process.env.NODE_ENV == 'development'
+    thumbsdir = path.join __dirname, '../thumbs'
+  else
+    thumbsdir = "#{process.env.OPENSHIFT_DATA_DIR}thumbs"
 
+  app.use '/thumbs', express.static(thumbsdir)
+  
   app.get '/', pages.make_page 'index'
-  app.get '/sunny', pages.make_page 'sunny'
 
   server = http.createServer app
-  if process.env.NO_DB_SYNC
-    server.listen PORT, HOST, ->
-      console.log "Infidel server running on #{HOST}:#{PORT}."
-  else
-    console.log "calling sql.sync()"
-    sql.sync().then ->
-      console.log "sql.sync() finished."
-      server.listen PORT, HOST, -> 
-        console.log "Infidel server running on #{HOST}:#{PORT}."
-    
-    
+  server.listen PORT, HOST, -> 
+    console.log "FCD#3 server running on #{HOST}:#{PORT}."
 
-bootghost = require('./bootghost')
 
-processBuffer = (buffer, app) ->
-  while buffer.length
-    request = buffer.pop()
-    app request[0], request[1]
-  return
-
-#ghostServer = undefined
-
-makeGhostMiddleware = (options) ->
-  requestBuffer = []
-  exapp = false
-  bootghost.init(options).then (ghost) ->
-    setup_after_ghost ghost
-    exapp = ghost.rootApp
-    #console.log "global.ghostServer", global.ghostServer
-    console.log "bootghost.init"
-    processBuffer requestBuffer, exapp
-    return
-  (req, res) ->
-    if !exapp
-      requestBuffer.unshift [
-        req
-        res
-      ]
-    else
-      exapp req, res
-    return
-
-ghostOptions =
-  config: path.join __dirname, '..', 'ghost-config.js'
-ghost_middleware = makeGhostMiddleware ghostOptions
-app.use '/blog', ghost_middleware
-
+run_server()
   
 module.exports =
   app: app
-  kdb: kdb
   
