@@ -10,7 +10,6 @@ MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
 ########################################
-delbtn_cls = '.delete-cfg-button'
 dialog_view = tc.renderable (blog) ->
   tc.div '.modal-header', ->
     tc.h2 'This is a modal!'
@@ -20,45 +19,47 @@ dialog_view = tc.renderable (blog) ->
     tc.button '#modal-cancel-button.btn', 'cancel'
     tc.button '#modal-ok-button.btn.btn-default', 'Ok'
 
-simple_config_info = tc.renderable (cfg) ->
-  tc.div '.cfgitem.listview-list-entry', ->
-    tc.a href:"#ebcsv/cfg/view/#{cfg.id}", cfg.name
-    tc.i "#{delbtn_cls}.fa.fa-close.btn.btn-default.btn-xs",
-    cfg:cfg.name
+simple_config_info = tc.renderable (dsc) ->
+  tc.div '.dscitem.listview-list-entry', ->
+    tc.a href:"#ebcsv/dsc/view/#{dsc.id}", dsc.name
+    tc.i ".delete-dsc-button.fa.fa-close.btn.btn-default.btn-xs",
+    dsc:dsc.name
 
-simple_cfg_list = tc.renderable () ->
+simple_dsc_list = tc.renderable () ->
   tc.div ->
-    tc.a '.btn.btn-default', href:'#ebcsv/cfg/add', "Add cfg"
-    tc.div '#cfglist-container.listview-list'
+    tc.a '.btn.btn-default', href:'#ebcsv/dsc/add', "Add dsc"
+    tc.div '#dsclist-container.listview-list'
 
 
-class SimpleCfgInfoView extends Backbone.Marionette.View
+class SimpleDscInfoView extends Backbone.Marionette.View
   template: simple_config_info
 
-class SimpleCfgListView extends Backbone.Marionette.CompositeView
-  childView: SimpleCfgInfoView
-  template: simple_cfg_list
-  childViewContainer: '#cfglist-container'
-  msnry_iclass: '.cfgitem'
+class SimpleDscListView extends Backbone.Marionette.CompositeView
+  childView: SimpleDscInfoView
+  template: simple_dsc_list
+  childViewContainer: '#dsclist-container'
   ui:
-    cfglist: '#cfglist-container'
+    dsclist: '#dsclist-container'
   onBeforeDestroy: ->
     @masonry.destroy()
 
   onDomRefresh: ->
-    @masonry = new Masonry '#cfglist-container',
+    @masonry = new Masonry '#dsclist-container',
       gutter: 2
       isInitLayout: false
-      itemSelector: '.cfgitem'
+      itemSelector: '.dscitem'
       columnWidth: 100
-    delete_buttons = $ delbtn_cls
+    delete_buttons = $ '.delete-dsc-button'
     delete_buttons.hide()
     delete_buttons.on 'click', (event) =>
+      console.log "destroy something!!!"
       target = $ event.currentTarget
-      cfg = target.attr 'cfg'
-      model = AppChannel.request 'get-ebcsv-config', cfg
+      console.log "currentTarget", target
+      dsc = target.attr 'dsc'
+      console.log "target.attr dsc", dsc
+      model = AppChannel.request 'get-ebcsv-config', dsc
+      console.log "destroy model", model
       model.destroy()
-      console.warn "remove from collection!!!"
       @masonry.reloadItems()
       @masonry.layout()
     @set_layout()
@@ -66,10 +67,11 @@ class SimpleCfgListView extends Backbone.Marionette.CompositeView
   set_layout: ->
     @masonry.reloadItems()
     @masonry.layout()
-    cfg = $ '.cfgitem'
+    dsc = $ '.dscitem'
     handlerIn = (event) ->
+      console.log "set_layout handlerIn", event
       window.enterevent = event
-      button = $(event.target).find delbtn_cls
+      button = $(event.target).find '.delete-dsc-button'
       button.show()
       # set button to disappear after two seconds
       # without this, some buttons appear to stick
@@ -81,9 +83,9 @@ class SimpleCfgListView extends Backbone.Marionette.CompositeView
       , 2000
     handlerOut = (event) ->
       window.leaveevent = event
-      button = $(event.target).find delbtn_cls
+      button = $(event.target).find '.delete-dsc-button'
       button.hide()
-    cfg.hover handlerIn, handlerOut
+    dsc.hover handlerIn, handlerOut
     
-module.exports = SimpleCfgListView
+module.exports = SimpleDscListView
 

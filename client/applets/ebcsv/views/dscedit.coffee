@@ -13,13 +13,12 @@ tc = require 'teacup'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
-ResourceChannel = Backbone.Radio.channel 'resources'
+AppChannel = Backbone.Radio.channel 'ebcsv'
 
 EditForm = tc.renderable (model) ->
   tc.div '.listview-header', 'Document'
-  for field in ['name', 'title', 'description']
+  for field in ['name', 'title']
     make_field_input(field)(model)
-  make_field_select(field, ['html', 'markdown'])(model)
   tc.div '#ace-editor', style:'position:relative;width:100%;height:40em;'
   tc.input '.btn.btn-default', type:'submit', value:"Submit"
   tc.div '.spinner.fa.fa-spinner.fa-spin'
@@ -28,7 +27,7 @@ EditForm = tc.renderable (model) ->
 class BaseFormView extends BootstrapFormView
   editorMode: 'markdown'
   editorContainer: 'ace-editor'
-  fieldList: ['name', 'title', 'description']
+  fieldList: ['name', 'title']
   template: EditForm
   ui: ->
     uiobject = make_field_input_ui @fieldList
@@ -45,7 +44,7 @@ class BaseFormView extends BootstrapFormView
       @editor.setValue content
 
   updateModel: ->
-    for field in ['name', 'title', 'description']
+    for field in @fieldList
       @model.set field, @ui[field].val()
     # update from ace-editor
     @model.set 'content', @editor.getValue()
@@ -55,22 +54,26 @@ class BaseFormView extends BootstrapFormView
     MessageChannel.request 'success', "#{name} saved successfully."
     
     
-class NewPageView extends BaseFormView
+class NewFormView extends BaseFormView
   createModel: ->
-    ResourceChannel.request 'new-document'
-    
-  saveModel: ->
-    docs = ResourceChannel.request 'document-collection'
-    docs.add @model
-    super
+    AppChannel.request 'new-ebdsc'
 
-class EditPageView extends BaseFormView
+  saveModel: ->
+    collection = AppChannel.request 'ebdsc-collection'
+    collection.add @model
+    super
+    
+  onSuccess: (model) ->
+    navigate_to_url "#ebcsv/dsc/view/#{model.id}"
+    
+
+class EditFormView extends BaseFormView
   # the model should be assigned in the controller
   createModel: ->
     @model
     
 module.exports =
-  NewPageView: NewPageView
-  EditPageView: EditPageView
+  NewFormView: NewFormView
+  EditFormView: EditFormView
   
 

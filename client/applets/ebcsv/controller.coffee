@@ -18,6 +18,8 @@ class ToolbarView extends Backbone.Marionette.View
     tc.div '.btn-group.btn-group-justified', ->
       tc.div '#list-configs-button.btn.btn-default', ->
         tc.i '.fa.fa-list', ' List Configs'
+      tc.div '#list-dscs-button.btn.btn-default', ->
+        tc.i '.fa.fa-list', ' List Descriptions'
       tc.div '#new-config-button.btn.btn-default', ->
         tc.i '.fa.fa-plus', ' New Config'
     tc.div '.input-group', ->
@@ -29,6 +31,7 @@ class ToolbarView extends Backbone.Marionette.View
         
   ui:
     list_btn: '#list-configs-button'
+    list_dsc_btn: '#list-dscs-button'
     newcfg_btn: '#new-config-button'
     search_bth: '#search-button'
     show_cal_btn: '#show-calendar-button'
@@ -36,6 +39,7 @@ class ToolbarView extends Backbone.Marionette.View
     
   events:
     'click @ui.list_btn': 'list_configs'
+    'click @ui.list_dsc_btn': 'list_descriptions'
     'click @ui.newcfg_btn': 'add_new_config'
     'click @ui.search_bth': 'search_hubby'
 
@@ -50,14 +54,14 @@ class ToolbarView extends Backbone.Marionette.View
       navigate_to_url '#hubby'
 
   list_configs: ->
-    navigate_to_url '#ebcsv/listconfigs'
+    navigate_to_url '#ebcsv/cfg/list'
+    
+  list_descriptions: ->
+    navigate_to_url '#ebcsv/dsc/list'
 
   add_new_config: ->
-    navigate_to_url '#ebcsv/addcfg'
+    navigate_to_url '#ebcsv/cfg/add'
     
-  list_meetings: ->
-    navigate_to_url '#hubby/listmeetings'
-
   search_hubby: ->
     controller = HubChannel.request 'main-controller'
     options =
@@ -72,95 +76,127 @@ class Controller extends MainController
   setup_layout_if_needed: ->
     super()
     @layout.showChildView 'toolbar', new ToolbarView
-
-  collection: ResourceChannel.request 'document-collection'
-
+  
+  ############################################
+  # ebcsv configs
+  ############################################
   list_configs: ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      cfgs = AppChannel.request 'get_local_configs'
-      View = require './views/cfglist'
-      view = new View
-        collection: cfgs
-      @layout.showChildView 'content', view
+      cfgs = AppChannel.request 'ebcfg-collection'
+      response = cfgs.fetch()
+      response.done =>
+        View = require './views/cfglist'
+        view = new View
+          collection: cfgs
+        @layout.showChildView 'content', view
+      response.fail ->
+        MessageChannel.request 'danger', 'Failed to get configs'
     # name the chunk
     , 'ebcsv-view-list-configs'
     
   add_new_config: ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      View = require './views/newcfg'
-      view = new View
+      Views = require './views/cfgedit'
+      view = new Views.NewFormView
       @layout.showChildView 'content', view
       scroll_top_fast()
     # name the chunk
     , 'ebcsv-view-add-cfg'
 
-  view_config: (name) ->
+  view_config: (id) ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      model = AppChannel.request 'get-ebcsv-config', name
       View = require './views/cfgview'
-      view = new View
-        model: model
-      @layout.showChildView 'content', view
-      scroll_top_fast()
+      model = AppChannel.request 'get-ebcfg', id
+      response = model.fetch()
+      response.done =>
+        view = new View
+          model: model
+        @layout.showChildView 'content', view
+        scroll_top_fast()
+      response.fail ->
+        MessageChannel.request 'danger', 'Failed to get configs'
     # name the chunk
     , 'ebcsv-view-config'
     
-  edit_config: (name) ->
+  edit_config: (id) ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      View = require './views/cfgedit'
-      model = AppChannel.request 'get-ebcsv-config', name
-      view = new View
-        model: model
-      @layout.showChildView 'content', view
+      Views = require './views/cfgedit'
+      model = AppChannel.request 'get-ebcfg', id
+      response = model.fetch()
+      response.done =>
+        view = new Views.EditFormView
+          model: model
+        @layout.showChildView 'content', view
+      response.fail ->
+        MessageChannel.request 'danger', 'Failed to get configs'
     # name the chunk
     , 'ebcsv-edit-config'
 
-  list_pages: () ->
+
+
+
+  ############################################
+  # ebcsv descriptions
+  ############################################
+  list_descriptions: ->
     @setup_layout_if_needed()
-    console.log "List Pages"
     require.ensure [], () =>
-      ListView = require './views/pagelist'
-      view = new ListView
-        collection: @collection
-      response = @collection.fetch()
+      dscs = AppChannel.request 'ebdsc-collection'
+      response = dscs.fetch()
       response.done =>
+        View = require './views/dsclist'
+        view = new View
+          collection: dscs
         @layout.showChildView 'content', view
       response.fail ->
-        MessageChannel.request 'danger', "Failed to load documents."
+        MessageChannel.request 'danger', 'Failed to get descriptions'
     # name the chunk
-    , 'ebcsv-view-list-pages'
-
-  edit_page: (id) ->
+    , 'ebcsv-view-list-descriptions'
+    
+  add_new_description: ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      { EditPageView } = require './views/editor'
-      model = ResourceChannel.request 'get-document', id
-      @_load_view EditPageView, model
-    # name the chunk
-    , 'ebcsv-view-edit-page'
-      
-  view_page: (id) ->
-    @setup_layout_if_needed()
-    require.ensure [], () =>
-      PageView = require './views/pageview'
-      model = ResourceChannel.request 'get-document', id
-      @_load_view PageView, model
-    # name the chunk
-    , 'ebcsv-view-doc-page'
-      
-  new_page: () ->
-    @setup_layout_if_needed()
-    require.ensure [], () =>
-      { NewPageView } = require './views/editor'
-      view = new NewPageView
+      Views = require './views/dscedit'
+      view = new Views.NewFormView
       @layout.showChildView 'content', view
+      scroll_top_fast()
     # name the chunk
-    , 'ebcsv-view-new-page'
-      
-      
+    , 'ebcsv-view-add-dsc'
+
+  view_description: (id) ->
+    @setup_layout_if_needed()
+    require.ensure [], () =>
+      View = require './views/dscview'
+      model = AppChannel.request 'get-ebdsc', id
+      response = model.fetch()
+      response.done =>
+        view = new View
+          model: model
+        @layout.showChildView 'content', view
+        scroll_top_fast()
+      response.fail ->
+        MessageChannel.request 'danger', 'Failed to get descriptions'
+    # name the chunk
+    , 'ebcsv-view-description'
+    
+  edit_description: (id) ->
+    @setup_layout_if_needed()
+    require.ensure [], () =>
+      Views = require './views/dscedit'
+      model = AppChannel.request 'get-ebdsc', id
+      response = model.fetch()
+      response.done =>
+        view = new Views.EditFormView
+          model: model
+        @layout.showChildView 'content', view
+      response.fail ->
+        MessageChannel.request 'danger', 'Failed to get descriptions'
+    # name the chunk
+    , 'ebcsv-edit-description'
+
 module.exports = Controller
 

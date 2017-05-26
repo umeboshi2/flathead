@@ -79,17 +79,18 @@ class BaseFormDataView extends BootstrapFormView
     navigate_to_url '#'
 
 cfg_template = tc.renderable (model) ->
+  console.log "model is", model
   tc.div '#edit-cfg-btn.btn.btn-default', 'Edit Config'
   tc.article '.document-view.content', ->
     tc.div '.body', ->
       tc.dl '.dl-horizontal', ->
         for field in ReqFieldNames
           tc.dt field
-          tc.dd model[field]
+          tc.dd model.content[field]
       tc.dl '.dl-horizontal', ->
         for field in OptFieldNames
           tc.dt field
-          tc.dd model[field]
+          tc.dd model.content[field]
   
 
 ########################################
@@ -100,9 +101,7 @@ class CfgView extends Backbone.Marionette.View
   events:
     'click @ui.edit_btn': 'edit_config'
   edit_config: ->
-    name = @model.id.split('cfg_')[1]
-    console.log "NAME", name
-    navigate_to_url "#ebcsv/editcfg/#{name}"
+    navigate_to_url "#ebcsv/cfg/edit/#{@model.id}"
     
 module.exports = CfgView
 

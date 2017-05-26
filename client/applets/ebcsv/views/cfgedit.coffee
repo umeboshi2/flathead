@@ -6,6 +6,8 @@ marked = require 'marked'
 BootstrapFormView = require 'tbirds/views/bsformview'
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 { form_group_input_div } = require 'tbirds/templates/forms'
+{ make_field_input
+  make_field_select } = require 'tbirds/templates/forms'
 
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
@@ -42,24 +44,29 @@ make_form_input = tc.renderable (field, fdata, settings) ->
   idata = fdata[field]
   value = settings[field]
   if value? and value isnt ''
-    console.log "Value is", value
+    #console.log "Value is", value
     idata.input_attributes.value = settings[field]
   else
-    console.log 'use placeholder', field, idata
+    #console.log 'use placeholder', field, idata
     idata.input_attributes.value = idata.input_attributes.placeholder
   form_group_input_div idata
 
-csvfields_form = tc.renderable (settings) ->
+csvfields_form = tc.renderable (model) ->
+  tc.div '.panel.panel-default', ->
+    tc.div '.panel-heading', 'Config Name'
+    tc.div '.panel-body', ->
+      #form_group_input_div mkInputData 'name', 'Config Name', 'default'
+      make_field_input('name')(model)
   tc.div '.panel.panel-default', ->
     tc.div '.panel-heading', 'Required Fields'
     tc.div '.panel-body', ->
       for field in ReqFieldNames
-        make_form_input field, csvfields_form_data, settings
+        make_form_input field, csvfields_form_data, model
   tc.div '.panel.panel-default', ->
     tc.div '.panel-heading', 'Optional Fields'
     tc.div '.panel-body', ->
       for field in OptFieldNames
-        make_form_input field, csvfields_form_data, settings
+        make_form_input field, csvfields_form_data, model
   tc.input '.btn.btn-default', type:'submit', value:'Submit'
 
 class BaseFormDataView extends BootstrapFormView
@@ -67,26 +74,48 @@ class BaseFormDataView extends BootstrapFormView
     data = {}
     for field of @form_data
       data[field] = "[name=\"#{field}\"]"
+    data.name = '[name="name"]'
     return data
+    
   updateModel: ->
     data = {}
     for field of @form_data
       data[field] = @ui[field].val()
-    @model.set data
-
-  onSuccess: (model) ->
-    name = @model.id.split('cfg_')[1]
-    console.log "navigate_to_url", name
-    navigate_to_url "#ebcsv/viewcfg/#{name}"
+    @model.set 'content', data
+    @model.set 'name', @ui.name.val()
+    console.log "@model", @model
     
+
+########################################
+class EditFormView extends BaseFormDataView
+  template: csvfields_form
+  form_data: csvfields_form_data
+
   # model should be set by controller
   createModel: ->
     @model
 
-########################################
-class FormView extends BaseFormDataView
+  onSuccess: (model) ->
+    navigate_to_url "#ebcsv/cfg/view/#{@model.id}"
+    
+class NewFormView extends BaseFormDataView
   template: csvfields_form
   form_data: csvfields_form_data
+  
+  createModel: ->
+    AppChannel.request 'new-ebcfg'
+
+  saveModel: ->
+    collection = AppChannel.request 'ebcfg-collection'
+    collection.add @model
+    super
     
-module.exports = FormView
+  onSuccess: (model) ->
+    navigate_to_url "#ebcsv/cfg/view/#{model.id}"
+    
+    
+module.exports =
+  EditFormView: EditFormView
+  NewFormView: NewFormView
+  
 

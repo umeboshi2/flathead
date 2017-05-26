@@ -35,7 +35,7 @@ class NewCfgFormView extends BootstrapFormView
 
   onSuccess: ->
     #console.log 'onSuccess called'
-    navigate_to_url '#ebcsv/listconfigs'
+    navigate_to_url '#ebcsv/cfg/list'
 
   createModel: ->
     return new Backbone.Model url:'/'
