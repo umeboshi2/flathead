@@ -18,4 +18,7 @@ module.exports =
     Comment: 'Comment'
     DbDoc: 'DbDoc'
     objects: 'GenObject'
+    ebcsvcfg: 'EbCsvConfig'
+    ebcsvdesc: 'EbCsvDescription'
+    ebcsvhero: 'EbCsvSuperhero'
     

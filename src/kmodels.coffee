@@ -24,13 +24,30 @@ GenObject = bookshelf.Model.extend
 ,
   jsonColumns: ['content']
   
+
+EbCsvConfig = bookshelf.Model.extend
+  tableName: 'ebcsv_configs'
+,
+  jsonColumns: ['content']
   
+
+EbCsvDescription = bookshelf.Model.extend
+  tableName: 'ebcsv_descriptions'
+
+EbCsvSuperhero = bookshelf.Model.extend
+  tableName: 'ebcsv_superhero_categories'
+
+
+
 models =
   User: User
   Post: Post
   Comment: Comment
   DbDoc: DbDoc
   GenObject: GenObject
+  EbCsvConfig: EbCsvConfig
+  EbCsvDescription: EbCsvDescription
+  EbCsvSuperhero: EbCsvSuperhero
   
 module.exports =
   knex: bookshelf.knex
