@@ -23,10 +23,6 @@ misc_menu =
 
 config.navbarEntries = [
   {
-    label: 'Admin'
-    url: '/admin'
-  }
-  {
     label: 'Ebcsv'
     url: '#ebcsv'
   }
@@ -34,36 +30,7 @@ config.navbarEntries = [
     label: 'Themes'
     url: '#frontdoor/themes'
   }
-  {
-    label: 'Fantasy'
-    url: '/#fantasy'
-  }
-  {
-    label: 'Annex'
-    url: '#annex'
-  }
-  {
-    label: 'Dbdocs'
-    url: '#dbdocs'
-  }
   misc_menu
-  {
-    label: 'Another'
-    menu: [
-      {
-        label: 'Crud'
-        url: '#crud'
-      }
-      {
-        label: 'MS Code'
-        url: '#mscode'
-      }
-      {
-        label: 'MSLeg'
-        url: '#msleg'
-      }
-    ]
-  }
   ]
 
 

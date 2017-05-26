@@ -19,6 +19,6 @@ module.exports =
     DbDoc: 'DbDoc'
     objects: 'GenObject'
     ebcsvcfg: 'EbCsvConfig'
-    ebcsvdesc: 'EbCsvDescription'
+    ebcsvdsc: 'EbCsvDescription'
     ebcsvhero: 'EbCsvSuperhero'
     
