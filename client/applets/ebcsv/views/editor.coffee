@@ -26,7 +26,7 @@ EditForm = tc.renderable (model) ->
   
 
 class BasePageEditor extends BootstrapFormView
-  editorMode: 'html'
+  editorMode: 'markdown'
   editorContainer: 'ace-editor'
   fieldList: ['name', 'title', 'description']
   template: EditForm

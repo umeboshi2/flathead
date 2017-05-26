@@ -10,6 +10,7 @@ MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
 ########################################
+delbtn_cls = '.delete-cfg-button'
 dialog_view = tc.renderable (blog) ->
   tc.div '.modal-header', ->
     tc.h2 'This is a modal!'
@@ -22,7 +23,7 @@ dialog_view = tc.renderable (blog) ->
 simple_config_info = tc.renderable (cfg) ->
   tc.div '.cfgitem.listview-list-entry', ->
     tc.a href:'#ebcsv/viewcfg/' + cfg.name, cfg.name
-    tc.i ".delete-cfg-button.fa.fa-close.btn.btn-default.btn-xs",
+    tc.i "#{delbtn_cls}.fa.fa-close.btn.btn-default.btn-xs",
     cfg:cfg.name
 
 simple_cfg_list = tc.renderable () ->
@@ -38,6 +39,7 @@ class SimpleCfgListView extends Backbone.Marionette.CompositeView
   childView: SimpleCfgInfoView
   template: simple_cfg_list
   childViewContainer: '#cfglist-container'
+  msnry_iclass: '.cfgitem'
   ui:
     cfglist: '#cfglist-container'
   onBeforeDestroy: ->
@@ -49,17 +51,14 @@ class SimpleCfgListView extends Backbone.Marionette.CompositeView
       isInitLayout: false
       itemSelector: '.cfgitem'
       columnWidth: 100
-    delete_buttons = $ '.delete-cfg-button'
+    delete_buttons = $ delbtn_cls
     delete_buttons.hide()
     delete_buttons.on 'click', (event) =>
-      console.log "destroy something!!!"
       target = $ event.currentTarget
-      console.log "currentTarget", target
       cfg = target.attr 'cfg'
-      console.log "target.attr cfg", cfg
       model = AppChannel.request 'get-ebcsv-config', cfg
-      console.log "destroy model", model
       model.destroy()
+      console.warn "remove from collection!!!"
       @masonry.reloadItems()
       @masonry.layout()
     @set_layout()
@@ -69,9 +68,8 @@ class SimpleCfgListView extends Backbone.Marionette.CompositeView
     @masonry.layout()
     cfg = $ '.cfgitem'
     handlerIn = (event) ->
-      console.log "set_layout handlerIn", event
       window.enterevent = event
-      button = $(event.target).find '.delete-cfg-button'
+      button = $(event.target).find delbtn_cls
       button.show()
       # set button to disappear after two seconds
       # without this, some buttons appear to stick
@@ -83,7 +81,7 @@ class SimpleCfgListView extends Backbone.Marionette.CompositeView
       , 2000
     handlerOut = (event) ->
       window.leaveevent = event
-      button = $(event.target).find '.delete-cfg-button'
+      button = $(event.target).find delbtn_cls
       button.hide()
     cfg.hover handlerIn, handlerOut
     
