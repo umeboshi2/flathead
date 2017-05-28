@@ -1,3 +1,6 @@
+Backbone = require 'backbone'
+xml = require 'xml2js-parseonly/src/xml2js'
+
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
 ComicAges =
@@ -61,5 +64,30 @@ OptFieldNames = [
 AppChannel.reply 'csv-opt-fieldnames', ->
   OptFieldNames
   
+
+XmlParser = new xml.Parser
+  explicitArray: false
+  async: false
+
+AppChannel.reply 'get-xmlparser', ->
+  XmlParser
+  
+
+class XmlComic extends Backbone.Model
+
+class XmlComicCollection extends Backbone.Collection
+  model: XmlComic
+
+CurrentCollection = new XmlComicCollection
+
+AppChannel.reply 'set-comics', (comics) ->
+  CurrentCollection.set comics
+
+AppChannel.reply 'get-comics', ->
+  CurrentCollection
+
+
+
+
 
 module.exports = {}

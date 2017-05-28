@@ -20,6 +20,8 @@ class ToolbarView extends Backbone.Marionette.View
         tc.i '.fa.fa-list', ' List Configs'
       tc.div '#list-dscs-button.btn.btn-default', ->
         tc.i '.fa.fa-list', ' List Descriptions'
+      tc.div '#upload-xml-button.btn.btn-default', ->
+        tc.i '.fa.fa-upload', ' Upload XML'
       tc.div '#new-config-button.btn.btn-default', ->
         tc.i '.fa.fa-plus', ' New Config'
     tc.div '.input-group', ->
@@ -33,6 +35,7 @@ class ToolbarView extends Backbone.Marionette.View
     list_btn: '#list-configs-button'
     list_dsc_btn: '#list-dscs-button'
     newcfg_btn: '#new-config-button'
+    uploadxml_btn: '#upload-xml-button'
     search_bth: '#search-button'
     show_cal_btn: '#show-calendar-button'
     search_entry: '.form-control'
@@ -41,6 +44,7 @@ class ToolbarView extends Backbone.Marionette.View
     'click @ui.list_btn': 'list_configs'
     'click @ui.list_dsc_btn': 'list_descriptions'
     'click @ui.newcfg_btn': 'add_new_config'
+    'click @ui.uploadxml_btn': 'upload_xml'
     'click @ui.search_bth': 'search_hubby'
 
   show_calendar: ->
@@ -61,6 +65,9 @@ class ToolbarView extends Backbone.Marionette.View
 
   add_new_config: ->
     navigate_to_url '#ebcsv/cfg/add'
+
+  upload_xml: ->
+    navigate_to_url '#ebcsv/xml/upload'
     
   search_hubby: ->
     controller = HubChannel.request 'main-controller'
@@ -76,7 +83,37 @@ class Controller extends MainController
   setup_layout_if_needed: ->
     super()
     @layout.showChildView 'toolbar', new ToolbarView
+
   
+  ############################################
+  # ebcsv main views
+  ############################################
+  main_view: ->
+    @setup_layout_if_needed()
+    require.ensure [], () =>
+      comics = AppChannel.request 'get-comics'
+      if not comics.length
+        navigate_to_url '#ebcsv/xml/upload'
+      else
+        View = require './views/mainview'
+        view = new View
+          collection: comics
+        @layout.showChildView 'content', view
+    # name the chunk
+    , 'ebcsv-view-main-view'
+    
+  upload_xml: ->
+    @setup_layout_if_needed()
+    require.ensure [], () =>
+      comics = AppChannel.request 'get-comics'
+      View = require './views/uploadxml'
+      view = new View
+        collection: comics
+      @layout.showChildView 'content', view
+    # name the chunk
+    , 'ebcsv-view-upload-xml-view'
+    
+    
   ############################################
   # ebcsv configs
   ############################################
