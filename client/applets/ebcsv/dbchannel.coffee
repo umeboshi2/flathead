@@ -5,6 +5,7 @@ Backbone = require 'backbone'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
 apiroot = "/api/dev/booky"
+apiroot = "/api/dev/bapi"
 cfg_apipath = "#{apiroot}/ebcsvcfg"
 dsc_apipath = "#{apiroot}/ebcsvdsc"
 hero_apipath = "#{apiroot}/ebcsvhero"

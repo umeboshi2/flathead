@@ -22,6 +22,8 @@ class ToolbarView extends Backbone.Marionette.View
         tc.i '.fa.fa-list', ' List Descriptions'
       tc.div '#upload-xml-button.btn.btn-default', ->
         tc.i '.fa.fa-upload', ' Upload XML'
+      tc.div '#mkcsv-button.btn.btn-default', ->
+        tc.i '.fa.fa-cubes', ' Create CSV'
       tc.div '#new-config-button.btn.btn-default', ->
         tc.i '.fa.fa-plus', ' New Config'
     tc.div '.input-group', ->
@@ -36,6 +38,7 @@ class ToolbarView extends Backbone.Marionette.View
     list_dsc_btn: '#list-dscs-button'
     newcfg_btn: '#new-config-button'
     uploadxml_btn: '#upload-xml-button'
+    mkcsv_btn: '#mkcsv-button'
     search_bth: '#search-button'
     show_cal_btn: '#show-calendar-button'
     search_entry: '.form-control'
@@ -45,6 +48,7 @@ class ToolbarView extends Backbone.Marionette.View
     'click @ui.list_dsc_btn': 'list_descriptions'
     'click @ui.newcfg_btn': 'add_new_config'
     'click @ui.uploadxml_btn': 'upload_xml'
+    'click @ui.mkcsv_btn': 'make_csv'
     'click @ui.search_bth': 'search_hubby'
 
   show_calendar: ->
@@ -68,6 +72,9 @@ class ToolbarView extends Backbone.Marionette.View
 
   upload_xml: ->
     navigate_to_url '#ebcsv/xml/upload'
+
+  make_csv: ->
+    navigate_to_url '#ebcsv/csv/create'
     
   search_hubby: ->
     controller = HubChannel.request 'main-controller'
@@ -76,7 +83,8 @@ class ToolbarView extends Backbone.Marionette.View
         title: @ui.search_entry.val()
     console.log "search for", options
     controller.view_items options
-    
+
+  
 
 class Controller extends MainController
   layoutClass: ToolbarAppletLayout
@@ -88,7 +96,7 @@ class Controller extends MainController
   ############################################
   # ebcsv main views
   ############################################
-  _show_main_view: ->
+  _show_main_view: =>
     require.ensure [], () =>
       comics = AppChannel.request 'get-comics'
       View = require './views/mainview'
@@ -97,30 +105,46 @@ class Controller extends MainController
       @layout.showChildView 'content', view
     # name the chunk
     , 'ebcsv-view-main-view-helper'
-    
-  main_view: ->
-    @setup_layout_if_needed()
+
+  _show_create_csv_view: =>
     require.ensure [], () =>
       comics = AppChannel.request 'get-comics'
-      if not comics.length
-        if __DEV__
-          xml_url = '/assets/comics.xml'
-          xhr = Backbone.ajax
-            type: 'GET'
-            dataType: 'text'
-            url: xml_url
-          xhr.done =>
-            content = xhr.responseText
-            AppChannel.request 'parse-comics-xml', content, (err, json) =>
-              @_show_main_view()
-          xhr.fail =>
-            navigate_to_url '#ebcsv/xml/upload'
-        else
+      View = require './views/mkcsv'
+      view = new View
+        collection: comics
+      @layout.showChildView 'content', view
+    # name the chunk
+    , 'ebcsv-view-mkcsv-view-helper'
+    
+  _need_comics_view: (cb) ->
+    comics = AppChannel.request 'get-comics'
+    if not comics.length
+      if __DEV__
+        window.comics = comics
+        xml_url = '/assets/dev/comics.xml'
+        xhr = Backbone.ajax
+          type: 'GET'
+          dataType: 'text'
+          url: xml_url
+        xhr.done ->
+          content = xhr.responseText
+          AppChannel.request 'parse-comics-xml', content, (err, json) ->
+            #@_show_main_view()
+            cb()
+        xhr.fail ->
           navigate_to_url '#ebcsv/xml/upload'
       else
-        @_show_main_view()
-    # name the chunk
-    , 'ebcsv-view-main-view'
+        navigate_to_url '#ebcsv/xml/upload'
+    else
+      cb()
+      
+  create_csv: =>
+    @setup_layout_if_needed()
+    @_need_comics_view @_show_create_csv_view
+    
+  main_view: =>
+    @setup_layout_if_needed()
+    @_need_comics_view @_show_main_view
     
   upload_xml: ->
     @setup_layout_if_needed()

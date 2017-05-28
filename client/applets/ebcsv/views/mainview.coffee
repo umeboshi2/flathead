@@ -1,3 +1,4 @@
+$ = require 'jquery'
 Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 Masonry = require 'masonry-layout'
@@ -14,27 +15,15 @@ AppChannel = Backbone.Radio.channel 'ebcsv'
 
 
 ########################################
-delbtn_cls = '.delete-cfg-button'
-dialog_view = tc.renderable (blog) ->
-  tc.div '.modal-header', ->
-    tc.h2 'This is a modal!'
-  tc.div '.modal-body', ->
-    tc.p 'here is some content'
-  tc.div '.modal-footer', ->
-    tc.button '#modal-cancel-button.btn', 'cancel'
-    tc.button '#modal-ok-button.btn.btn-default', 'Ok'
-
-simple_config_info = tc.renderable (cfg) ->
-  tc.div '.cfgitem.listview-list-entry', ->
-    tc.a href:"#ebcsv/cfg/view/#{cfg.id}", cfg.name
-    tc.i "#{delbtn_cls}.fa.fa-close.btn.btn-default.btn-xs",
-    cfg:cfg.name
-
 simple_comic_info = tc.renderable (model) ->
   main = model.mainsection
   tc.div '.listview-list-entry', ->
-    tc.text "#{main.series.displayname} #{main.title}"
-
+    #tc.div "#{main.series.displayname} #{main.title}"
+    tc.a href:"#{model.links.link.url}",
+    "#{main.series.displayname} #{main.title}"
+    tc.div '.comic-info', "#{model.links.link.url}"
+    tc.div '.show-comic.btn.btn-default', 'show'
+    
 simple_comic_list = tc.renderable () ->
   tc.div ->
     tc.div '#comiclist-container.listview-list'
@@ -42,7 +31,82 @@ simple_comic_list = tc.renderable () ->
 
 class ComicEntryView extends Backbone.Marionette.View
   template: simple_comic_info
+  regions:
+    info: '.comic-info'
+  ui:
+    show_btn: '.show-comic'
+  events:
+    'click @ui.show_btn': 'show_comic'
 
+  _get_comic_data: (url, cb) ->
+    u = new URL url
+    xhr = Backbone.ajax
+      type: 'GET'
+      dataType: 'html'
+      url: "/clzcore#{u.pathname}"
+    xhr.done =>
+      cb url, xhr.responseText
+    xhr.fail ->
+      MessageChannel.request 'warning', "Couldn't get the info"
+          
+  _add_comic_to_db: (url, content) =>
+    #console.log "_add_comic_to_db", @model
+    model = AppChannel.request 'new-clzpage'
+    #console.log "url is", url
+    #console.log "content is", content
+    model.set 'url', url
+    model.set 'content', content
+    cdoc = $.parseHTML content
+    links = []
+    for e in cdoc
+      if e.tagName == 'LINK' and e.rel == 'image_src'
+        links.push e
+    if links.length > 1
+      MessageChannel.request 'warning', 'Too many links for this comic.'
+    link = links[0]
+    model.set 'img_src', link.href
+    model.set 'clzdata', @model.toJSON()
+    collection = AppChannel.request 'clzpage-collection'
+    collection.add model
+    response = model.save()
+    response.done ->
+      navigate_to_url '#ebcsv'
+    
+    
+  show_comic: ->
+    links = @model.get 'links'
+    url = links.link.url
+    u = new URL url
+    collection = AppChannel.request 'clzpage-collection'
+    response = collection.fetch
+      data:
+        where:
+          url: url
+    response.fail ->
+      msg = "There was a problem talking to the server"
+      MessageChannel.request 'warning', msg
+    response.done =>
+      if collection.length > 1
+        MessageChannel.request 'warning', "#{url} is not unique!"
+      if not collection.length
+        @_get_comic_data url, @_add_comic_to_db
+      else
+        console.log "we should have a model in the collection"
+      
+
+  get_comic_data: (url) ->
+    u = new URL url
+    xhr = Backbone.ajax
+      type: 'GET'
+      dataType: 'html'
+      url: "/clzcore#{u.pathname}"
+    xhr.done =>
+      view = new Backbone.Marionette.View
+        template: xhr.responseText
+      @showChildView 'info', view
+    xhr.fail ->
+      MessageChannel.request 'warning', "Couldn't get the info"
+  
 class ComicListView extends Backbone.Marionette.CollectionView
   childView: ComicEntryView
 
