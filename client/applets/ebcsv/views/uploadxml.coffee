@@ -13,28 +13,6 @@ MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
 ########################################
-delbtn_cls = '.delete-cfg-button'
-dialog_view = tc.renderable (blog) ->
-  tc.div '.modal-header', ->
-    tc.h2 'This is a modal!'
-  tc.div '.modal-body', ->
-    tc.p 'here is some content'
-  tc.div '.modal-footer', ->
-    tc.button '#modal-cancel-button.btn', 'cancel'
-    tc.button '#modal-ok-button.btn.btn-default', 'Ok'
-
-simple_config_info = tc.renderable (cfg) ->
-  tc.div '.cfgitem.listview-list-entry', ->
-    tc.a href:"#ebcsv/cfg/view/#{cfg.id}", cfg.name
-    tc.i "#{delbtn_cls}.fa.fa-close.btn.btn-default.btn-xs",
-    cfg:cfg.name
-
-simple_cfg_list = tc.renderable () ->
-  tc.div ->
-    tc.a '.btn.btn-default', href:'#ebcsv/cfg/add', "Add cfg"
-    tc.div '#cfglist-container.listview-list'
-
-
 dropzone_template = tc.renderable (model) ->
   tc.article '.document-view.content', ->
     tc.div '.body', ->
