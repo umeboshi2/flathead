@@ -41,3 +41,4 @@ jspm_packages
 /.auth.coffee
 /stuff
 /build/stats.json
+/assets/dev
