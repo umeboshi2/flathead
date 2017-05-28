@@ -98,6 +98,7 @@ if BuildEnvironment is 'dev'
     proxy:
       #'/assets/*': 'http://localhost:8081'
       '/api/*': 'http://localhost:8081'
+      '/clzcore/*': 'http://localhost:8081'
     historyApiFallback:
       rewrites: [
         {from: /^\/$/, to: '/_devpages/index.html'}
