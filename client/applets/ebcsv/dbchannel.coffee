@@ -4,9 +4,10 @@ Backbone = require 'backbone'
 
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
-cfg_apipath = "/api/dev/booky/ebcsvcfg"
-dsc_apipath = "/api/dev/booky/ebcsvdsc"
-hero_apipath = "/api/dev/booky/ebcsvhero"
+apiroot = "/api/dev/booky"
+cfg_apipath = "#{apiroot}/ebcsvcfg"
+dsc_apipath = "#{apiroot}/ebcsvdsc"
+hero_apipath = "#{apiroot}/ebcsvhero"
 
 class EbConfigModel extends Backbone.Model
   urlRoot: cfg_apipath
@@ -27,8 +28,17 @@ class EbDescCollection extends Backbone.Collection
 
 make_dbchannel AppChannel, 'ebdsc', EbDescModel, EbDescCollection
 
+class ClzPage extends Backbone.Model
+  urlRoot: "#{apiroot}/ebclzpage"
+
+class ClzPageCollection extends Backbone.Collection
+  url: "#{apiroot}/ebclzpage"
+  model: ClzPage
+  
+make_dbchannel AppChannel, 'clzpage', ClzPage, ClzPageCollection
 
 module.exports =
   EbConfigCollection: EbConfigCollection
   EbDescCollection: EbDescCollection
+  ClzPageCollection: ClzPageCollection
   
