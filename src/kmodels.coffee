@@ -37,6 +37,10 @@ EbCsvDescription = bookshelf.Model.extend
 EbCsvSuperhero = bookshelf.Model.extend
   tableName: 'ebcsv_superhero_categories'
 
+EbClzComicPage = bookshelf.Model.extend
+  tableName: 'ebcsv_clz_comic_pages'
+,
+  jsonColumns: ['clzdata']
 
 
 models =
@@ -48,6 +52,7 @@ models =
   EbCsvConfig: EbCsvConfig
   EbCsvDescription: EbCsvDescription
   EbCsvSuperhero: EbCsvSuperhero
+  EbClzComicPage: EbClzComicPage
   
 module.exports =
   knex: bookshelf.knex

@@ -21,4 +21,5 @@ module.exports =
     ebcsvcfg: 'EbCsvConfig'
     ebcsvdsc: 'EbCsvDescription'
     ebcsvhero: 'EbCsvSuperhero'
+    ebclzpage: 'EbClzComicPage'
     
