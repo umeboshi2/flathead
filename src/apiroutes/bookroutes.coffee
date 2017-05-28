@@ -17,8 +17,14 @@ router.get '/:models', (req, res) ->
   .then (models) ->
     res.json models
 
+router.get '/:models/search', (req, res) ->
+  model = new res.locals.ModelClass
+  model.fetchAll()
+  .then (models) ->
+    res.json models
+
 router.post '/:models', (req, res) ->
-  console.log 'body---->', req.body
+  #console.log 'body---->', req.body
   model = new res.locals.ModelClass req.body
   model.save()
   .then (result) ->

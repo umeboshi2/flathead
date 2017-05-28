@@ -5,6 +5,7 @@ cookieParser = require 'cookie-parser'
 expressSession = require 'express-session'
 morgan = require 'morgan'
 httpsRedirect = require 'express-https-redirect'
+proxy = require 'express-http-proxy'
 
 env = process.env.NODE_ENV or 'development'
 
@@ -29,9 +30,9 @@ setup = (app) ->
     console.log 'skipping httpsRedirect'
   else
     app.use '/', httpsRedirect()
-
-    
   
+  app.use '/clzcore', proxy('http://core.collectorz.com')
+
 module.exports =
   setup: setup
   
