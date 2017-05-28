@@ -86,7 +86,12 @@ AppChannel.reply 'set-comics', (comics) ->
 AppChannel.reply 'get-comics', ->
   CurrentCollection
 
-
+AppChannel.reply 'parse-comics-xml', (content, cb) ->
+  XmlParser.parseString content, (err, json) ->
+    comics = json.comicinfo.comiclist.comic
+    AppChannel.request 'set-comics', comics
+    cb()
+    
 
 
 

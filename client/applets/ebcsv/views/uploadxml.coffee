@@ -79,24 +79,20 @@ class DropZoneView extends Backbone.Marionette.View
     event.preventDefault()
     @ui.dropzone.css 'border', '2px dotted'
 
-  successfulParse: ->
+  successfulParse: =>
     @ui.dropzone.text "Parse Successful"
-    console.log "model", @model
-    window.comics = AppChannel.request 'get-comics'
-    
+    if __DEV__
+      window.comics = AppChannel.request 'get-comics'
+    navigate_to_url "#ebcsv"
     
   parse_xml: ->
-    XmlParser = AppChannel.request 'get-xmlparser'
     @ui.dropzone.text "Reading xml file..."
     console.log "PARSE #{@droppedFile.name}"
     reader = new FileReader()
     reader.onload = (event) =>
       content = event.target.result
       @ui.dropzone.text 'Parsing xml.....'
-      XmlParser.parseString content, (err, json) =>
-        comics = json.comicinfo.comiclist.comic
-        AppChannel.request 'set-comics', comics
-        @successfulParse()
+      AppChannel.request 'parse-comics-xml', content, @successfulParse
     reader.readAsText(@droppedFile)
     @ui.parse_btn.hide()
     

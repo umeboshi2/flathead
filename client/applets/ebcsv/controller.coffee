@@ -88,17 +88,37 @@ class Controller extends MainController
   ############################################
   # ebcsv main views
   ############################################
+  _show_main_view: ->
+    require.ensure [], () =>
+      comics = AppChannel.request 'get-comics'
+      View = require './views/mainview'
+      view = new View
+        collection: comics
+      @layout.showChildView 'content', view
+    # name the chunk
+    , 'ebcsv-view-main-view-helper'
+    
   main_view: ->
     @setup_layout_if_needed()
     require.ensure [], () =>
       comics = AppChannel.request 'get-comics'
       if not comics.length
-        navigate_to_url '#ebcsv/xml/upload'
+        if __DEV__
+          xml_url = '/assets/comics.xml'
+          xhr = Backbone.ajax
+            type: 'GET'
+            dataType: 'text'
+            url: xml_url
+          xhr.done =>
+            content = xhr.responseText
+            AppChannel.request 'parse-comics-xml', content, (err, json) =>
+              @_show_main_view()
+          xhr.fail =>
+            navigate_to_url '#ebcsv/xml/upload'
+        else
+          navigate_to_url '#ebcsv/xml/upload'
       else
-        View = require './views/mainview'
-        view = new View
-          collection: comics
-        @layout.showChildView 'content', view
+        @_show_main_view()
     # name the chunk
     , 'ebcsv-view-main-view'
     
