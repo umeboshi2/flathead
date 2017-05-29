@@ -12,7 +12,11 @@ hero_apipath = "#{apiroot}/ebcsvhero"
 
 class EbConfigModel extends Backbone.Model
   urlRoot: cfg_apipath
-
+  parse: (response, options) ->
+    if typeof(response.content) is 'string'
+      response.content = JSON.parse response.content
+    super response, options
+    
 class EbConfigCollection extends Backbone.Collection
   url: cfg_apipath
   model: EbConfigModel
@@ -40,6 +44,10 @@ make_dbchannel AppChannel, 'ebhero', EbHeroModel, EbHeroCollection
 
 class ClzPage extends Backbone.Model
   urlRoot: "#{apiroot}/ebclzpage"
+  parse: (response, options) ->
+    if typeof(response.clzdata) is 'string'
+      response.clzdata = JSON.parse response.clzdata
+    super response, options
 
 class ClzPageCollection extends Backbone.Collection
   url: "#{apiroot}/ebclzpage"
