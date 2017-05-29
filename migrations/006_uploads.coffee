@@ -1,7 +1,7 @@
 exports.up = (knex, Promise) ->
   Promise.all [
     knex.schema.createTable('uploads', (table) ->
-      table.integer('id').primary()
+      table.increments('id').primary()
       table.text 'fieldname'
       table.text 'originalname'
       table.text 'encoding'

@@ -1,7 +1,7 @@
 exports.up = (knex, Promise) ->
   Promise.all [
     knex.schema.createTable('ms_titles', (table) ->
-      table.integer('id').primary()
+      table.increments('id').primary()
       table.text('number').unique()
       table.text 'title'
       table.text 'description'
@@ -9,7 +9,7 @@ exports.up = (knex, Promise) ->
       return
     )
     knex.schema.createTable('ms_chapters', (table) ->
-      table.integer('id').primary()
+      table.increments('id').primary()
       table.text('number')
       table.text 'title'
       table.text 'description'
@@ -19,7 +19,7 @@ exports.up = (knex, Promise) ->
       return
     )
     knex.schema.createTable('ms_sections', (table) ->
-      table.integer('id').primary()
+      table.increments('id').primary()
       table.text('number')
       table.text 'title'
       table.text 'description'
