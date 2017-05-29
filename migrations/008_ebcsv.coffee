@@ -26,8 +26,7 @@ exports.up = (knex, Promise) ->
     knex.schema.createTable('ebcsv_clz_comic_pages', (table) ->
       table.integer('id').primary()
       table.text('url').unique()
-      table.text 'img_src'
-      table.text 'filename'
+      table.text 'image_src'
       table.text 'content'
       table.text 'clzdata'
       return
