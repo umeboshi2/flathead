@@ -16,6 +16,16 @@ MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
+current_masonry_layout = undefined
+AppChannel.reply 'set-masonry-layout', (layout) ->
+  current_masonry_layout = layout
+  
+AppChannel.reply 'reload-layout', ->
+  items = $ '.item'
+  imagesLoaded items, ->
+    current_masonry_layout.reloadItems()
+    current_masonry_layout.layout()
+
 class ComicCollectionView extends Backbone.Marionette.CollectionView
   childView: ComicEntryView
 
@@ -43,9 +53,7 @@ class ComicListView extends Backbone.Marionette.View
       columnWidth: 10
       horizontalOrder: true
     @set_layout()
-    AppChannel.reply 'reload-layout', =>
-      @set_layout()
-      
+    AppChannel.request 'set-masonry-layout', @masonry
 
   set_layout: ->
     items = $ '.item'
