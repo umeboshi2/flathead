@@ -29,6 +29,15 @@ class EbDescCollection extends Backbone.Collection
 
 make_dbchannel AppChannel, 'ebdsc', EbDescModel, EbDescCollection
 
+class EbHeroModel extends Backbone.Model
+  urlRoot: hero_apipath
+
+class EbHeroCollection extends Backbone.Collection
+  url: hero_apipath
+  model: EbHeroModel
+
+make_dbchannel AppChannel, 'ebhero', EbHeroModel, EbHeroCollection
+
 class ClzPage extends Backbone.Model
   urlRoot: "#{apiroot}/ebclzpage"
 

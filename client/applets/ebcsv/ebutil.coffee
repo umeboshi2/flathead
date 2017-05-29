@@ -35,9 +35,18 @@ get_comic_age = (year) ->
 AppChannel.reply 'get-comic-ages', ->
   ComicAges
 
-AppChannel.reply 'get-age', (year) ->
+AppChannel.reply 'find-age', (year) ->
   get_comic_age year
   
+# These are not required fields!
+EbayFields = [
+  'Title'
+  'PicURL'
+  'Description'
+  'Product:EAN'
+  'Product:UPC'
+  'Product:ISBN',
+  ]
   
 ReqFieldNames = [
   'format'
@@ -91,6 +100,57 @@ AppChannel.reply 'parse-comics-xml', (content, cb) ->
     comics = json.comicinfo.comiclist.comic
     AppChannel.request 'set-comics', comics
     cb()
+
+
+#######################################################
+# makeCommonData (config)
+#######################################################
+
+
+
+#######################################################
+# makeEbayInfo (config, comic, opts, mgr)
+#######################################################
+
+
+
+# set upc
+# if comic.isbn then set Product:UPC
+# if upc.length == 14 then return upc[:-2]
+# if upc.length == 13 then return upc[1:]
+#
+
+# quantity is comic.quantity
+# csv header should be *Quantity
+
+
+# get categoryID
+# csv header should be *Category
+#
+
+# default startprice in config
+# csv header should be *Startprice
+# if comic.currentprice exists use
+# that instead
+
+
+
+create_csv_header = ->
+  header = {}
+  for field in ReqFieldNames
+    header[field] = "*#{capitalize field}"
+  for field in OptFieldNames
+    header[field] = field
+  return header
+
+class CsvRowModel extends Backbone.Model
+  set_comic: (options) ->
+    comic = options.comic
+    config = options.config
+    desc = options.description
+    
+
+CurrentCsvRowCollection = undefined
     
 
 

@@ -26,22 +26,15 @@ class ToolbarView extends Backbone.Marionette.View
         tc.i '.fa.fa-cubes', ' Create CSV'
       tc.div '#new-config-button.btn.btn-default', ->
         tc.i '.fa.fa-plus', ' New Config'
-    tc.div '.input-group', ->
-      tc.input '.form-control', type:'text', placeholder:'search',
-      name:'search'
-      tc.span '.input-group-btn', ->
-        tc.button '#search-button.btn.btn-default', ->
-          tc.i '.fa.fa-search', 'Search'
-        
+      tc.div '#list-heroes-button.btn.btn-default', ->
+        tc.i '.fa.fa-list', ' Heroes'
   ui:
     list_btn: '#list-configs-button'
     list_dsc_btn: '#list-dscs-button'
     newcfg_btn: '#new-config-button'
     uploadxml_btn: '#upload-xml-button'
     mkcsv_btn: '#mkcsv-button'
-    search_bth: '#search-button'
-    show_cal_btn: '#show-calendar-button'
-    search_entry: '.form-control'
+    list_hero_btn: '#list-heroes-button'
     
   events:
     'click @ui.list_btn': 'list_configs'
@@ -49,23 +42,16 @@ class ToolbarView extends Backbone.Marionette.View
     'click @ui.newcfg_btn': 'add_new_config'
     'click @ui.uploadxml_btn': 'upload_xml'
     'click @ui.mkcsv_btn': 'make_csv'
-    'click @ui.search_bth': 'search_hubby'
-
-  show_calendar: ->
-    hash = '#hubby'
-    if window.location.hash == hash
-      controller = HubChannel.request 'main-controller'
-      controller.mainview()
-    else
-      if __DEV__
-        console.log "current url", window.location
-      navigate_to_url '#hubby'
+    'click @ui.list_hero_btn': 'list_heroes'
 
   list_configs: ->
     navigate_to_url '#ebcsv/cfg/list'
     
   list_descriptions: ->
     navigate_to_url '#ebcsv/dsc/list'
+
+  list_heroes: ->
+    navigate_to_url '#ebcsv/hero/list'
 
   add_new_config: ->
     navigate_to_url '#ebcsv/cfg/add'
@@ -76,16 +62,6 @@ class ToolbarView extends Backbone.Marionette.View
   make_csv: ->
     navigate_to_url '#ebcsv/csv/create'
     
-  search_hubby: ->
-    controller = HubChannel.request 'main-controller'
-    options =
-      searchParams:
-        title: @ui.search_entry.val()
-    console.log "search for", options
-    controller.view_items options
-
-  
-
 class Controller extends MainController
   layoutClass: ToolbarAppletLayout
   setup_layout_if_needed: ->
@@ -192,6 +168,21 @@ class Controller extends MainController
     # name the chunk
     , 'ebcsv-view-upload-xml-view'
     
+    
+  list_heroes: ->
+    @setup_layout_if_needed()
+    require.ensure [], () =>
+      collection = AppChannel.request 'ebhero-collection'
+      response = collection.fetch()
+      response.done =>
+        View = require './views/superheroes'
+        view = new View
+          collection: collection
+        @layout.showChildView 'content', view
+      response.fail ->
+        MessageChannel.request 'danger', 'Failed to get configs'
+    # name the chunk
+    , 'ebcsv-view-list-configs'
     
   ############################################
   # ebcsv configs

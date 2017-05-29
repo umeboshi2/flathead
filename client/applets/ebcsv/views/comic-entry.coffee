@@ -98,14 +98,14 @@ class ComicEntryView extends Backbone.Marionette.View
         @_get_comic_data url, @_add_comic_to_db
       else
         clzpage = collection.models[0]
-        console.log "we should have a model in the collection"
+        #console.log "we should have a model in the collection"
         @_show_comic_image clzpage
         
   _show_comic_image: (clzpage) ->
     @ui.show_btn.hide()
     view = new ComicImageView
       model: clzpage
-    console.log "show image"
+    #console.log "show image"
     @showChildView 'image', view
     
   show_comic: ->
