@@ -23,6 +23,8 @@ class ComicsView extends Backbone.Marionette.View
     #list: '#comiclist-container'
     body: '.body'
   template: tc.renderable (model) ->
+    tc.div '.listview-header', ->
+      tc.text "CLZ XML to EBay File Exchange CSV"
     tc.div '.body'
   onRender: ->
     view = new ComicListView

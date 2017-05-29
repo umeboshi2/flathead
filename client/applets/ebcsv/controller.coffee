@@ -116,6 +116,16 @@ class Controller extends MainController
     # name the chunk
     , 'ebcsv-view-mkcsv-view-helper'
     
+  _show_preview_csv_view: =>
+    require.ensure [], () =>
+      comics = AppChannel.request 'get-comics'
+      View = require './views/csvpreview'
+      view = new View
+        collection: comics
+      @layout.showChildView 'content', view
+    # name the chunk
+    , 'ebcsv-view-csvpreview-view-helper'
+    
   _need_comics_view: (cb) ->
     comics = AppChannel.request 'get-comics'
     if not comics.length
@@ -140,7 +150,22 @@ class Controller extends MainController
       
   create_csv: =>
     @setup_layout_if_needed()
-    @_need_comics_view @_show_create_csv_view
+    cfgs = AppChannel.request 'ebcfg-collection'
+    dscs = AppChannel.request 'ebdsc-collection'
+    cfgs.fetch().then =>
+      dscs.fetch().then =>
+        @_need_comics_view @_show_create_csv_view
+    
+  preview_csv: =>
+    @setup_layout_if_needed()
+    cfg = AppChannel.request 'get-current-csv-cfg'
+    dsc = AppChannel.request 'get-current-csv-dsc'
+    if cfg is undefined
+      navigate_to_url '#ebcsv'
+      return
+    cfg.fetch().then =>
+      dsc.fetch().then =>
+        @_need_comics_view @_show_preview_csv_view
     
   main_view: =>
     @setup_layout_if_needed()

@@ -52,7 +52,7 @@ class ComicsView extends Backbone.Marionette.View
     body: '.body'
   template: tc.renderable (model) ->
     tc.div '.listview-header', ->
-      tc.text "Create CSV"
+      tc.text "Preview CSV"
     tc.div '.mkcsv-form', ->
       csv_cfg_select model.ebcfg_collection
       csv_dsc_select model.ebdsc_collection
@@ -61,9 +61,6 @@ class ComicsView extends Backbone.Marionette.View
     tc.div '.body'
   ui:
     mkcsv_btn: '.mkcsv-button'
-    show_btn: '.show-comics-button'
-    cfg_sel: 'select[name="select_cfg"]'
-    dsc_sel: 'select[name="select_dsc"]'
   events:
     'click @ui.mkcsv_btn': 'make_csv'
     'click @ui.show_btn': 'show_comics'
@@ -73,7 +70,6 @@ class ComicsView extends Backbone.Marionette.View
     dsc = AppChannel.request 'get-ebdsc', @ui.dsc_sel.val()
     AppChannel.request 'set-current-csv-cfg', cfg
     AppChannel.request 'set-current-csv-dsc', dsc
-    navigate_to_url '#ebcsv/csv/preview'
     
   show_comics: ->
     view = new ComicListView

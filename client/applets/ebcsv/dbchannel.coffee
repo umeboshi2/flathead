@@ -38,6 +38,20 @@ class ClzPageCollection extends Backbone.Collection
   
 make_dbchannel AppChannel, 'clzpage', ClzPage, ClzPageCollection
 
+
+current_csv_cfg = undefined
+AppChannel.reply 'set-current-csv-cfg', (cfg) ->
+  current_csv_cfg = cfg
+AppChannel.reply 'get-current-csv-cfg', ->
+  current_csv_cfg
+  
+current_csv_dsc = undefined
+AppChannel.reply 'set-current-csv-dsc', (dsc) ->
+  current_csv_dsc = dsc
+AppChannel.reply 'get-current-csv-dsc', ->
+  current_csv_dsc
+  
+
 module.exports =
   EbConfigCollection: EbConfigCollection
   EbDescCollection: EbDescCollection
