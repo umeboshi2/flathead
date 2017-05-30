@@ -79,8 +79,6 @@ class ComicsView extends Backbone.Marionette.View
     action = 'VerifyAdd'
     #data = @collection.toJSON()
     for comic in @collection.toJSON()
-      #cdata = id:comic.id, name:comic.fulltitle
-      params = [action, comic, cfg, dsc]
       options =
         action: action
         comic: comic
