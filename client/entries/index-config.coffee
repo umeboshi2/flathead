@@ -8,6 +8,10 @@ misc_menu =
   label: 'Misc Applets'
   menu: [
     {
+      label: 'Themes'
+      url: '#frontdoor/themes'
+    }
+    {
       label: 'Ebcsv'
       url: '#ebcsv'
     }
@@ -21,15 +25,37 @@ misc_menu =
     }
   ]
 
+ebcsv_menu =
+  label: 'Ebcsv'
+  menu: [
+    {
+      label: 'Main View'
+      url: '#ebcsv'
+    }
+    {
+      label: 'List Configs'
+      url: '#ebcsv/cfg/list'
+    }
+    {
+      label: 'List Descriptions'
+      url: '#ebcsv/dsc/list'
+    }
+    {
+      label: 'Upload Comic XML'
+      url: '#ebcsv/xml/upload'
+    }
+    {
+      label: 'Create CSV'
+      url: '#ebcsv/csv/create'
+    }
+    {
+      label: 'Create New Config'
+      url: '#ebcsv/cfg/add'
+    }
+  ]
+
 config.navbarEntries = [
-  {
-    label: 'Ebcsv'
-    url: '#ebcsv'
-  }
-  {
-    label: 'Themes'
-    url: '#frontdoor/themes'
-  }
+  ebcsv_menu
   misc_menu
   ]
 
