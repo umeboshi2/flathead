@@ -22,18 +22,17 @@ require('editable-table')($)
 # table template
 require 'editable-table/editable-table.css'
 table_template = tc.renderable ->
+  header = AppChannel.request 'get-csv-header'
   tc.table '.table', 'data-editable':'', 'data-editable-spy':'', ->
     tc.thead ->
       tc.tr ->
-        tc.th 'ID'
-        tc.th 'Name'
+        Object.keys(header).forEach (field) ->
+          tc.th header[field]
     tc.tbody ->
       tc.tr ->
-        tc.td ->
-          tc.input name:'id', placeholder:''
-        tc.td ->
-          tc.input name:'name', placeholder:''
-  
+        Object.keys(header).forEach (field) ->
+          tc.td ->
+            tc.input name:field, placeholder:''
 
 ########################################
 class ComicsView extends Backbone.Marionette.View
@@ -74,10 +73,20 @@ class ComicsView extends Backbone.Marionette.View
 
   onDomRefresh: ->
     #@ui.csvtable.editableTableWidget()
-    
+    cfg = AppChannel.request 'get-current-csv-cfg'
+    dsc = AppChannel.request 'get-current-csv-dsc'
+    # FIXME set action in a form or button
+    action = 'VerifyAdd'
     #data = @collection.toJSON()
     for comic in @collection.toJSON()
-      cdata = id:comic.id, name:comic.fulltitle
+      #cdata = id:comic.id, name:comic.fulltitle
+      params = [action, comic, cfg, dsc]
+      options =
+        action: action
+        comic: comic
+        cfg: cfg
+        desc: dsc
+      cdata = AppChannel.request 'create-csv-row-object', options
       @ui.table.editableTable 'add', cdata
     
   show_comics: ->

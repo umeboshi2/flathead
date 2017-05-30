@@ -1,5 +1,9 @@
 Backbone = require 'backbone'
 xml = require 'xml2js-parseonly/src/xml2js'
+ms = require 'ms'
+dateFormat = require 'dateformat'
+
+capitalize = require 'tbirds/util/capitalize'
 
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
@@ -106,48 +110,105 @@ AppChannel.reply 'parse-comics-xml', (content, cb) ->
 # makeCommonData (config)
 #######################################################
 
-
-
+create_common_data = (options) ->
+  row = {}
+  cfg = options.cfg.get 'content'
+  row.action = options.action
+  ReqFieldNames.forEach (field) ->
+    row[field] = cfg[field]
+  OptFieldNames.forEach (field) ->
+    row[field] = cfg[field]
+  return row
+  
 #######################################################
 # makeEbayInfo (config, comic, opts, mgr)
 #######################################################
+create_csv_row_object = (options) ->
+  comic = options.comic
+  cfg = options.cfg.get 'content'
+  # make common data
+  # from required and optional fields
+  row = create_common_data options
+  # then adjust these fields --<
+  #
+  # quantity is from config(1) unless comic.quantity > 1
+  # csv header should be *Quantity
+  #console.log 'quantity', options.comic.quantity
+  if row.quantity != comic.quantity
+    row.quantity = comic.quantity
+  # default startprice in config
+  # csv header should be *Startprice
+  # if comic.currentprice exists use
+  # that instead
+  if comic?.currentprice
+    console.log "we have currentprice!", comic.currentprice
+    currentprice = comic.currentprice
+    while currentprice.startsWith '$'
+      currentprice = currentprice.substring 1, currentprice.length
+    #currentprice = parseFloat currentprice
+    row.startprice = currentprice
+    
+  #console.log "row", row, options
+    
+  # parse scheduletime in config
+  # if scheduletime is 0 then
+  # set row.scheduletime = ''
+  timedelta = ms row.scheduletime
+  if timedelta
+    console.log 'timedelta', timedelta
+    now = new Date()
+    console.log "now", now
+    nt = now.valueOf() + timedelta
+    later = new Date nt
+    sformat = "%Y-%m-%d %H:%M:%S"
+    sformat = "yyyy-mm-dd HH:MM:ss"
+    fdate = dateFormat later, sformat
+    console.log "later", later, fdate
+    row.scheduletime = fdate
+  #
+  # --------> then add fields
+  #
+  # set upc
+  # if comic.isbn then set Product:UPC
+  # if upc.length == 14 then return upc[:-2]
+  # if upc.length == 13 then return upc[1:]
+  #
+  # get categoryID
+  # csv header should be *Category
+  #
+  # make title
+  #
+  # make description
+  #
+  # set picurl
+  #
+  return row
 
-
-
-# set upc
-# if comic.isbn then set Product:UPC
-# if upc.length == 14 then return upc[:-2]
-# if upc.length == 13 then return upc[1:]
-#
-
-# quantity is comic.quantity
-# csv header should be *Quantity
-
-
-# get categoryID
-# csv header should be *Category
-#
-
-# default startprice in config
-# csv header should be *Startprice
-# if comic.currentprice exists use
-# that instead
-
-
+AppChannel.reply 'create-csv-row-object', (action, comic, cfg, desc) ->
+  create_csv_row_object action, comic, cfg, desc
+  
 
 create_csv_header = ->
-  header = {}
+  header = {action: "*Action"}
   for field in ReqFieldNames
     header[field] = "*#{capitalize field}"
   for field in OptFieldNames
     header[field] = field
   return header
 
+AppChannel.reply 'create-csv-header', ->
+  create-csv-header()
+  
+CSV_HEADER = create_csv_header()
+AppChannel.reply 'get-csv-header', ->
+  CSV_HEADER
+  
 class CsvRowModel extends Backbone.Model
   set_comic: (options) ->
     comic = options.comic
     config = options.config
     desc = options.description
+    
     
 
 CurrentCsvRowCollection = undefined
