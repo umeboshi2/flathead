@@ -41,7 +41,7 @@ csvfields_form_data =
   scheduletime: mkInputData 'scheduletime', 'Listing Delay Time', '14d'
   
 make_form_input = tc.renderable (field, fdata, model) ->
-  settings = model.content
+  settings = model.content or {}
   idata = fdata[field]
   value = settings[field]
   #console.log "settings[#{field}] is", value
