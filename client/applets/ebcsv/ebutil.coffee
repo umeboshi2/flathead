@@ -41,8 +41,17 @@ AppChannel.reply 'get-comic-ages', ->
 
 AppChannel.reply 'find-age', (year) ->
   get_comic_age year
+
+
+get_heroes_by_age = (year, herolist) ->
+  age = get_comic_age year
+  newlist = []
+  herolist.forEach (row) ->
+    if row.age == age
+      newlist.push row
+  return newlist
   
-# These are not required fields!
+# Most of these are not required fields!
 EbayFields = [
   'Title'
   'PicURL'
@@ -50,6 +59,7 @@ EbayFields = [
   'Product:EAN'
   'Product:UPC'
   'Product:ISBN',
+  '*Category'
   ]
   
 ReqFieldNames = [
@@ -129,58 +139,91 @@ create_csv_row_object = (options) ->
   # make common data
   # from required and optional fields
   row = create_common_data options
-  # then adjust these fields --<
-  #
+  # then adjust these fields -->
+
   # quantity is from config(1) unless comic.quantity > 1
   # csv header should be *Quantity
   #console.log 'quantity', options.comic.quantity
   if row.quantity != comic.quantity
     row.quantity = comic.quantity
+
   # default startprice in config
   # csv header should be *Startprice
   # if comic.currentprice exists use
   # that instead
   if comic?.currentprice
-    console.log "we have currentprice!", comic.currentprice
     currentprice = comic.currentprice
     while currentprice.startsWith '$'
       currentprice = currentprice.substring 1, currentprice.length
-    #currentprice = parseFloat currentprice
     row.startprice = currentprice
     
-  #console.log "row", row, options
     
   # parse scheduletime in config
   # if scheduletime is 0 then
   # set row.scheduletime = ''
   timedelta = ms row.scheduletime
   if timedelta
-    console.log 'timedelta', timedelta
     now = new Date()
-    console.log "now", now
     nt = now.valueOf() + timedelta
     later = new Date nt
-    sformat = "%Y-%m-%d %H:%M:%S"
+    #pyformat = "%Y-%m-%d %H:%M:%S"
     sformat = "yyyy-mm-dd HH:MM:ss"
-    fdate = dateFormat later, sformat
-    console.log "later", later, fdate
-    row.scheduletime = fdate
+    row.scheduletime = dateFormat later, sformat
+
+  #console.log "row", row, options
+
   #
   # --------> then add fields
-  #
+  
   # set upc
   # if comic.isbn then set Product:UPC
   # if upc.length == 14 then return upc[:-2]
   # if upc.length == 13 then return upc[1:]
+  if comic?.isbn
+    upc = comic.isbn
+    if upc.length == 14
+      upc = upc.substring(0, upc.length - 2)
+    if upc.length == 13
+      upc = upc.substring(1, upc.length)
+    row['Product:UPC'] = upc
+    
+    
   #
   # get categoryID
   # csv header should be *Category
+  shmodel = AppChannel.request 'get-superheroes-model'
+  hlist = shmodel.get 'rows'
+  # FIXME this might fail and year needs to be 2017
+  year = parseInt comic.publicationdate.year.displayname
+  seriesname = comic.mainsection.series.displayname.toLowerCase()
+  age = AppChannel.request 'find-age', year
+  console.log "age, year", age, year
+  hrows = get_heroes_by_age year, hlist
+  other_row = undefined
+  heroes = {}
+  for hrow in hrows
+    if hrow.superhero.startsWith 'Other '
+      other_row = hrow
+    field = hrow.superhero.toLowerCase()
+    heroes[field] = hrow
+  if not other_row?
+    MessageChannel.request 'danger', "No category found for #{age}"
+  found_row = other_row
+  for h of heroes
+    console.log "Checking hero", h, seriesname
+    if (seriesname.indexOf(h) >= 0)
+      found_row = heroes[h]
+      break
+  row['*Category'] = found_row.id
+  
+  #console.log "hrows", hrows
+    
+  #
+  # set picurl
   #
   # make title
   #
   # make description
-  #
-  # set picurl
   #
   return row
 
@@ -193,6 +236,8 @@ create_csv_header = ->
   for field in ReqFieldNames
     header[field] = "*#{capitalize field}"
   for field in OptFieldNames
+    header[field] = field
+  for field in EbayFields
     header[field] = field
   return header
 
