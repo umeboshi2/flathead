@@ -136,6 +136,7 @@ class Controller extends MainController
     @setup_layout_if_needed()
     cfg = AppChannel.request 'get-current-csv-cfg'
     dsc = AppChannel.request 'get-current-csv-dsc'
+    hlist = AppChannel.request 'get-superheroes-model'
     if cfg is undefined
       if __DEV__
         cfg = AppChannel.request 'get-ebcfg', 1
@@ -144,14 +145,16 @@ class Controller extends MainController
         AppChannel.request 'set-current-csv-dsc', dsc
         cfg.fetch().then =>
           dsc.fetch().then =>
-            @_need_comics_view @_show_preview_csv_view
+            hlist.fetch().then =>
+              @_need_comics_view @_show_preview_csv_view
       else
         navigate_to_url '#ebcsv'
         return
     else
       cfg.fetch().then =>
         dsc.fetch().then =>
-          @_need_comics_view @_show_preview_csv_view
+          hlist.fetch().then =>
+            @_need_comics_view @_show_preview_csv_view
     
   main_view: =>
     @setup_layout_if_needed()

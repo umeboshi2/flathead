@@ -10,6 +10,14 @@ cfg_apipath = "#{apiroot}/ebcsvcfg"
 dsc_apipath = "#{apiroot}/ebcsvdsc"
 hero_apipath = "#{apiroot}/ebcsvhero"
 
+class SuperHeroList extends Backbone.Model
+  url: '/assets/data/superheroes.json'
+
+hero_list = new SuperHeroList
+AppChannel.reply 'get-superheroes-model', ->
+  hero_list
+  
+
 class EbConfigModel extends Backbone.Model
   urlRoot: cfg_apipath
   parse: (response, options) ->
