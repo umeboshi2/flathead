@@ -186,6 +186,18 @@ class Controller extends MainController
         MessageChannel.request 'danger', 'Failed to get configs'
     # name the chunk
     , 'ebcsv-view-list-configs'
+
+  view_comic_json: (comic_id) ->
+    @setup_layout_if_needed()
+    require.ensure [], () =>
+      comics = AppChannel.request 'get-comics'
+      comic = comics.get comic_id
+      View = require './views/comicjson'
+      view = new View
+        model: comic
+      @layout.showChildView 'content', view
+    # name the chunk
+    , 'ebcsv-view-comic-json'
     
   ############################################
   # ebcsv configs

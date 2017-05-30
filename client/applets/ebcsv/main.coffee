@@ -17,6 +17,7 @@ class Router extends Marionette.AppRouter
     'ebcsv/xml/upload': 'upload_xml'
     'ebcsv/csv/create': 'create_csv'
     'ebcsv/csv/preview': 'preview_csv'
+    'ebcsv/comic/view/:id': 'view_comic_json'
     
     'ebcsv/hero': 'list_heroes'
     'ebcsv/hero/list': 'list_heroes'

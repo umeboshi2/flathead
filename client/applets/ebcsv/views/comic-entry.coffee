@@ -41,8 +41,15 @@ class ComicEntryView extends Backbone.Marionette.View
     image: '.comic-image'
   ui:
     show_btn: '.show-comic'
+    item: '.item'
   events:
     'click @ui.show_btn': 'show_comic'
+    'click @ui.item': 'show_comic_json'
+
+  show_comic_json: ->
+    url = "#ebcsv/comic/view/#{@model.id}"
+    navigate_to_url url
+    
   onDomRefresh: ->
     @_get_comic_from_db()
     
