@@ -40,9 +40,11 @@ csvfields_form_data =
   'Shipping Profile Name', 'Raw Comic Shipments'
   scheduletime: mkInputData 'scheduletime', 'Listing Delay Time', '14d'
   
-make_form_input = tc.renderable (field, fdata, settings) ->
+make_form_input = tc.renderable (field, fdata, model) ->
+  settings = model.content
   idata = fdata[field]
   value = settings[field]
+  #console.log "settings[#{field}] is", value
   if value? and value isnt ''
     #console.log "Value is", value
     idata.input_attributes.value = settings[field]
