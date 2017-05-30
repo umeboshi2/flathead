@@ -75,6 +75,11 @@ class ComicsView extends Backbone.Marionette.View
     #@ui.csvtable.editableTableWidget()
     cfg = AppChannel.request 'get-current-csv-cfg'
     dsc = AppChannel.request 'get-current-csv-dsc'
+    urls = AppChannel.request 'get-comic-image-urls'
+    if not Object.keys(urls).length
+      msg = "No pictures attached, please view comics, then create csv"
+      MessageChannel.request 'warning', msg
+    
     # FIXME set action in a form or button
     action = 'VerifyAdd'
     #data = @collection.toJSON()

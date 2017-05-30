@@ -5,6 +5,7 @@ dateFormat = require 'dateformat'
 
 capitalize = require 'tbirds/util/capitalize'
 
+MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
 ComicAges =
@@ -197,7 +198,7 @@ create_csv_row_object = (options) ->
   year = parseInt comic.publicationdate.year.displayname
   seriesname = comic.mainsection.series.displayname.toLowerCase()
   age = AppChannel.request 'find-age', year
-  console.log "age, year", age, year
+  #console.log "age, year", age, year
   hrows = get_heroes_by_age year, hlist
   other_row = undefined
   heroes = {}
@@ -210,7 +211,7 @@ create_csv_row_object = (options) ->
     MessageChannel.request 'danger', "No category found for #{age}"
   found_row = other_row
   for h of heroes
-    console.log "Checking hero", h, seriesname
+    #console.log "Checking hero", h, seriesname
     if (seriesname.indexOf(h) >= 0)
       found_row = heroes[h]
       break
@@ -220,7 +221,13 @@ create_csv_row_object = (options) ->
     
   #
   # set picurl
-  #
+  urls = AppChannel.request 'get-comic-image-urls'
+  url = comic.links.link.url
+  #console.log "URLS", urls
+  image_src = urls[url]
+  #console.log "url->", url, "image_src", image_src
+  row['PicURL'] = urls[comic.links.link.url]
+
   # make title
   #
   # make description

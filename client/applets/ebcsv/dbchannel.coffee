@@ -17,6 +17,13 @@ hero_list = new SuperHeroList
 AppChannel.reply 'get-superheroes-model', ->
   hero_list
   
+comic_image_urls = {}
+AppChannel.reply 'get-comic-image-urls', ->
+  comic_image_urls
+
+AppChannel.reply 'clear-comic-image-urls', ->
+  comic_image_urls = {}
+  
 
 class EbConfigModel extends Backbone.Model
   urlRoot: cfg_apipath
