@@ -144,7 +144,6 @@ create_csv_row_object = (options) ->
 
   # quantity is from config(1) unless comic.quantity > 1
   # csv header should be *Quantity
-  #console.log 'quantity', options.comic.quantity
   if row.quantity != comic.quantity
     row.quantity = comic.quantity
 
@@ -170,8 +169,6 @@ create_csv_row_object = (options) ->
     #pyformat = "%Y-%m-%d %H:%M:%S"
     sformat = "yyyy-mm-dd HH:MM:ss"
     row.scheduletime = dateFormat later, sformat
-
-  #console.log "row", row, options
 
   #
   # --------> then add fields
@@ -232,6 +229,8 @@ create_csv_row_object = (options) ->
   #
   # make description
   #
+  #console.log "row", row, options
+
   return row
 
 AppChannel.reply 'create-csv-row-object', (action, comic, cfg, desc) ->
