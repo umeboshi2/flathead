@@ -192,7 +192,15 @@ create_csv_row_object = (options) ->
   shmodel = AppChannel.request 'get-superheroes-model'
   hlist = shmodel.get 'rows'
   # FIXME this might fail and year needs to be 2017
-  year = parseInt comic.publicationdate.year.displayname
+  year = comic.publicationdate?.year
+  if not year
+    year = comic.releasedate.year
+    console.warn "Using releasedate"
+  if not year
+    console.warn "Bad date for comic", comic
+    MessageChannel.request "danger", "Bad Date for comic #{comic.id}"
+  year = parseInt year.displayname
+  console.log "YEAR", year
   seriesname = comic.mainsection.series.displayname.toLowerCase()
   age = AppChannel.request 'find-age', year
   #console.log "age, year", age, year

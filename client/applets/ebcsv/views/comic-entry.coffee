@@ -14,12 +14,10 @@ MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
 
-comic_image_class = '.eemedia-object.thumbnail'
 ########################################
 class ComicImageView extends Backbone.Marionette.View
   template: tc.renderable (model) ->
     img = model.image_src.replace '/lg/', '/sm/'
-    #tc.img comic_image_class, src:img
     tc.img src:img
   onDomRefresh: ->
     AppChannel.request 'reload-layout'
@@ -35,7 +33,9 @@ class ComicEntryView extends Backbone.Marionette.View
       tc.div '.caption', ->
         tc.h5 style:"text-overflow: ellipsis;",
         "#{main.series.displayname} ##{main.issue}"
-        tc.a href:"#{model.links.link.url}","#{main.title}"
+        label = main?.title or model?.edition?.displayname
+        label = label or tc.strong 'UNTITLED'
+        tc.a href:"#{model.links.link.url}", label
   regions:
     info: '.comic-info'
     image: '.comic-image'
