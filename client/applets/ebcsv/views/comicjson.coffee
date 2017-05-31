@@ -24,14 +24,28 @@ class JsonView extends Backbone.Marionette.View
     main = model.mainsection
     tc.div '.listview-header', ->
       tc.text "#{main.series.displayname} ##{main.issue}"
+    tc.div '.expand-button.btn.btn-default', 'Expand'
     tc.div '.panel'
   ui:
     body: '.panel'
+    expand_btn: '.expand-button'
+  events:
+    'click @ui.expand_btn': 'expand_view'
+
+  expand_view: ->
+    if @expanded_view
+      @json_view.collapse true
+      @expanded_view = false
+      @ui.expand_btn.text 'Expand'
+    else
+      @json_view.expand true
+      @expanded_view = true
+      @ui.expand_btn.text 'Collapse'
     
   onDomRefresh: ->
+    @expanded_view = false
     #view = new JView @model.get 'content'
-    view = new JView @model.toJSON()
-    @ui.body.prepend view.dom
-
+    @json_view = new JView @model.toJSON()
+    @ui.body.prepend @json_view.dom
   
 module.exports = JsonView
