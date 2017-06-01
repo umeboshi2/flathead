@@ -240,6 +240,12 @@ create_csv_row_object = (options) ->
   template = handlebars.compile dsc.get 'title'
   title = template options
   #console.log 'title', title
+  if title.length > 80
+    msg = "Title too long.\n"
+    newtitle = title.substring(0, 79)
+    msg = msg + "#{title} ----> #{newtitle}"
+    MessageChannel.request 'danger', msg
+    title = newtitle
   row['Title'] = title
   
   # make description
