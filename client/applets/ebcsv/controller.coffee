@@ -28,8 +28,6 @@ class ToolbarView extends Backbone.Marionette.View
         tc.i '.fa.fa-cubes', ' Create CSV'
       tc.div '#new-config-button.btn.btn-default', ->
         tc.i '.fa.fa-plus', ' New Config'
-      tc.div '#list-heroes-button.btn.btn-default', ->
-        tc.i '.fa.fa-list', ' Heroes'
   ui:
     main_view_btn: '#main-view-button'
     list_btn: '#list-configs-button'
@@ -37,7 +35,6 @@ class ToolbarView extends Backbone.Marionette.View
     newcfg_btn: '#new-config-button'
     uploadxml_btn: '#upload-xml-button'
     mkcsv_btn: '#mkcsv-button'
-    list_hero_btn: '#list-heroes-button'
     
   events:
     'click @ui.main_view_btn': 'show_main_view'
@@ -46,7 +43,6 @@ class ToolbarView extends Backbone.Marionette.View
     'click @ui.newcfg_btn': 'add_new_config'
     'click @ui.uploadxml_btn': 'upload_xml'
     'click @ui.mkcsv_btn': 'make_csv'
-    'click @ui.list_hero_btn': 'list_heroes'
 
   show_main_view: ->
     navigate_to_url '#ebcsv'
@@ -56,9 +52,6 @@ class ToolbarView extends Backbone.Marionette.View
     
   list_descriptions: ->
     navigate_to_url '#ebcsv/dsc/list'
-
-  list_heroes: ->
-    navigate_to_url '#ebcsv/hero/list'
 
   add_new_config: ->
     navigate_to_url '#ebcsv/cfg/add'
@@ -178,33 +171,6 @@ class Controller extends MainController
     # name the chunk
     , 'ebcsv-view-upload-xml-view'
     
-    
-  list_heroes: ->
-    @setup_layout_if_needed()
-    require.ensure [], () =>
-      collection = AppChannel.request 'ebhero-collection'
-      response = collection.fetch()
-      response.done =>
-        View = require './views/superheroes'
-        view = new View
-          collection: collection
-        @layout.showChildView 'content', view
-      response.fail ->
-        MessageChannel.request 'danger', 'Failed to get configs'
-    # name the chunk
-    , 'ebcsv-view-list-configs'
-
-  view_comic_json: (comic_id) ->
-    @setup_layout_if_needed()
-    require.ensure [], () =>
-      comics = AppChannel.request 'get-comics'
-      comic = comics.get comic_id
-      View = require './views/comicjson'
-      view = new View
-        model: comic
-      @layout.showChildView 'content', view
-    # name the chunk
-    , 'ebcsv-view-comic-json'
     
   ############################################
   # ebcsv configs

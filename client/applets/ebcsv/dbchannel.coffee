@@ -8,7 +8,6 @@ apiroot = "/api/dev/booky"
 apiroot = "/api/dev/bapi"
 cfg_apipath = "#{apiroot}/ebcsvcfg"
 dsc_apipath = "#{apiroot}/ebcsvdsc"
-hero_apipath = "#{apiroot}/ebcsvhero"
 
 class SuperHeroList extends Backbone.Model
   url: '/assets/data/superheroes.json'
@@ -47,15 +46,6 @@ class EbDescCollection extends Backbone.Collection
   model: EbDescModel
 
 make_dbchannel AppChannel, 'ebdsc', EbDescModel, EbDescCollection
-
-class EbHeroModel extends Backbone.Model
-  urlRoot: hero_apipath
-
-class EbHeroCollection extends Backbone.Collection
-  url: hero_apipath
-  model: EbHeroModel
-
-make_dbchannel AppChannel, 'ebhero', EbHeroModel, EbHeroCollection
 
 class ClzPage extends Backbone.Model
   urlRoot: "#{apiroot}/ebclzpage"
