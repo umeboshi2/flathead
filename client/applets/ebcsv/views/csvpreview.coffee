@@ -47,7 +47,8 @@ create_csv_data = () ->
       value = data[field]
       #console.log 'field, value', field, value
       # escape double quotes
-      value.replace('"', '""')
+      # https://stackoverflow.com/a/17606289
+      value = value.split('"').join('""')
       # quote the value if it contains a space
       if ' ' in value
         value = '"' + value + '"'

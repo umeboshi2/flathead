@@ -256,11 +256,14 @@ create_csv_row_object = (options) ->
   template = handlebars.compile dsc.get 'content'
   description = template options
   description = marked description
-  description = description.replace '\r', ''
-  description = description.replace '\n', ''
+  # https://stackoverflow.com/a/17606289
+  description = description.split('\r').join('')
+  description = description.split('\n').join('')
   if description.length > 32700
     msg = "#{description.length} characters in description"
     MessageChannel.request 'warning', msg
+  if '\n' in description
+    MessageChannel.request 'danger', 'newline in description'
   row['Description'] = description
   
   #console.log "row", row, options
