@@ -202,7 +202,7 @@ create_csv_row_object = (options) ->
     console.warn "Bad date for comic", comic
     MessageChannel.request "danger", "Bad Date for comic #{comic.id}"
   year = parseInt year.displayname
-  console.log "YEAR", year
+  #console.log "YEAR", year
   seriesname = comic.mainsection.series.displayname.toLowerCase()
   age = AppChannel.request 'find-age', year
   #console.log "age, year", age, year
@@ -239,7 +239,7 @@ create_csv_row_object = (options) ->
   # make title
   template = handlebars.compile dsc.get 'title'
   title = template options
-  console.log 'title', title
+  #console.log 'title', title
   row['Title'] = title
   
   # make description
