@@ -8,10 +8,17 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 { make_field_input
   make_field_select } = require 'tbirds/templates/forms'
 
+JsonView = require './comicjson'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
+
+show_modal = (view, backdrop=false) ->
+  app = MainChannel.request 'main:app:object'
+  modal_region = app.getView().getRegion 'modal'
+  modal_region.backdrop = backdrop
+  modal_region.show view
 
 
 ########################################
@@ -47,8 +54,11 @@ class ComicEntryView extends Backbone.Marionette.View
     'click @ui.item': 'show_comic_json'
 
   show_comic_json: ->
-    url = "#ebcsv/comic/view/#{@model.id}"
-    navigate_to_url url
+    #url = "#ebcsv/comic/view/#{@model.id}"
+    #navigate_to_url url
+    view = new JsonView
+      model: @model
+    show_modal view
     
   onDomRefresh: ->
     @_get_comic_from_db()
