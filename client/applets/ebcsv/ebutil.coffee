@@ -131,6 +131,8 @@ create_common_data = (options) ->
     row[field] = cfg[field]
   OptFieldNames.forEach (field) ->
     row[field] = cfg[field]
+  EbayFields.forEach (field) ->
+    row[field] = ''
   return row
   
 #######################################################

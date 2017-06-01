@@ -61,6 +61,12 @@ class ClzPageCollection extends Backbone.Collection
 make_dbchannel AppChannel, 'clzpage', ClzPage, ClzPageCollection
 
 
+current_csv_action = undefined
+AppChannel.reply 'set-current-csv-action', (action) ->
+  current_csv_action = action
+AppChannel.reply 'get-current-csv-action', ->
+  current_csv_action
+  
 current_csv_cfg = undefined
 AppChannel.reply 'set-current-csv-cfg', (cfg) ->
   current_csv_cfg = cfg

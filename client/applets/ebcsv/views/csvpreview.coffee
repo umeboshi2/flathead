@@ -28,6 +28,35 @@ show_modal = (view, backdrop=false) ->
   modal_region.backdrop = backdrop
   modal_region.show view
 
+
+make_csv_headline = () ->
+  csvheader = AppChannel.request 'get-csv-header'
+  fields = []
+  for field of csvheader
+    fields.push field
+  "#{fields.join(',')}"
+  
+create_csv_data = () ->
+  collection = AppChannel.request 'get-csvrow-collection'
+  csvheader = AppChannel.request 'get-csv-header'
+  lines = [make_csv_headline()]
+  for row in collection.models
+    data = row.toJSON()
+    values = []
+    for field of data
+      value = data[field]
+      #console.log 'field, value', field, value
+      # escape double quotes
+      value.replace('"', '""')
+      # quote the value if it contains a space
+      if ' ' in value
+        value = '"' + value + '"'
+      values.push value
+    line = values.join(',')
+    lines.push line
+  content =  lines.join('\r\n')
+  return "#{content}\r\n"
+
 ############################################
 # csv info preview dialogs
 ############################################
@@ -50,6 +79,10 @@ class ModalDescView extends Backbone.Marionette.View
               modal_close_button 'Close', 'check'
 
 class ModalRowView extends Backbone.Marionette.View
+  templateContext: ->
+    options = @options
+    options.csvheader = AppChannel.request 'get-csv-header'
+    options
   template: tc.renderable (model) ->
     tc.div '.modal-dialog', ->
       tc.div '.modal-content', ->
@@ -60,7 +93,7 @@ class ModalRowView extends Backbone.Marionette.View
           tc.div '.panel', ->
             tc.dl '.dl-horizontal', ->
               Object.keys(model).forEach (field) ->
-                tc.dt field
+                tc.dt model.csvheader[field]
                 tc.dd model[field]
         tc.div '.modal-footer', ->
           tc.ul '.list-inline', ->
@@ -105,13 +138,13 @@ class CsvTableRow extends Backbone.Marionette.View
     'click @ui.row_btn': 'show_row'
 
   show_row: ->
-    console.log 'show_row'
+    #console.log 'show_row'
     view = new ModalRowView
       model: @model
     show_modal view
     
   show_description: ->
-    console.log 'show_description'
+    #console.log 'show_description'
     view = new ModalDescView
       model: @model
     show_modal view
@@ -158,7 +191,7 @@ class CsvMainView extends Backbone.Marionette.View
       replaceElement: true
 
   onRender: ->
-    console.log "CsvMainView onRender"
+    #console.log "CsvMainView onRender"
     collection = AppChannel.request 'get-csvrow-collection'
     view = new CsvTableBody
       collection: collection
@@ -187,14 +220,27 @@ class ComicsView extends Backbone.Marionette.View
     'click @ui.mkcsv_btn': 'show_comics'
     
   show_comics: ->
-    window.csvrows = @csvRowCollection
-    MessageChannel.request 'info', 'coming soon yada, yada'
+    #window.csvrows = @csvRowCollection
+    #MessageChannel.request 'info', 'coming soon yada, yada'
+    csvdata = create_csv_data()
+    type = 'data:text/csv;charset=utf-8'
+    data = encodeURIComponent(csvdata)
+    link = "#{type},#{data}"
+    filename = 'export.csv'
+    a = document.createElement 'a'
+    a.id = 'exported-csv-anchor'
+    a.href = link
+    a.download = filename
+    a.innerHTML = "Download #{filename}"
+    a.style.display = 'none'
+    document.body.appendChild a
+    a.click()
+    document.body.removeChild a
     
   createCsvRows: ->
+    action = AppChannel.request 'get-current-csv-action'
     cfg = AppChannel.request 'get-current-csv-cfg'
     dsc = AppChannel.request 'get-current-csv-dsc'
-    # FIXME set action in a form or button
-    action = 'VerifyAdd'
     rows = []
     for comic in @collection.toJSON()
       options =

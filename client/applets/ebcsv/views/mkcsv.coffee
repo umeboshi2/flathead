@@ -23,6 +23,13 @@ mkInputData = (field, label, placeholder) ->
     name: field
     placeholder: placeholder
 
+csv_action_select = tc.renderable () ->
+  tc.div '.form-group', ->
+    tc.label '.control-label', for:'select_action', 'Action'
+  tc.select '.form-control', name:'select_action', ->
+    for action in ['Add', 'VerifyAdd']
+      tc.option selected:null, value:action, action
+    
 csv_cfg_select = tc.renderable (collection) ->
   tc.div '.form-group', ->
     tc.label '.control-label', for:'select_cfg', 'Config'
@@ -54,6 +61,7 @@ class ComicsView extends Backbone.Marionette.View
     tc.div '.listview-header', ->
       tc.text "Create CSV"
     tc.div '.mkcsv-form', ->
+      csv_action_select()
       csv_cfg_select model.ebcfg_collection
       csv_dsc_select model.ebdsc_collection
     tc.div '.mkcsv-button.btn.btn-default', "Make CSV"
@@ -62,6 +70,7 @@ class ComicsView extends Backbone.Marionette.View
   ui:
     mkcsv_btn: '.mkcsv-button'
     show_btn: '.show-comics-button'
+    action_sel: 'select[name="select_action"]'
     cfg_sel: 'select[name="select_cfg"]'
     dsc_sel: 'select[name="select_dsc"]'
   events:
@@ -69,8 +78,10 @@ class ComicsView extends Backbone.Marionette.View
     'click @ui.show_btn': 'show_comics'
 
   make_csv: ->
+    action = @ui.action_sel.val()
     cfg = AppChannel.request 'get-ebcfg', @ui.cfg_sel.val()
     dsc = AppChannel.request 'get-ebdsc', @ui.dsc_sel.val()
+    AppChannel.request 'set-current-csv-action', action
     AppChannel.request 'set-current-csv-cfg', cfg
     AppChannel.request 'set-current-csv-dsc', dsc
     navigate_to_url '#ebcsv/csv/preview'
