@@ -2,6 +2,8 @@ Backbone = require 'backbone'
 xml = require 'xml2js-parseonly/src/xml2js'
 ms = require 'ms'
 dateFormat = require 'dateformat'
+handlebars = require 'handlebars'
+marked = require 'marked'
 
 capitalize = require 'tbirds/util/capitalize'
 
@@ -233,10 +235,26 @@ create_csv_row_object = (options) ->
   #console.log "url->", url, "image_src", image_src
   row['PicURL'] = urls[comic.links.link.url]
 
+  dsc = options.desc
   # make title
-  #
+  template = handlebars.compile dsc.get 'title'
+  title = template options
+  console.log 'title', title
+  row['Title'] = title
+  
   # make description
   #
+  #console.log 'dsc', dsc
+  template = handlebars.compile dsc.get 'content'
+  description = template options
+  description = marked description
+  description = description.replace '\r', ''
+  description = description.replace '\n', ''
+  if description.length > 32700
+    msg = "#{description.length} characters in description"
+    MessageChannel.request 'warning', msg
+  row['Description'] = description
+  
   #console.log "row", row, options
 
   return row
