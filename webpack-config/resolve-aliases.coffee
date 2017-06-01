@@ -19,3 +19,5 @@ module.exports =
   pixi: pixi
   p2: p2
   tbirds: 'tbirds/src'
+  # https://github.com/wycats/handlebars.js/issues/953
+  handlebars: 'handlebars/dist/handlebars'
