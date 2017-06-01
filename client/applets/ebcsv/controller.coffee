@@ -16,6 +16,8 @@ AppChannel = Backbone.Radio.channel 'ebcsv'
 class ToolbarView extends Backbone.Marionette.View
   template: tc.renderable () ->
     tc.div '.btn-group.btn-group-justified', ->
+      tc.div '#main-view-button.btn.btn-default', ->
+        tc.i '.fa.fa-eye', ' Main View'
       tc.div '#list-configs-button.btn.btn-default', ->
         tc.i '.fa.fa-list', ' List Configs'
       tc.div '#list-dscs-button.btn.btn-default', ->
@@ -29,6 +31,7 @@ class ToolbarView extends Backbone.Marionette.View
       tc.div '#list-heroes-button.btn.btn-default', ->
         tc.i '.fa.fa-list', ' Heroes'
   ui:
+    main_view_btn: '#main-view-button'
     list_btn: '#list-configs-button'
     list_dsc_btn: '#list-dscs-button'
     newcfg_btn: '#new-config-button'
@@ -37,6 +40,7 @@ class ToolbarView extends Backbone.Marionette.View
     list_hero_btn: '#list-heroes-button'
     
   events:
+    'click @ui.main_view_btn': 'show_main_view'
     'click @ui.list_btn': 'list_configs'
     'click @ui.list_dsc_btn': 'list_descriptions'
     'click @ui.newcfg_btn': 'add_new_config'
@@ -44,6 +48,9 @@ class ToolbarView extends Backbone.Marionette.View
     'click @ui.mkcsv_btn': 'make_csv'
     'click @ui.list_hero_btn': 'list_heroes'
 
+  show_main_view: ->
+    navigate_to_url '#ebcsv'
+    
   list_configs: ->
     navigate_to_url '#ebcsv/cfg/list'
     
