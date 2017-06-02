@@ -33,7 +33,7 @@ make_csv_headline = () ->
   csvheader = AppChannel.request 'get-csv-header'
   fields = []
   for field of csvheader
-    fields.push field
+    fields.push csvheader[field]
   "#{fields.join(',')}"
   
 create_csv_data = () ->
@@ -212,10 +212,12 @@ class ComicsView extends Backbone.Marionette.View
   template: tc.renderable (model) ->
     tc.div '.listview-header', ->
       tc.text "Preview CSV"
-    tc.div '.mkcsv-button.btn.btn-default', "Make CSV"
+    tc.div '.mkcsv-button.btn.btn-default', "Download CSV"
+    tc.input value:'export.csv', name:'csvfilename'
     tc.div '.body'
   ui:
     mkcsv_btn: '.mkcsv-button'
+    filename_input: "input[name='csvfilename']"
     
   events:
     'click @ui.mkcsv_btn': 'show_comics'
@@ -227,7 +229,7 @@ class ComicsView extends Backbone.Marionette.View
     type = 'data:text/csv;charset=utf-8'
     data = encodeURIComponent(csvdata)
     link = "#{type},#{data}"
-    filename = 'export.csv'
+    filename = @ui.filename_input.val() or 'export.csv'
     a = document.createElement 'a'
     a.id = 'exported-csv-anchor'
     a.href = link
