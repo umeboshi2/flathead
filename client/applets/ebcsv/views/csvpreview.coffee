@@ -215,7 +215,7 @@ class ComicsView extends Backbone.Marionette.View
     tc.div '.listview-header', ->
       tc.text "Preview CSV"
     tc.div '.fileexchange-button.btn.btn-default', "File Exchange Upload"
-    tc.div '.mkcsv-button.btn.btn-default', "Download CSV"
+    tc.div '.mkcsv-button.btn.btn-default', "Create CSV"
     tc.input value:'export.csv', name:'csvfilename'
     tc.div '.body'
   ui:
