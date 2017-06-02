@@ -35,6 +35,10 @@ class Router extends Marionette.AppRouter
     'ebcsv/dsc/view/:name': 'view_description'
     'ebcsv/dsc/edit/:name': 'edit_description'
 
+    'ebcsv/ebdscs/new': 'add_new_description'
+    'ebcsv/ebdscs/view/:id': 'view_description'
+    'ebcsv/ebdscs/edit/:id': 'edit_description'
+
 class Applet extends TkApplet
   Controller: Controller
   Router: Router
