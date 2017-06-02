@@ -64,7 +64,7 @@ class ComicsView extends Backbone.Marionette.View
       csv_action_select()
       csv_cfg_select model.ebcfg_collection
       csv_dsc_select model.ebdsc_collection
-    tc.div '.mkcsv-button.btn.btn-default', "Make CSV"
+    tc.div '.mkcsv-button.btn.btn-default', "Preview CSV Data"
     tc.div '.show-comics-button.btn.btn-default', "Show Comics"
     tc.div '.body'
   ui:
