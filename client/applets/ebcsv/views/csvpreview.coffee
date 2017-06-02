@@ -17,6 +17,8 @@ ComicListView = require './comic-list'
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
+fileexchange_upload_url = \
+  "http://bulksell.ebay.com/ws/eBayISAPI.dll?FileExchangeUploadForm"
 
 csvRowCollection = new Backbone.Collection
 AppChannel.reply 'get-csvrow-collection', ->
@@ -212,15 +214,20 @@ class ComicsView extends Backbone.Marionette.View
   template: tc.renderable (model) ->
     tc.div '.listview-header', ->
       tc.text "Preview CSV"
+    tc.div '.fileexchange-button.btn.btn-default', "File Exchange Upload"
     tc.div '.mkcsv-button.btn.btn-default', "Download CSV"
     tc.input value:'export.csv', name:'csvfilename'
     tc.div '.body'
   ui:
     mkcsv_btn: '.mkcsv-button'
     filename_input: "input[name='csvfilename']"
-    
+    fileexchange_btn: '.fileexchange-button'
   events:
     'click @ui.mkcsv_btn': 'show_comics'
+    'click @ui.fileexchange_btn': 'open_fileexchange_tab'
+
+  open_fileexchange_tab: ->
+    window.open fileexchange_upload_url, '_blank'
     
   show_comics: ->
     #window.csvrows = @csvRowCollection
