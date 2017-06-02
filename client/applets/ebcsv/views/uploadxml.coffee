@@ -21,8 +21,11 @@ dropzone_template = tc.renderable (model) ->
         tc.div '.panel-body', ->
           tc.div '.mydropzone.pill.pill-default', type:'file', "Drop Something"
           tc.div '.parse-btn.btn.btn-default', style:'display:none', ->
-            tc.text 'Parse File'
-          
+            tc.text 'Parse Dropped File'
+          tc.input '.xml-file-input.input', type:'file'
+          tc.span '.parse-chosen-button.btn.btn-default',
+          style:'display:none', ->
+            tc.text 'Parse input file.'
   
           
 class DropZoneView extends Backbone.Marionette.View
@@ -30,12 +33,28 @@ class DropZoneView extends Backbone.Marionette.View
   droppedFile: null
   ui:
     dropzone: '.mydropzone'
+    file_input: '.xml-file-input'
     parse_btn: '.parse-btn'
+    chosen_btn: '.parse-chosen-button'
   events:
     'dragover @ui.dropzone': 'handle_dragOver'
     'dragenter @ui.dropzone': 'handle_dragEnter'
     'drop @ui.dropzone': 'handle_drop'
     'click @ui.parse_btn': 'parse_xml'
+    'click @ui.file_input': 'file_input_clicked'
+    'change @ui.file_input': 'file_input_changed'
+    'click @ui.chosen_btn': 'parse_chosen_xml'
+    
+
+  # https://stackoverflow.com/a/12102992
+  file_input_clicked: (event) ->
+    console.log "file_input_clicked", event
+    @ui.file_input.val null
+    @ui.chosen_btn.hide()
+
+  file_input_changed: (event) ->
+    console.log "file_input_changed", event
+    @ui.chosen_btn.show()
     
   handle_drop: (event) ->
     event.preventDefault()
@@ -62,15 +81,29 @@ class DropZoneView extends Backbone.Marionette.View
     if __DEV__
       window.comics = AppChannel.request 'get-comics'
     navigate_to_url "#ebcsv"
+
+  parse_chosen_xml: ->
+    @ui.dropzone.text "Reading xml file..."
+    filename = @ui.file_input.val()
+    console.log "PARSE #{filename}"
+    fi = @ui.file_input
+    console.log 'fi', fi, fi[0].files
+    file = @ui.file_input[0].files[0]
+    reader = new FileReader()
+    reader.onload = @xmlReaderOnLoad
+    reader.readAsText file
+    @ui.parse_btn.hide()
+    
+  xmlReaderOnLoad: (event) =>
+    content = event.target.result
+    @ui.dropzone.text 'Parsing xml.....'
+    AppChannel.request 'parse-comics-xml', content, @successfulParse
     
   parse_xml: ->
     @ui.dropzone.text "Reading xml file..."
     console.log "PARSE #{@droppedFile.name}"
     reader = new FileReader()
-    reader.onload = (event) =>
-      content = event.target.result
-      @ui.dropzone.text 'Parsing xml.....'
-      AppChannel.request 'parse-comics-xml', content, @successfulParse
+    reader.onload = @xmlReaderOnLoad
     reader.readAsText(@droppedFile)
     @ui.parse_btn.hide()
     
