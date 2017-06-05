@@ -74,6 +74,7 @@
     "minimist": "^1.2.0",
     "node-sass": "^4.5.0",
     "octokat": "^0.6.2",
+    "raw-loader": "^0.5.1",
     "resolve-url-loader": "^2.0.0",
     "sass-loader": "^6.0.2",
     "shelljs": "^0.7.6",

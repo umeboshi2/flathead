@@ -14,6 +14,7 @@ DocChannel = Backbone.Radio.channel 'static-documents'
 ResourceChannel = Backbone.Radio.channel 'resources'
 
 tc = require 'teacup'
+readme = require 'raw-loader!../../../README.md'
 
 frontdoor_template = tc.renderable () ->
   tc.div '#main-content.col-sm-10.col-sm-offset-1'
@@ -92,8 +93,8 @@ class Controller extends MainController
   default_view: ->
     @setup_layout_if_needed()
     #@show_login()
-    @view_page 1
-      
+    @_view_resource new Backbone.Model content:readme
+    
   frontdoor: ->
     config = MainChannel.request 'main:app:config'
     if config?.needLogin
