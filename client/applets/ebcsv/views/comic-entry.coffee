@@ -39,7 +39,7 @@ class ComicEntryView extends Backbone.Marionette.View
         tc.text 'loading'
       tc.div '.caption', ->
         tc.h5 style:"text-overflow: ellipsis;",
-        "#{main.series.displayname} ##{main.issue}"
+        "#{main.series.displayname} ##{model.issue}"
         label = main?.title or model?.edition?.displayname
         label = label or tc.strong 'UNTITLED'
         tc.a href:"#{model.links.link.url}", label
