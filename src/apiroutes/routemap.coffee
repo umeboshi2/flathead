@@ -20,6 +20,5 @@ module.exports =
     objects: 'GenObject'
     ebcsvcfg: 'EbCsvConfig'
     ebcsvdsc: 'EbCsvDescription'
-    ebcsvhero: 'EbCsvSuperhero'
     ebclzpage: 'EbClzComicPage'
     
