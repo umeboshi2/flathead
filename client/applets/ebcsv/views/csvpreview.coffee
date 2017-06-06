@@ -3,6 +3,7 @@ Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 Masonry = require 'masonry-layout'
 tc = require 'teacup'
+dateFormat = require 'dateformat'
 #require('editable-table/mindmup-editabletable')
 
 navigate_to_url = require 'tbirds/util/navigate-to-url'
@@ -23,7 +24,7 @@ fileexchange_upload_url = \
 csvRowCollection = new Backbone.Collection
 AppChannel.reply 'get-csvrow-collection', ->
   csvRowCollection
-
+  
 show_modal = (view, backdrop=false) ->
   app = MainChannel.request 'main:app:object'
   modal_region = app.getView().getRegion 'modal'
@@ -212,31 +213,36 @@ class ComicsView extends Backbone.Marionette.View
   regions:
     body: '.body'
   template: tc.renderable (model) ->
+    now = new Date()
+    sformat = "yyyy-mm-dd-HH:MM:ss"
+    timestring = dateFormat now, sformat
+    filename = "export-#{timestring}.csv"
     tc.div '.listview-header', ->
       tc.text "Preview CSV"
     tc.div '.fileexchange-button.btn.btn-default', "File Exchange Upload"
     tc.div '.mkcsv-button.btn.btn-default', "Create CSV"
-    tc.input value:'export.csv', name:'csvfilename'
+    tc.input '.form-control', value:filename, name:'csvfilename'
     tc.div '.body'
   ui:
     mkcsv_btn: '.mkcsv-button'
     filename_input: "input[name='csvfilename']"
     fileexchange_btn: '.fileexchange-button'
   events:
-    'click @ui.mkcsv_btn': 'show_comics'
+    'click @ui.mkcsv_btn': 'make_csv_file'
     'click @ui.fileexchange_btn': 'open_fileexchange_tab'
 
   open_fileexchange_tab: ->
     window.open fileexchange_upload_url, '_blank'
     
-  show_comics: ->
-    #window.csvrows = @csvRowCollection
-    #MessageChannel.request 'info', 'coming soon yada, yada'
+  make_csv_file: ->
     csvdata = create_csv_data()
     type = 'data:text/csv;charset=utf-8'
     data = encodeURIComponent(csvdata)
     link = "#{type},#{data}"
-    filename = @ui.filename_input.val() or 'export.csv'
+    now = new Date()
+    sformat = "yyyy-mm-dd-HH:MM:ss"
+    timestring = dateFormat now, sformat
+    filename = @ui.filename_input.val() or "export-#{timestring}.csv"
     a = document.createElement 'a'
     a.id = 'exported-csv-anchor'
     a.href = link
