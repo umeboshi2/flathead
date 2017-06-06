@@ -115,7 +115,26 @@ AppChannel.reply 'get-comics', ->
 AppChannel.reply 'parse-comics-xml', (content, cb) ->
   XmlParser.parseString content, (err, json) ->
     comics = json.comicinfo.comiclist.comic
-    AppChannel.request 'set-comics', comics
+    forsale = []
+    in_collection = []
+    for comic in comics
+      console.log comic.collectionstatus
+      status = comic.collectionstatus._
+      if status == 'For Sale'
+        forsale.push comic
+      else if status == 'In Collection'
+        in_collection.push comic
+      else
+        main = comic.mainsection
+        name = "#{main.series.displayname} ##{main.issue}"
+        msg = "Cannot determine comic status of (#{name})!"
+        MessageChannel.request "danger", msg
+    if in_collection.length
+      msg = "#{in_collection.length} ignored!!"
+      MessageChannel.request "warning", msg
+    if not forsale.length
+      MessageChannel.request "danger", "No comics for sale!"
+    AppChannel.request 'set-comics', forsale
     cb()
 
 
