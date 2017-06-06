@@ -236,22 +236,16 @@ class ComicsView extends Backbone.Marionette.View
     
   make_csv_file: ->
     csvdata = create_csv_data()
-    type = 'data:text/csv;charset=utf-8'
-    data = encodeURIComponent(csvdata)
-    link = "#{type},#{data}"
     now = new Date()
     sformat = "yyyy-mm-dd-HH:MM:ss"
     timestring = dateFormat now, sformat
     filename = @ui.filename_input.val() or "export-#{timestring}.csv"
-    a = document.createElement 'a'
-    a.id = 'exported-csv-anchor'
-    a.href = link
-    a.download = filename
-    a.innerHTML = "Download #{filename}"
-    a.style.display = 'none'
-    document.body.appendChild a
-    a.click()
-    document.body.removeChild a
+    options =
+      type: 'data:text/csv;charset=utf-8'
+      data: create_csv_data()
+      el_id: 'exported-csv-anchor'
+      filename: filename
+    AppChannel.request 'export-to-file', options
     
   createCsvRows: ->
     action = AppChannel.request 'get-current-csv-action'

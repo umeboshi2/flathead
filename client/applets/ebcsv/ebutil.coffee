@@ -10,6 +10,26 @@ capitalize = require 'tbirds/util/capitalize'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
+export_to_file = (options) ->
+  data = encodeURIComponent(options.data)
+  link = "#{options.type},#{data}"
+  now = new Date()
+  sformat = "yyyy-mm-dd-HH:MM:ss"
+  timestring = dateFormat now, sformat
+  filename = options.filename or "export-#{timestring}"
+  a = document.createElement 'a'
+  a.id = options.el_id or 'exported-file-anchor'
+  a.href = link
+  a.download = filename
+  a.innerHTML = "Download #{filename}"
+  a.style.display = 'none'
+  document.body.appendChild a
+  a.click()
+  document.body.removeChild a
+  
+AppChannel.reply 'export-to-file', (options) ->
+  export_to_file options
+  
 ComicAges =
   platinum:
     start: 1897
