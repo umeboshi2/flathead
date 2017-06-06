@@ -14,8 +14,16 @@ DocChannel = Backbone.Radio.channel 'static-documents'
 ResourceChannel = Backbone.Radio.channel 'resources'
 
 tc = require 'teacup'
-readme = require 'raw-loader!../../../README.md'
 
+class ReadMeModel extends Backbone.Model
+  url: "https://raw.githubusercontent.com/umeboshi2/flathead/master/README.md"
+  fetch: (options) ->
+    options = options or {}
+    options.dataType = 'text'
+    super options
+  parse: (response) ->
+    content: response
+    
 frontdoor_template = tc.renderable () ->
   tc.div '#main-content.col-sm-10.col-sm-offset-1'
   
@@ -28,11 +36,6 @@ class FrontdoorLayout extends Backbone.Marionette.View
   onBeforeDestroy: (view) ->
     console.log "FrontdoorLayout onBeforeDestroy!!!!", view
     console.log "Determine what to do with child apps when changing"
-    #controller = view.controller
-    #controller.applet.stop()
-    #controller.applet.destroy()
-    
-     
 
 class Controller extends MainController
   layoutClass: FrontdoorLayout
@@ -90,10 +93,24 @@ class Controller extends MainController
   frontdoor_hasuser: (user) ->
     @default_view()
 
+  view_readme: ->
+    @setup_layout_if_needed()
+    model = new ReadMeModel
+    if true and __DEV__
+      readme = require 'raw-loader!../../../README.md'
+      model = new Backbone.Model content:readme
+      @_view_resource model
+      return
+    response = model.fetch()
+    response.done =>
+      @_view_resource model
+    response.fail ->
+      MessageChannel.request 'warning', 'failed to get readme'
+      
   default_view: ->
     @setup_layout_if_needed()
     #@show_login()
-    @_view_resource new Backbone.Model content:readme
+    @view_readme()
     
   frontdoor: ->
     config = MainChannel.request 'main:app:config'

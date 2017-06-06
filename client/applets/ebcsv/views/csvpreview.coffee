@@ -219,7 +219,7 @@ class ComicsView extends Backbone.Marionette.View
     filename = "export-#{timestring}.csv"
     tc.div '.listview-header', ->
       tc.text "Preview CSV"
-    tc.div '.fileexchange-button.btn.btn-default', "File Exchange Upload"
+    tc.div '.fileexchange-button.btn.btn-default', "Ebay Upload"
     tc.div '.mkcsv-button.btn.btn-default', "Create CSV"
     tc.input '.form-control', value:filename, name:'csvfilename'
     tc.div '.body'

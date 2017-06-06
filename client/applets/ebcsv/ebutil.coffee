@@ -212,6 +212,9 @@ create_csv_row_object = (options) ->
     #pyformat = "%Y-%m-%d %H:%M:%S"
     sformat = "yyyy-mm-dd HH:MM:ss"
     row.scheduletime = dateFormat later, sformat
+  else
+    row.scheduletime = ''
+    
 
   #
   # --------> then add fields
