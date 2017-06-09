@@ -7,6 +7,7 @@ tc = require 'teacup'
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 { make_field_input
   make_field_select } = require 'tbirds/templates/forms'
+{ modal_close_button } = require 'tbirds/templates/buttons'
 
 JsonView = require './comicjson'
 
@@ -20,6 +21,34 @@ show_modal = (view, backdrop=false) ->
   modal_region.backdrop = backdrop
   modal_region.show view
 
+class ImageModalView extends Backbone.Marionette.View
+  template: tc.renderable (model) ->
+    main = model.mainsection
+    tc.div '.modal-dialog', ->
+      tc.div '.modal-content', ->
+        tc.div '.modal-body', ->
+          tc.img src: model.image_src
+        tc.div '.modal-footer', ->
+          tc.ul '.list-inline', ->
+            btnclass = 'btn.btn-default.btn-sm'
+            tc.li "#confirm-delete-button", ->
+              modal_close_button 'Close', 'check'
+
+
+class IFrameModalView extends Backbone.Marionette.View
+  template: tc.renderable (model) ->
+    main = model.mainsection
+    tc.div '.modal-dialog.modal-lg', ->
+      tc.div '.modal-content', ->
+        tc.div '.modal-body', ->
+          tc.iframe style:"width:97%;height:75vh;", src: model.src
+        tc.div '.modal-footer', ->
+          tc.ul '.list-inline', ->
+            btnclass = 'btn.btn-default.btn-sm'
+            tc.li "#confirm-delete-button", ->
+              modal_close_button 'Close', 'check'
+
+
 
 ########################################
 class ComicImageView extends Backbone.Marionette.View
@@ -28,6 +57,14 @@ class ComicImageView extends Backbone.Marionette.View
     tc.img src:img
   onDomRefresh: ->
     AppChannel.request 'reload-layout'
+  ui:
+    image: 'img'
+  events:
+    'click @ui.image': 'show_large_image'
+  show_large_image: ->
+    view = new ImageModalView
+      model: @model
+    show_modal view
     
 
 class ComicEntryView extends Backbone.Marionette.View
@@ -38,29 +75,53 @@ class ComicEntryView extends Backbone.Marionette.View
         tc.i '.fa.fa-spinner.fa-spin'
         tc.text 'loading'
       tc.div '.caption', ->
-        tc.h5 style:"text-overflow: ellipsis;",
-        "#{main.series.displayname} ##{model.issue}"
+        tc.span ->
+          tc.i '.info-button.fa.fa-info.fa-pull-left.btn.btn-default.btn-sm'
+          tc.h5 style:"text-overflow: ellipsis;",
+          "#{main.series.displayname} ##{model.issue}"
         label = main?.title or model?.edition?.displayname
         label = label or tc.strong 'UNTITLED'
-        tc.a href:"#{model.links.link.url}", label
+        tc.a '.clz-link',
+        href:"#{model.links.link.url}", target:'_blank', label
   regions:
     info: '.comic-info'
     image: '.comic-image'
   ui:
-    show_btn: '.show-comic'
+    info_btn: '.info-button'
     item: '.item'
+    clz_link: '.clz-link'
   events:
-    'click @ui.show_btn': 'show_comic'
-    'click @ui.item': 'show_comic_json'
-
-  show_comic_json: ->
-    #url = "#ebcsv/comic/view/#{@model.id}"
-    #navigate_to_url url
+    'click @ui.info_btn': 'show_comic_json'
+    'click @ui.clz_link': 'show_comic_page'
+    'mouseenter @ui.item': 'mouse_enter_item'
+    'mouseleave @ui.item': 'mouse_leave_item'
+    
+  mouse_enter_item: (event) ->
+    #console.log "mouse_enter_item", event
+    @ui.info_btn.show()
+    
+  mouse_leave_item: (event) ->
+    #console.log "mouse_leave_item", event
+    @ui.info_btn.hide()
+    
+  show_comic_json: (event) ->
+    target = event.target
+    if target.tagName is "A"
+      return
     view = new JsonView
       model: @model
     show_modal view
-    
+
+  show_comic_page: (event) ->
+    event.preventDefault()
+    target = event.target
+    if target.tagName is "A"
+      view = new IFrameModalView
+        model: new Backbone.Model src:target.href
+      show_modal view
+      
   onDomRefresh: ->
+    @ui.info_btn.hide()
     @_get_comic_from_db()
     
   _get_comic_data: (url, cb) ->
@@ -121,7 +182,6 @@ class ComicEntryView extends Backbone.Marionette.View
     url = clzpage.get 'url'
     image_src = clzpage.get 'image_src'
     urls[url] = image_src
-    @ui.show_btn.hide()
     view = new ComicImageView
       model: clzpage
     #console.log "show image"
