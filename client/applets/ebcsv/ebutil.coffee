@@ -137,11 +137,15 @@ AppChannel.reply 'parse-comics-xml', (content, cb) ->
     comics = json.comicinfo.comiclist.comic
     forsale = []
     in_collection = []
+    bad_xml = []
     for comic in comics
       #console.log comic.collectionstatus
       status = comic.collectionstatus._
       if status == 'For Sale'
-        forsale.push comic
+        if not comic.links
+          bad_xml.push comic
+        else
+          forsale.push comic
       else if status == 'In Collection'
         in_collection.push comic
       else
@@ -154,6 +158,9 @@ AppChannel.reply 'parse-comics-xml', (content, cb) ->
       MessageChannel.request "warning", msg
     if not forsale.length
       MessageChannel.request "danger", "No comics for sale!"
+    if bad_xml.length
+      msg = "There was some bad xml, skipped #{bad_xml.length} comics."
+      MessageChannel.request 'danger', msg
     AppChannel.request 'set-comics', forsale
     cb()
 
