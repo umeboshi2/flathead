@@ -275,7 +275,7 @@ create_csv_row_object = (options) ->
   urls = AppChannel.request 'get-comic-image-urls'
   url = comic.links.link.url
   #console.log "URLS", urls
-  image_src = urls[url]
+  options.image_src = urls[url].replace 'http://', '//'
   #console.log "url->", url, "image_src", image_src
   row['PicURL'] = urls[comic.links.link.url]
 

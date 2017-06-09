@@ -55,6 +55,7 @@ class IFrameModalView extends Backbone.Marionette.View
 class ComicImageView extends Backbone.Marionette.View
   template: tc.renderable (model) ->
     img = model.image_src.replace '/lg/', '/sm/'
+    img = img.replace 'http://', '//'
     tc.img src:img
   onDomRefresh: ->
     AppChannel.request 'reload-layout'
