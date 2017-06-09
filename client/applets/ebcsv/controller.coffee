@@ -23,7 +23,7 @@ class ToolbarView extends Backbone.Marionette.View
       tc.div '#list-dscs-button.btn.btn-default', ->
         tc.i '.fa.fa-list', ' List Descriptions'
       tc.div '#upload-xml-button.btn.btn-default', ->
-        tc.i '.fa.fa-upload', ' Upload XML'
+        tc.i '.fa.fa-upload', ' Upload CLZ/XML'
       tc.div '#mkcsv-button.btn.btn-default', ->
         tc.i '.fa.fa-cubes', ' Create CSV'
       tc.div '#new-config-button.btn.btn-default', ->
