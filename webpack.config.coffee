@@ -99,6 +99,7 @@ if BuildEnvironment is 'dev'
       #'/assets/*': 'http://localhost:8081'
       '/api/*': 'http://localhost:8081'
       '/clzcore/*': 'http://localhost:8081'
+      '/login': 'http://localhost:8081'
     historyApiFallback:
       rewrites: [
         {from: /^\/$/, to: '/_devpages/index.html'}
