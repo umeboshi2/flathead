@@ -41,7 +41,8 @@ class IFrameModalView extends Backbone.Marionette.View
     tc.div '.modal-dialog.modal-lg', ->
       tc.div '.modal-content', ->
         tc.div '.modal-body', ->
-          tc.iframe style:"width:97%;height:75vh;", src: model.src
+          src = model.src.replace 'http://', '//'
+          tc.iframe style:"width:97%;height:75vh;", src: src
         tc.div '.modal-footer', ->
           tc.ul '.list-inline', ->
             btnclass = 'btn.btn-default.btn-sm'
