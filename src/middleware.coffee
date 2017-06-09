@@ -30,7 +30,8 @@ setup = (app) ->
     console.log 'skipping httpsRedirect'
   else
     app.use '/', httpsRedirect()
-  
+    
+  # proxies
   app.use '/clzcore', proxy('http://core.collectorz.com')
 
 module.exports =
