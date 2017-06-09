@@ -138,7 +138,7 @@ AppChannel.reply 'parse-comics-xml', (content, cb) ->
     forsale = []
     in_collection = []
     for comic in comics
-      console.log comic.collectionstatus
+      #console.log comic.collectionstatus
       status = comic.collectionstatus._
       if status == 'For Sale'
         forsale.push comic
