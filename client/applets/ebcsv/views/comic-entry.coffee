@@ -124,7 +124,17 @@ class ComicEntryView extends Backbone.Marionette.View
       
   onDomRefresh: ->
     @ui.info_btn.hide()
-    @_get_comic_from_db()
+    links = @model.get 'links'
+    url = links.link.url
+    urls = AppChannel.request 'get-comic-image-urls'
+    if urls[url]
+      view = new ComicImageView
+        model: new Backbone.Model
+          image_src: urls[url]
+          url: url
+      @showChildView 'image', view
+    else
+      @_get_comic_from_db()
     
   _get_comic_data: (url, cb) ->
     u = new URL url
@@ -178,12 +188,15 @@ class ComicEntryView extends Backbone.Marionette.View
         clzpage = collection.models[0]
         #console.log "we should have a model in the collection"
         @_show_comic_image clzpage
-        
-  _show_comic_image: (clzpage) ->
+
+  _set_local_images_url: (clzpage) ->
     urls = AppChannel.request 'get-comic-image-urls'
     url = clzpage.get 'url'
     image_src = clzpage.get 'image_src'
     urls[url] = image_src
+    
+  _show_comic_image: (clzpage) ->
+    @_set_local_images_url clzpage
     view = new ComicImageView
       model: clzpage
     #console.log "show image"
