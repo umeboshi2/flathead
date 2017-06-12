@@ -190,10 +190,11 @@ class ComicEntryView extends Backbone.Marionette.View
         @_show_comic_image clzpage
 
   _set_local_images_url: (clzpage) ->
-    urls = AppChannel.request 'get-comic-image-urls'
+    #urls = AppChannel.request 'get-comic-image-urls'
     url = clzpage.get 'url'
     image_src = clzpage.get 'image_src'
-    urls[url] = image_src
+    #urls[url] = image_src
+    AppChannel.request 'add-comic-image-url', url, image_src
     
   _show_comic_image: (clzpage) ->
     @_set_local_images_url clzpage

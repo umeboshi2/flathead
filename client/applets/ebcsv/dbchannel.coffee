@@ -15,13 +15,42 @@ class SuperHeroList extends Backbone.Model
 hero_list = new SuperHeroList
 AppChannel.reply 'get-superheroes-model', ->
   hero_list
-  
-comic_image_urls = {}
-AppChannel.reply 'get-comic-image-urls', ->
-  comic_image_urls
 
+class BaseLocalStorageModel extends Backbone.Model
+  initialize: () ->
+    @fetch()
+    @on 'change', @save, @
+  fetch: () ->
+    #console.log '===== FETCH FIRED LOADING LOCAL STORAGE ===='
+    @set JSON.parse localStorage.getItem @id
+  save: (attributes, options) ->
+    #console.log '===== CHANGE FIRED SAVING LOCAL STORAGE ===='
+    localStorage.setItem(@id, JSON.stringify(@toJSON()))
+    #return $.ajax
+    #  success: options.success
+    #  error: options.error
+  destroy: (options) ->
+    #console.log '===== DESTROY LOCAL STORAGE ===='
+    localStorage.removeItem @id
+  isEmpty: () ->
+    _.size @attributes <= 1
+
+
+
+  
+comic_image_urls = new BaseLocalStorageModel
+  id: 'comic-image-urls'
+  
+AppChannel.reply 'get-comic-image-urls', ->
+  comic_image_urls.toJSON()
+
+AppChannel.reply 'add-comic-image-url', (url, image_src) ->
+  comic_image_urls.set url, image_src
+  comic_image_urls.save()
+  
 AppChannel.reply 'clear-comic-image-urls', ->
-  comic_image_urls = {}
+  comic_image_urls.destroy()
+  
   
 
 class EbConfigModel extends Backbone.Model
