@@ -11,15 +11,16 @@ knex = require 'knex'
 process.env.NODE_ENV = process.env.NODE_ENV || 'development'
 
 env = process.env.NODE_ENV or 'development'
-config = require('../config')[env]
+configPath = process.env.OPENSHIFT_DATA_DIR + 'config'
+#config = require('../config')[env]
+config = require(configPath)[env]
 
 Middleware = require './middleware'
+UserAuth = require './userauth'
 
 pages = require './pages'
 
 webpackManifest = require '../build/manifest.json'
-
-eprouter = require './endpoints'
 
 
 UseMiddleware = false or process.env.__DEV_MIDDLEWARE__ is 'true'
@@ -43,13 +44,10 @@ app.locals.bookshelf = bookshelf
 app.locals.models = models
 
 Middleware.setup app
+UserAuth.setup app
   
 ApiRoutes = require './apiroutes'
 ApiRoutes.setup app
-
-APIPATH = config.apipath
-app.use "#{APIPATH}/ep", eprouter
-
 
 app.use '/assets', express.static(path.join __dirname, '../assets')
 if UseMiddleware

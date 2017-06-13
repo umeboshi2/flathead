@@ -1,4 +1,4 @@
-bookshelf = require './endpoints/classes/database'
+bookshelf = require './bookshelf'
 
 User = bookshelf.Model.extend
   tableName: 'users'

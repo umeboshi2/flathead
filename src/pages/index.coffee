@@ -32,21 +32,19 @@ write_page = (page, res, next) ->
   make_page_header res, page
   res.write page
   res.end()
-  next()      
-
+  next()
+  
 make_page = (name) ->
   (req, res, next) ->
     # FIXME make a site config
-    #theme = 'custom'
-    theme = 'cornsilk'
+    theme = 'vanilla'
     manifest = get_manifest name
     page = create_page_html name, manifest, theme
     write_page page, res, next
   
 make_page_html = (name) ->
   # FIXME make a site config
-  theme = 'cornsilk'
-  theme = 'DarkSeaGreen'
+  theme = 'vanilla'
   manifest = get_manifest name
   page = create_page_html name, manifest, theme
   return page
