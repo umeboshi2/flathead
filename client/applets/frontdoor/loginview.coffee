@@ -1,6 +1,7 @@
 Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 tc = require 'teacup'
+jwtDecode = require 'jwt-decode'
 
 make_field_input_ui = require 'tbirds/util/make-field-input-ui'
 navigate_to_url = require 'tbirds/util/navigate-to-url'
@@ -9,6 +10,7 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 BootstrapFormView = require 'tbirds/views/bsformview'
 
 MainChannel = Backbone.Radio.channel 'global'
+MessageChannel = Backbone.Radio.channel 'messages'
 
 ghost_login_form =  tc.renderable (user) ->
   form_group_input_div
@@ -44,6 +46,40 @@ class LoginView extends BootstrapFormView
     @model.set 'password', @ui.password.val()
 
   saveModel: ->
+    username  = @model.get 'username'
+    password = @model.get 'password'
+    if __DEV__
+      username = 'admin'
+      password = 'admin'
+    xhr = $.ajax
+      url: '/login'
+      type: 'POST'
+      data:
+        username: username
+        password: password
+      dataType: 'json'
+      success: (response) =>
+        #response.time = time
+        #@save response
+        #@trigger 'refresh', response, this
+        console.log "Success!", response
+        token = response.token
+        decoded = jwtDecode token
+        console.log "decoded", decoded
+        localStorage.setItem 'auth_token', token
+        @trigger 'save:form:success', @model
+        
+      error: (response) =>
+        console.log "error", response
+        #console.log response.responseJSON
+        #for error in response.responseJSON.errors
+        #  MessageChannel.request 'warning', error.message
+        MessageChannel.request 'warning', response.responseText
+        @trigger 'save:form:failure', @model
+        
+    console.log "returning xhr", xhr
+    
+  saveModelOrig: ->
     auth = MainChannel.request 'main:app:ghostauth'
     console.log auth
     username  = @model.get 'username'
@@ -55,7 +91,7 @@ class LoginView extends BootstrapFormView
       @trigger 'save:form:success', @model
       
   onSuccess: ->
-    navigate_to_url '/'
+    navigate_to_url '#'
     
      
     
