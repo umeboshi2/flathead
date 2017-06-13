@@ -8,7 +8,6 @@ require 'tbirds/applet-router'
 TopApp = require 'tbirds/top-app'
 
 MainAppConfig = require './admin-config'
-require '../miscobjects'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
