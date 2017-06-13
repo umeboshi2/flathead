@@ -42,8 +42,8 @@ gulp.task 'devpages', (cb) ->
     fs.writeFileSync fname, page
     console.log "Created new page #{fname}"
 
-gulp.task 'coffee', () ->
-  gulp.src('./src/**/*.coffee')
+gulp.task 'models', () ->
+  gulp.src('./src/models/*.coffee')
   .pipe sourcemaps.init()
   .pipe coffee
     bare: true
@@ -51,7 +51,7 @@ gulp.task 'coffee', () ->
   .on 'error', gutil.log
   .pipe size
     showFiles: true
-  .pipe gulp.dest './js'
+  .pipe gulp.dest './src/models'
 
 
 #gulp.task 'serve', ['coffee', 'ghost-config'], (callback) ->
@@ -70,6 +70,8 @@ gulp.task 'serve', (callback) ->
       
 gulp.task 'serve:api', (callback) ->
   process.env.__DEV_MIDDLEWARE__ = 'false'
+  # add trailing slash to match openshift
+  process.env.OPENSHIFT_DATA_DIR = "#{__dirname}/"
   #gulp.watch './ghost-config.coffee', ->
   #  gulp.start 'ghost-config'
   nodemon
