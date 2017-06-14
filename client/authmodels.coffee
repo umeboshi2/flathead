@@ -44,15 +44,15 @@ MainChannel.reply 'main:app:refresh-token', ->
   refresh = new AuthRefresh
   response = refresh.fetch()
   response.fail ->
-    navigate_to_url '#frontdoor/login'
+    if response.status == 401
+      window.location.hash = "#frontdoor/login"
+    else
+      msg = 'There was a problem refreshing the access token'
+      MessageChannel.request 'warning', msg
   response.done ->
     token = refresh.get 'token'
-    console.log "refresh successful", token
     decoded = jwtDecode token
-    console.log "decoded", decoded
     localStorage.setItem 'auth_token', token
-    
-
 
 MainChannel.reply 'main:app:set-auth-token', (token) ->
   localStorage.setItem 'auth_token', token
@@ -67,6 +67,10 @@ MainChannel.reply 'main:app:decode-auth-token', ->
 MainChannel.reply 'main:app:destroy-auth-token', ->
   localStorage.removeItem 'auth_token'
   
+
+
+
+
     
 module.exports = {}
   
