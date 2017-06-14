@@ -15,12 +15,6 @@ MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
-show_modal = (view, backdrop=false) ->
-  app = MainChannel.request 'main:app:object'
-  modal_region = app.getView().getRegion 'modal'
-  modal_region.backdrop = backdrop
-  modal_region.show view
-
 class ImageModalView extends Backbone.Marionette.View
   template: tc.renderable (model) ->
     main = model.mainsection
@@ -66,7 +60,7 @@ class ComicImageView extends Backbone.Marionette.View
   show_large_image: ->
     view = new ImageModalView
       model: @model
-    show_modal view
+    AppChannel.request 'show-modal', view
     
 
 class ComicEntryView extends Backbone.Marionette.View
@@ -112,7 +106,7 @@ class ComicEntryView extends Backbone.Marionette.View
       return
     view = new JsonView
       model: @model
-    show_modal view
+    AppChannel.request 'show-modal', view
 
   show_comic_page: (event) ->
     event.preventDefault()
@@ -120,7 +114,7 @@ class ComicEntryView extends Backbone.Marionette.View
     if target.tagName is "A"
       view = new IFrameModalView
         model: new Backbone.Model src:target.href
-      show_modal view
+      AppChannel.request 'show-modal', view
       
   onDomRefresh: ->
     @ui.info_btn.hide()
