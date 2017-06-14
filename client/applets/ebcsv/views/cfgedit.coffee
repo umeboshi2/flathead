@@ -38,7 +38,7 @@ csvfields_form_data =
   'Return Profile Name', 'Return30ExChangeReStock20'
   shippingprofilename: mkInputData 'shippingprofilename',
   'Shipping Profile Name', 'Raw Comic Shipments'
-  scheduletime: mkInputData 'scheduletime', 'Listing Delay Time', '14d'
+  scheduletime: mkInputData 'scheduletime', 'Listing Delay Time', '0d'
   
 make_form_input = tc.renderable (field, fdata, model) ->
   settings = model.content or {}
