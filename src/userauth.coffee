@@ -28,7 +28,20 @@ setup = (app) ->
   app.get '/admin', jwtAuth authOpts, (req, res) ->
     console.log "Success!"
     res.redirect '/'
-
+    
+  app.get '/auth/refresh', jwtAuth authOpts
+  app.get '/auth/refresh', (req, res) ->
+    console.log "Success!", req.user
+    payload =
+      uid: req.user.uid
+      username: req.user.username
+      name: req.user.name
+    console.log "TOKEN PAYLOAD", payload
+    token = jwt.sign payload, jwtOptions.secret, expiresIn:jwtOptions.expiresIn
+    res.json
+      msg: 'ok'
+      token: token
+    
   app.post '/login', (req, res) ->
     console.log "req.body", req.body
     name = req.body.username
@@ -39,7 +52,7 @@ setup = (app) ->
       where:
         username:name
     .fetchOne().then (model) ->
-      console.log "MODEL", model
+      #console.log "MODEL", model
       if model is null
         res.sendStatus 401
         return
@@ -48,13 +61,15 @@ setup = (app) ->
       model.compare req.body.password, password
       .then (isValid) ->
         if isValid
-          id = model.get 'id'
-          console.log "ID IS", id
+          uid = model.get 'uid'
+          console.log "UID IS", uid
           payload =
             uid: model.get 'uid'
             username: model.get 'username'
+            name: model.get 'name'
           console.log "TOKEN PAYLOAD", payload
-          token = jwt.sign payload, jwtOptions.secret, expiresIn:'10m'
+          token = jwt.sign(payload,
+            jwtOptions.secret, expiresIn:jwtOptions.expiresIn)
           res.json
             msg: 'ok'
             token: token
