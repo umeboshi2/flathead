@@ -32,6 +32,10 @@ HOST = process.env.NODE_IP or 'localhost'
 app = express()
 app.use favicon path.join __dirname, '../assets/favicon.ico'
 
+# health url required for openshift
+app.get '/health', (req, res, next) ->
+  res.end()
+
 { knex
   bookshelf
   models } = require './kmodels'
@@ -86,13 +90,14 @@ check_for_admin_user = (app, cb) ->
   users = app.locals.models.User.collection().count()
   .then (count) ->
     if not count
+      config = app.locals.config
       admin = new app.locals.models.User
       console.log "admin is", admin
       #admin.forge
       app.locals.models.User.forge
-        name: 'Admin User'
-        username: 'admin'
-        password: 'admin'
+        name: config.adminUser.name
+        username: config.adminUser.username
+        password: config.adminUser.password
       .save()
       .then (user) ->
         cb count
@@ -121,16 +126,16 @@ else
   .then ->
     console.log "Migration finished"
     knex.seed.run config.database
-    .then ->
-      console.log "Seed finished"
+  .then ->
+    console.log "Seed finished"
+    check_for_admin_and_start()
+  .catch (err) ->
+    if err.message.startsWith 'insert into "photos"'
+      console.log "fantasy seed not needed"
       check_for_admin_and_start()
-    .catch (err) ->
-      if err.message.startsWith 'insert into "photos"'
-        console.log "fantasy seed not needed"
-        check_for_admin_and_start()
-      else
-        console.log "EM IS", err.message
-        throw err
+    else
+      console.log "EM IS", err.message
+      throw err
           
 module.exports =
   app: app
