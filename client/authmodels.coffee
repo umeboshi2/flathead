@@ -1,14 +1,12 @@
 Backbone = require 'backbone'
 navigate_to_url = require 'tbirds/util/navigate-to-url'
+jwtDecode = require 'jwt-decode'
 
 MainChannel = Backbone.Radio.channel 'global'
 
 make_auth_header = ->
   # retrieve from local storage on each request
   # to ensure current token
-  #s = get_blog_session().authenticated
-  #console.log 'get_blog_session', s
-  #"#{s.token_type} #{s.access_token}"
   token = localStorage.getItem 'auth_token'
   #"JWT #{token}"
   "Bearer #{token}"
@@ -55,6 +53,20 @@ MainChannel.reply 'main:app:refresh-token', ->
     localStorage.setItem 'auth_token', token
     
 
+
+MainChannel.reply 'main:app:set-auth-token', (token) ->
+  localStorage.setItem 'auth_token', token
+
+MainChannel.reply 'main:app:decode-auth-token', ->
+  token = localStorage.getItem 'auth_token'
+  if token
+    jwtDecode token
+  else
+    {}
+    
+MainChannel.reply 'main:app:destroy-auth-token', ->
+  localStorage.removeItem 'auth_token'
+  
     
 module.exports = {}
   
