@@ -1,7 +1,6 @@
 Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 tc = require 'teacup'
-jwtDecode = require 'jwt-decode'
 
 make_field_input_ui = require 'tbirds/util/make-field-input-ui'
 navigate_to_url = require 'tbirds/util/navigate-to-url'
@@ -49,8 +48,9 @@ class LoginView extends BootstrapFormView
     username  = @model.get 'username'
     password = @model.get 'password'
     if __DEV__
-      username = 'admin'
-      password = 'admin'
+      config = require('../../../config').development
+      username = config.adminUser.username
+      password = config.adminUser.password
     xhr = $.ajax
       url: '/login'
       type: 'POST'
@@ -64,9 +64,7 @@ class LoginView extends BootstrapFormView
         #@trigger 'refresh', response, this
         console.log "Success!", response
         token = response.token
-        decoded = jwtDecode token
-        console.log "decoded", decoded
-        localStorage.setItem 'auth_token', token
+        MainChannel.request 'main:app:set-auth-token', token
         @trigger 'save:form:success', @model
         
       error: (response) =>
@@ -91,7 +89,9 @@ class LoginView extends BootstrapFormView
       @trigger 'save:form:success', @model
       
   onSuccess: ->
-    navigate_to_url '#'
+    # FIXME start reloading the child apps
+    # that recognize users
+    navigate_to_url '/'
     
      
     

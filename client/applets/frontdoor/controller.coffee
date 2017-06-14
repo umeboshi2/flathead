@@ -4,6 +4,7 @@ Marionette = require 'backbone.marionette'
 { MainController } = require 'tbirds/controllers'
 { login_form } = require 'tbirds/templates/forms'
 SlideDownRegion = require 'tbirds/regions/slidedown'
+navigate_to_url = require 'tbirds/util/navigate-to-url'
 
 # require this for ResourceChannel
 require '../dbdocs/dbchannel'
@@ -34,8 +35,9 @@ class FrontdoorLayout extends Backbone.Marionette.View
       el: '#main-content'
       speed: 'slow'
   onBeforeDestroy: (view) ->
-    console.log "FrontdoorLayout onBeforeDestroy!!!!", view
-    console.log "Determine what to do with child apps when changing"
+    if __DEV__
+      console.log "FrontdoorLayout onBeforeDestroy!!!!", view
+      console.log "Determine what to do with child apps when changing"
 
 class Controller extends MainController
   layoutClass: FrontdoorLayout
@@ -89,6 +91,10 @@ class Controller extends MainController
   show_login: ->
     @setup_layout_if_needed()
     @_view_login()
+    
+  show_logout: ->
+    MainChannel.request 'main:app:destroy-auth-token'
+    navigate_to_url '/'
     
   frontdoor_hasuser: (user) ->
     @default_view()
