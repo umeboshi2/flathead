@@ -17,6 +17,11 @@ module.exports =
       httpsRedirect: false
     jwtOptions:
       secret: "This is the jwt secret."
+      expiresIn:'1m'
+    adminUser:
+      name: 'Admin User'
+      username: 'admin'
+      password: 'admin'
   production:
     database:
       client: 'pg'
@@ -37,3 +42,8 @@ module.exports =
       httpsRedirect: true
     jwtOptions:
       secret: "This is the jwt secret."
+      expiresIn:'10m'
+    adminUser:
+      name: 'Admin User'
+      username: 'admin'
+      password: 'admin'
