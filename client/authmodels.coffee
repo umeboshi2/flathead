@@ -1,4 +1,5 @@
 Backbone = require 'backbone'
+navigate_to_url = require 'tbirds/util/navigate-to-url'
 
 MainChannel = Backbone.Radio.channel 'global'
 
@@ -34,6 +35,26 @@ MainChannel.reply 'main:app:AuthModel', ->
   AuthModel
 MainChannel.reply 'main:app:AuthCollection', ->
   AuthCollection
-  
+
+class AuthRefresh extends AuthModel
+  url: '/auth/refresh'
+
+MainChannel.reply 'main:app:AuthRefresh', ->
+  AuthRefresh
+
+MainChannel.reply 'main:app:refresh-token', ->
+  refresh = new AuthRefresh
+  response = refresh.fetch()
+  response.fail ->
+    navigate_to_url '#frontdoor/login'
+  response.done ->
+    token = refresh.get 'token'
+    console.log "refresh successful", token
+    decoded = jwtDecode token
+    console.log "decoded", decoded
+    localStorage.setItem 'auth_token', token
+    
+
+    
 module.exports = {}
   
