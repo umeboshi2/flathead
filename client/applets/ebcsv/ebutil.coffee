@@ -135,6 +135,12 @@ AppChannel.reply 'get-comics', ->
 AppChannel.reply 'parse-comics-xml', (content, cb) ->
   XmlParser.parseString content, (err, json) ->
     comics = json.comicinfo.comiclist.comic
+    #if __DEV__
+    #  window.Comics = comics
+    #  console.log "Comics", comics
+    if not comics?.length
+      #console.warn "Single comic!"
+      comics = [comics]
     forsale = []
     in_collection = []
     bad_xml = []
