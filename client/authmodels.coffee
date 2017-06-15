@@ -3,6 +3,7 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 jwtDecode = require 'jwt-decode'
 
 MainChannel = Backbone.Radio.channel 'global'
+MessageChannel = Backbone.Radio.channel 'messages'
 
 make_auth_header = ->
   # retrieve from local storage on each request
