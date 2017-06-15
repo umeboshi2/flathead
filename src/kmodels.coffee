@@ -2,6 +2,7 @@ bookshelf = require './bookshelf'
 
 User = bookshelf.Model.extend
   tableName: 'users'
+  idAttribute: 'uid'
   bcrypt:
     field: 'password'
   posts: ->
@@ -30,7 +31,6 @@ EbCsvConfig = bookshelf.Model.extend
 ,
   jsonColumns: ['content']
   
-
 EbCsvDescription = bookshelf.Model.extend
   tableName: 'ebcsv_descriptions'
 
