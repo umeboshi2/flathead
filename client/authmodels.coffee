@@ -63,7 +63,15 @@ MainChannel.reply 'main:app:decode-auth-token', ->
     jwtDecode token
   else
     {}
-    
+
+MainChannel.reply 'current-user', ->
+  if __DEV__
+    console.warn "We need to request 'main:app:decode-auth-token' instead"
+  token = MainChannel.request 'main:app:decode-auth-token'
+  unless token
+    return null
+  return new Backbone.Model token
+  
 MainChannel.reply 'main:app:destroy-auth-token', ->
   localStorage.removeItem 'auth_token'
   

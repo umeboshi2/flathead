@@ -1,6 +1,7 @@
 config = require 'tbirds/app-config'
 config.userMenuApp = require './user-menu-view'
 config.hasUser = true
+config.appletRoutes.profile = 'userprofile'
 
 config.brand.label = 'Flathead'
 config.brand.url = '#'

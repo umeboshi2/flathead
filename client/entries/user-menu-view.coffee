@@ -21,6 +21,8 @@ user_menu = tc.renderable (user) ->
       tc.text user.name
       tc.b '.caret'
     tc.ul '.dropdown-menu', ->
+      tc.li ->
+        tc.a href:'#profile', 'User Profile'
       # FIXME need better way to figure out admin access
       if user.username is 'admin'
         tc.li ->
