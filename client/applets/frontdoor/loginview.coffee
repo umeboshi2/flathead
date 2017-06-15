@@ -11,7 +11,7 @@ BootstrapFormView = require 'tbirds/views/bsformview'
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 
-ghost_login_form =  tc.renderable (user) ->
+login_form =  tc.renderable (user) ->
   form_group_input_div
     input_id: 'input_username'
     label: 'User Name'
@@ -29,21 +29,27 @@ ghost_login_form =  tc.renderable (user) ->
   tc.div '.spinner.fa.fa-spinner.fa-spin'
 
 
-class LoginView extends BootstrapFormView
-  template: ghost_login_form
-  fieldList: ['username', 'password']
+class BaseView extends BootstrapFormView
   ui: ->
     uiobject = make_field_input_ui @fieldList
     return uiobject
-
   createModel: ->
     new Backbone.Model
+  onSuccess: ->
+    # FIXME start reloading the child apps
+    # that recognize users
+    navigate_to_url '/'
+    
 
+
+  
+class LoginView extends BaseView
+  template: login_form
+  fieldList: ['username', 'password']
   updateModel: ->
     console.log 'updateModel called'
     @model.set 'username', @ui.username.val()
     @model.set 'password', @ui.password.val()
-
   saveModel: ->
     username  = @model.get 'username'
     password = @model.get 'password'
@@ -59,40 +65,58 @@ class LoginView extends BootstrapFormView
         password: password
       dataType: 'json'
       success: (response) =>
-        #response.time = time
-        #@save response
-        #@trigger 'refresh', response, this
-        console.log "Success!", response
         token = response.token
         MainChannel.request 'main:app:set-auth-token', token
         @trigger 'save:form:success', @model
         
       error: (response) =>
-        console.log "error", response
-        #console.log response.responseJSON
-        #for error in response.responseJSON.errors
-        #  MessageChannel.request 'warning', error.message
+        if __DEV__
+          console.log "error", response
         MessageChannel.request 'warning', response.responseText
         @trigger 'save:form:failure', @model
-        
     console.log "returning xhr", xhr
     
-  saveModelOrig: ->
-    auth = MainChannel.request 'main:app:ghostauth'
-    console.log auth
-    username  = @model.get 'username'
-    password = @model.get 'password'
-    res = auth.access username, password
-    res.error =>
+
+token_form =  tc.renderable (user) ->
+  form_group_input_div
+    input_id: 'input_token'
+    label: 'Auth Token'
+    input_attributes:
+      name: 'token'
+      placeholder: 'xxxxxxxxxxxxxxx'
+  tc.input '.btn.btn-default', type:'submit', value:'login'
+  tc.div '.spinner.fa.fa-spinner.fa-spin'
+
+class TokenView extends BaseView
+  template: token_form
+  fieldList: ['token']
+  updateModel: ->
+    console.log 'updateModel called'
+    @model.set 'token', @ui.token.val()
+  saveModel: ->
+    token = @model.get 'token'
+    MainChannel.request 'main:app:set-auth-token', token
+    AuthRefresh = MainChannel.request 'main:app:AuthRefresh'
+    refresh = new AuthRefresh
+    response = refresh.fetch()
+    response.fail =>
       @trigger 'save:form:failure', @model
-    res.success =>
+    response.done =>
       @trigger 'save:form:success', @model
-      
-  onSuccess: ->
-    # FIXME start reloading the child apps
-    # that recognize users
-    navigate_to_url '/'
+
+class MainView extends Marionette.View
+  template: tc.renderable (model) ->
+    tc.div '#login-form'
+    tc.div '#token-form'
+  regions:
+    login: '#login-form'
+    token: '#token-form'
+  onRender: ->
+    @showChildView 'login', new LoginView
+    @showChildView 'token', new TokenView
+
+
+
     
-     
     
-module.exports = LoginView
+module.exports = MainView
