@@ -85,19 +85,25 @@ app.get '/', pages.make_page 'index'
 app.get '/oldindex', pages.make_page 'oldindex'
 
 check_for_admin_user = (app, cb) ->
-  console.log "User model", app.locals.models.User
   user = new app.locals.models.User
   users = app.locals.models.User.collection().count()
   .then (count) ->
+    # coerce to int
+    # https://github.com/tgriesser/bookshelf/issues/1275
+    count = parseInt count
     if not count
       config = app.locals.config
       admin = new app.locals.models.User
-      console.log "admin is", admin
-      #admin.forge
-      app.locals.models.User.forge
+      password = config.adminUser.password
+      if password == 'random'
+        console.log "Using random password for admin user"
+        uuid = require 'uuid'
+        password = uuid()
+      user_atts =
         name: config.adminUser.name
         username: config.adminUser.username
-        password: config.adminUser.password
+        password: password
+      app.locals.models.User.forge user_atts
       .save()
       .then (user) ->
         cb count
