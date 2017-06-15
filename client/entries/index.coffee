@@ -24,7 +24,9 @@ class FooterView extends Marionette.View
       tc.table '.table', ->
         tc.tr ->
           if model.remaining >= 0
-            tc.td "#{model.remaining} seconds left for #{model.token.name}"
+            seconds_in_day = 24 * 60 * 60
+            days = Math.floor(model.remaining / seconds_in_day)
+            tc.td "#{days} days left for #{model.token.name}"
           else
             tc.td "Time expired for #{model.token.name}"
           tc.td "Version: #{model.version}"
@@ -72,7 +74,11 @@ keep_token_fresh = ->
   token = MainChannel.request 'main:app:decode-auth-token'
   remaining = ms_remaining token
   #console.log 'remaining', remaining
-  if remaining < ms '30s'
+  interval = ms MainAppConfig.authToken.refreshInterval
+  multiple = MainAppConfig.authToken.refreshIntervalMultiple
+  access_period = 1000 * (token.exp - token.iat)
+  refresh_when = access_period - (multiple * interval)
+  if remaining < refresh_when
     MainChannel.request 'main:app:refresh-token'
     
     
@@ -90,7 +96,7 @@ app.on 'before:start', ->
 
 app.on 'start', ->
   show_footer()
-  setInterval show_footer, ms '1m'
+  setInterval show_footer, ms '5s'
   setInterval keep_token_fresh, ms '10s'
   
   

@@ -5,6 +5,12 @@ config.appletRoutes.profile = 'userprofile'
 
 config.brand.label = 'Flathead'
 config.brand.url = '#'
+
+config.authToken = {}
+config.authToken.refreshInterval = '5m'
+config.authToken.refreshIntervalMultiple = 3
+
+
 misc_menu =
   label: 'Misc Applets'
   menu: [
