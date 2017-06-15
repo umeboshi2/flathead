@@ -89,8 +89,8 @@ app.on 'before:start', ->
   
 
 app.on 'start', ->
-  #show_footer()
-  setInterval show_footer, ms '1s'
+  show_footer()
+  setInterval show_footer, ms '1m'
   setInterval keep_token_fresh, ms '10s'
   
   
