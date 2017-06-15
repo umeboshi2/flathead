@@ -214,7 +214,8 @@ class ComicsView extends Backbone.Marionette.View
     body: '.body'
   template: tc.renderable (model) ->
     now = new Date()
-    sformat = "yyyy-mm-dd-HH:MM:ss"
+    #sformat = "yyyy-mm-dd-HH:MM:ss"
+    sformat = "mmddHHMM"
     timestring = dateFormat now, sformat
     filename = "export-#{timestring}.csv"
     tc.div '.listview-header', ->
