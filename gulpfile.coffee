@@ -63,6 +63,7 @@ gulp.task 'serve', (callback) ->
     script: 'server.js'
     ext: 'js coffee'
     watch: [
+      'config.coffee'
       'src'
       'webpack-config'
       'webpack.config.coffee'
@@ -79,6 +80,7 @@ gulp.task 'serve:api', (callback) ->
     script: 'server.js'
     ext: 'js coffee'
     watch: [
+      'config.coffee'
       'src'
       'webpack-config'
       'webpack.config.coffee'
@@ -94,6 +96,7 @@ gulp.task 'serve:prod', (callback) ->
     script: 'server.js'
     ext: 'js coffee'
     watch: [
+      'config.coffee'
       'src/'
       'webpack-config/'
       'webpack.config.coffee'
