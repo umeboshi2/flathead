@@ -292,6 +292,12 @@ create_csv_row_object = (options) ->
   #console.log "url->", url, "image_src", image_src
   row['PicURL'] = urls[comic.links.link.url]
 
+  # remove <br>'s from plot before
+  # using templates
+  if comic.mainsection?.plot
+    comic.mainsection.plot = comic.mainsection.plot.split('<br>').join('\n')
+    comic.mainsection.plot = comic.mainsection.plot.split('<BR>').join('\n')
+    
   dsc = options.desc
   # make title
   template = handlebars.compile dsc.get 'title'
