@@ -11,6 +11,7 @@ MainChannel = Backbone.Radio.channel 'global'
 
 # FIXME, make a css manifest
 themes = [
+  'vanilla'
   'cornsilk'
   'BlanchedAlmond'
   'DarkSeaGreen'
@@ -18,13 +19,14 @@ themes = [
   ]
 
 config_template = tc.renderable (model) ->
+  current_theme = MainChannel.request 'main:app:get-theme'
   tc.div '.form-group', ->
     tc.label '.control-label',
       for: 'select_theme'
       "Theme"
     tc.select '.form-control', name:'select_theme', ->
       for opt in themes
-        if model.config.theme is opt
+        if opt is current_theme
           tc.option selected:null, value:opt, opt
         else
           tc.option value:opt, opt
@@ -43,12 +45,14 @@ class UserConfigView extends BootstrapFormView
     config = @model.get 'config'
     changed_config = false
     selected_theme = @ui.theme.val()
-    if config.theme != selected_theme
-      changed_config = true
-      config.theme = selected_theme
-    if changed_config
-      @model.set 'config', config
+    MainChannel.request 'main:app:set-theme', selected_theme
 
+  saveModel: ->
+    theme = MainChannel.request 'main:app:get-theme'
+    MainChannel.request 'main:app:switch-theme', theme
+    @trigger 'save:form:success', @model
+    
+    
   onSuccess: (model) ->
     navigate_to_url '#profile'
     

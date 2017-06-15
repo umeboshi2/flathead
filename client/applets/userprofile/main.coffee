@@ -6,6 +6,7 @@ Controller = require './controller'
 
 
 MainChannel = Backbone.Radio.channel 'global'
+AppChannel = Backbone.Radio.channel 'userprofile'
 
 class Router extends Marionette.AppRouter
   appRoutes:

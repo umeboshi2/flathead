@@ -8,10 +8,10 @@ Marionette = require 'backbone.marionette'
   
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
-UserProfileChannel = Backbone.Radio.channel 'userprofile'
+AppChannel = Backbone.Radio.channel 'userprofile'
 
 
-UserProfileChannel.reply 'update-user-config', ->
+AppChannel.reply 'update-user-config', ->
   console.log 'update-user-config called'
   
 

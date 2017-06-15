@@ -1,3 +1,5 @@
+tc = require 'teacup'
+
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 { MainController } = require 'tbirds/controllers'
 { ToolbarAppletLayout } = require 'tbirds/views/layout'
@@ -45,7 +47,7 @@ class ToolbarView extends Backbone.Marionette.View
   toolbarButtonPressed: (event) ->
     console.log "toolbarButtonPressed", event
     url = event.currentTarget.getAttribute 'button-url'
-    Util.navigate_to_url url
+    navigate_to_url url
     
 class Controller extends MainController
   #sidebarclass: SidebarView
@@ -66,7 +68,7 @@ class Controller extends MainController
       user = MainChannel.request 'current-user'
       view = new ViewClass
         model: user
-      @_show_content view
+      @layout.showChildView 'content', view
     # name the chunk
     , 'userprofile-view-show-profile'
 
@@ -92,7 +94,7 @@ class Controller extends MainController
       user = MainChannel.request 'current-user'
       view = new ViewClass
         model: user
-      @_show_content view
+      @layout.showChildView 'content', view
     # name the chunk
     , 'userprofile-view-edit-config'
       
@@ -105,7 +107,7 @@ class Controller extends MainController
       user = MainChannel.request 'current-user'
       view = new ViewClass
         model: user
-      @_show_content view
+      @layout.showChildView 'content', view
     # name the chunk
     , 'userprofile-view-chpasswd'
       
