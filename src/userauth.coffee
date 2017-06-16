@@ -42,6 +42,32 @@ setup = (app) ->
       msg: 'ok'
       token: token
     
+  app.post '/auth/chpass', jwtAuth authOpts
+  app.post '/auth/chpass', (req, res) ->
+    if req.body.password != req.body.confirm
+      # we expect this to have been done using
+      # client side validation.  Profess teapottery
+      # on malformed requests.
+      res.sendStatus 418
+      return
+    users = req.app.locals.models.User.collection()
+    users.query
+      where:
+        uid: req.user.uid
+    .fetchOne().then (model) ->
+      console.log "MODEL", model
+      if model is null
+        res.sendStatus 401
+        return
+      values =
+        password: req.body.password
+      where =
+        uid: req.user.uid
+      #model.update values, where
+      model.save values
+      .then (result) ->
+        res.json result
+    
   app.post '/login', (req, res) ->
     console.log "req.body", req.body
     name = req.body.username
