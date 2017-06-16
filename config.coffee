@@ -17,7 +17,8 @@ module.exports =
       httpsRedirect: false
     jwtOptions:
       secret: "This is the jwt secret."
-      expiresIn:'1m'
+      #expiresIn:'7d'
+      expiresIn:'1h'
     adminUser:
       name: 'Admin User'
       username: 'admin'
@@ -42,8 +43,8 @@ module.exports =
       httpsRedirect: true
     jwtOptions:
       secret: "This is the jwt secret."
-      expiresIn:'10m'
+      expiresIn:'7d'
     adminUser:
       name: 'Admin User'
       username: 'admin'
-      password: 'admin'
+      password: 'random'
