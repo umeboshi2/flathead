@@ -7,6 +7,7 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
+AppChannel = Backbone.Radio.channel 'userprofile'
 
 
 side_bar_data = new Backbone.Model
@@ -102,11 +103,8 @@ class Controller extends MainController
     @setup_layout_if_needed()
     require.ensure [], () =>
       ViewClass = require './chpassview'
-      # current-user is always there when app is
-      # running
-      user = MainChannel.request 'current-user'
       view = new ViewClass
-        model: user
+        model: AppChannel.request 'new-password-model'
       @layout.showChildView 'content', view
     # name the chunk
     , 'userprofile-view-chpasswd'
