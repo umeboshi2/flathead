@@ -1,9 +1,16 @@
 config = require 'tbirds/app-config'
 config.userMenuApp = require './user-menu-view'
 config.hasUser = true
+config.appletRoutes.profile = 'userprofile'
 
 config.brand.label = 'Flathead'
 config.brand.url = '#'
+
+config.authToken = {}
+config.authToken.refreshInterval = '5m'
+config.authToken.refreshIntervalMultiple = 3
+
+
 misc_menu =
   label: 'Misc Applets'
   menu: [
@@ -14,6 +21,7 @@ misc_menu =
     {
       label: 'Ebcsv'
       url: '#ebcsv'
+      needUser: true
     }
     {
       label: 'Bumblr'
@@ -26,6 +34,7 @@ misc_menu =
   ]
 
 ebcsv_menu =
+  needUser: true
   label: 'Ebcsv'
   menu: [
     {

@@ -1,5 +1,4 @@
 path = require 'path'
-_ = require 'underscore'
 
 dbfile = path.join __dirname, '/flathead.sqlite'
 #postgresql://$OPENSHIFT_POSTGRESQL_DB_HOST:$OPENSHIFT_POSTGRESQL_DB_PORT
@@ -11,6 +10,19 @@ module.exports =
       debug: false
     brand: 'Flathead'
     apipath: '/api/dev'
+    middleware:
+      cookieParser: true
+      expressSession: false
+      sessionSecret: "This should be secret. Don't look Ethyl!"
+      httpsRedirect: false
+    jwtOptions:
+      secret: process.env.JWT_SECRET or "This is the jwt secret."
+      #expiresIn:'7d'
+      expiresIn:'1h'
+    adminUser:
+      name: 'Admin User'
+      username: 'admin'
+      password: 'admin'
   production:
     database:
       client: 'pg'
@@ -24,3 +36,15 @@ module.exports =
       debug: false
     brand: 'Flathead'
     apipath: '/api/dev'
+    middleware:
+      cookieParser: true
+      expressSession: false
+      sessionSecret: "This should be secret. Don't look Ethyl!"
+      httpsRedirect: true
+    jwtOptions:
+      secret: process.env.JWT_SECRET or "This is the jwt secret."
+      expiresIn:'7d'
+    adminUser:
+      name: 'Admin User'
+      username: 'admin'
+      password: 'random'

@@ -2,9 +2,13 @@ Backbone = require 'backbone'
 
 { make_dbchannel } = require 'tbirds/crud/basecrudchannel'
 
+MainChannel = Backbone.Radio.channel 'global'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
-apiroot = "/api/dev/booky"
+AuthModel = MainChannel.request 'main:app:AuthModel'
+AuthCollection = MainChannel.request 'main:app:AuthCollection'
+
+#apiroot = "/api/dev/booky"
 apiroot = "/api/dev/bapi"
 cfg_apipath = "#{apiroot}/ebcsvcfg"
 dsc_apipath = "#{apiroot}/ebcsvdsc"
@@ -52,38 +56,37 @@ AppChannel.reply 'clear-comic-image-urls', ->
   comic_image_urls.destroy()
   
   
-
-class EbConfigModel extends Backbone.Model
+class EbConfigModel extends AuthModel
   urlRoot: cfg_apipath
   parse: (response, options) ->
     if typeof(response.content) is 'string'
       response.content = JSON.parse response.content
     super response, options
     
-class EbConfigCollection extends Backbone.Collection
+class EbConfigCollection extends AuthCollection
   url: cfg_apipath
   model: EbConfigModel
 
 make_dbchannel AppChannel, 'ebcfg', EbConfigModel, EbConfigCollection
 
 
-class EbDescModel extends Backbone.Model
+class EbDescModel extends AuthModel
   urlRoot: dsc_apipath
 
-class EbDescCollection extends Backbone.Collection
+class EbDescCollection extends AuthCollection
   url: dsc_apipath
   model: EbDescModel
 
 make_dbchannel AppChannel, 'ebdsc', EbDescModel, EbDescCollection
 
-class ClzPage extends Backbone.Model
+class ClzPage extends AuthModel
   urlRoot: "#{apiroot}/ebclzpage"
   parse: (response, options) ->
     if typeof(response.clzdata) is 'string'
       response.clzdata = JSON.parse response.clzdata
     super response, options
 
-class ClzPageCollection extends Backbone.Collection
+class ClzPageCollection extends AuthCollection
   url: "#{apiroot}/ebclzpage"
   model: ClzPage
   

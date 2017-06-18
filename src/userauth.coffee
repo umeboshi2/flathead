@@ -2,64 +2,72 @@ bcrypt = require 'bcryptjs'
 
 _ = require 'underscore'
 jwt = require 'jsonwebtoken'
-passport = require 'passport'
-passportJWT = require 'passport-jwt'
 
-ExtractJwt = passportJWT.ExtractJwt
-JwtStrategy = passportJWT.Strategy
+jwtAuth = require 'express-jwt'
 
-# FIXME this is needed for passport strategy
-# figure out how to use req.app.locals in passport
-# strategy
-#{ models } = require './kmodels'
-
-jwtOptions =
-  jwtFromRequest: ExtractJwt.fromAuthHeader()
-  secretOrKey: 'FIXME-get-a-secret-key-from-config'
-  passReqToCallback: true
-
-
-users = [
-  {
-    id: 1
-    name: 'admin'
-    password: 'admin'
-  }
-  {
-    id: 2
-    name: 'test'
-    password: 'test'
-  }
-]
-
-strategy = new JwtStrategy jwtOptions, (req, jwt_payload, next) ->
-  #console.log 'payload received', jwt_payload
-  users = req.app.locals.models.User.collection()
-  users.query
-    where:
-      uid: jwt_payload.uid
-  .fetchOne().then (model) ->
-    if model
-      next null, model
-    else
-      next null, false
-
-
+#auth = (req, res, next) ->
+#  if req.isAuthenticated()
+#    next()
+#  else
+#    res.redirect '/#frontdoor/login'
 
 auth = (req, res, next) ->
-  if req.isAuthenticated()
-    next()
-  else
-    res.redirect '/#frontdoor/login'
-
+  config = req.app.locals.config
+  secret = config.jwtOptions.secret
+  jwtAuth secret: secret
+  next()
+  
+  
 setup = (app) ->
-  passport.use strategy
-  app.use passport.initialize()
-
+  config = app.locals.config
+  jwtOptions = config.jwtOptions
+  authOpts = secret: jwtOptions.secret
   app.get '/login', (req, res) ->
     res.redirect '/'
-    return
 
+  app.get '/admin', jwtAuth authOpts, (req, res) ->
+    console.log "Success!"
+    res.redirect '/'
+    
+  app.get '/auth/refresh', jwtAuth authOpts
+  app.get '/auth/refresh', (req, res) ->
+    console.log "Success!", req.user
+    payload =
+      uid: req.user.uid
+      username: req.user.username
+      name: req.user.name
+    console.log "TOKEN PAYLOAD", payload
+    token = jwt.sign payload, jwtOptions.secret, expiresIn:jwtOptions.expiresIn
+    res.json
+      msg: 'ok'
+      token: token
+    
+  app.post '/auth/chpass', jwtAuth authOpts
+  app.post '/auth/chpass', (req, res) ->
+    if req.body.password != req.body.confirm
+      # we expect this to have been done using
+      # client side validation.  Profess teapottery
+      # on malformed requests.
+      res.sendStatus 418
+      return
+    users = req.app.locals.models.User.collection()
+    users.query
+      where:
+        uid: req.user.uid
+    .fetchOne().then (model) ->
+      console.log "MODEL", model
+      if model is null
+        res.sendStatus 401
+        return
+      values =
+        password: req.body.password
+      where =
+        uid: req.user.uid
+      #model.update values, where
+      model.save values
+      .then (result) ->
+        res.json result
+    
   app.post '/login', (req, res) ->
     console.log "req.body", req.body
     name = req.body.username
@@ -70,35 +78,30 @@ setup = (app) ->
       where:
         username:name
     .fetchOne().then (model) ->
-      console.log "MODEL", model
+      #console.log "MODEL", model
       if model is null
         res.sendStatus 401
         return
       password = model.get 'password'
       console.log "password", password
-      #console.log "Tpass", tuser.get('password')
-      foo = model.compare req.body.password, password
-      #foo = model.compare 'password', password
-      #console.log "foo", foo
-      foo.then (isValid) ->
+      model.compare req.body.password, password
+      .then (isValid) ->
         if isValid
-          id = model.get 'id'
-          console.log "ID IS", id
+          uid = model.get 'uid'
+          console.log "UID IS", uid
           payload =
             uid: model.get 'uid'
             username: model.get 'username'
+            name: model.get 'name'
           console.log "TOKEN PAYLOAD", payload
-          token = jwt.sign payload, jwtOptions.secretOrKey
+          token = jwt.sign(payload,
+            jwtOptions.secret, expiresIn:jwtOptions.expiresIn)
           res.json
             msg: 'ok'
             token: token
         else
           res.sendStatus 401
         
-    app.get '/secret',
-    passport.authenticate('jwt', session: false), (req, res) ->
-      res.json message: 'Success! You can not see this without a token.'
-    
 
 module.exports =
   setup: setup
