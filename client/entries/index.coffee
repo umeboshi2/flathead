@@ -31,9 +31,6 @@ class FooterView extends Marionette.View
             tc.td "Time expired for #{model.token.name}"
           tc.td "Version: #{model.version}"
             
-app = new TopApp
-  appConfig: MainAppConfig
-
 ms_remaining = (token) ->
   now = new Date()
   exp = new Date(token.exp * 1000)
@@ -55,21 +52,6 @@ show_footer = ->
   footer_region = app.getView().getRegion 'footer'
   footer_region.show view
 
-refresh_token = ->
-  AuthRefresh = MainChannel.request 'main:app:AuthRefresh'
-  refresh = new AuthRefresh
-  response = refresh.fetch()
-  response.fail ->
-    if response.status == 401
-      window.location.hash = "#frontdoor/login"
-    else
-      msg = 'There was a problem refreshing the access token'
-      MessageChannel.request 'warning', msg
-  response.done ->
-    token = refresh.get 'token'
-    decoded = jwtDecode token
-    localStorage.setItem 'auth_token', token
-
 keep_token_fresh = ->
   token = MainChannel.request 'main:app:decode-auth-token'
   remaining = ms_remaining token
@@ -81,25 +63,11 @@ keep_token_fresh = ->
   if remaining < refresh_when
     MainChannel.request 'main:app:refresh-token'
     
-    
-  
-app.on 'before:start', ->
-  theme = MainChannel.request 'main:app:get-theme'
-  theme = if theme then theme else 'vanilla'
-  MainChannel.request 'main:app:switch-theme', theme
-  remaining = access_time_remaining()
-  if remaining <= 0
-    MessageChannel.request 'warning', 'deleting expired access token'
-    MainChannel.request 'main:app:destroy-auth-token'
-  MainChannel.request 'main:app:refresh-token'
-  
 
-app.on 'start', ->
-  show_footer()
-  setInterval show_footer, ms '5s'
-  setInterval keep_token_fresh, ms '10s'
-  
-  
+
+app = new TopApp
+  appConfig: MainAppConfig
+
 if __DEV__
   # DEBUG attach app to window
   window.App = app
@@ -107,8 +75,40 @@ if __DEV__
 # register the main router
 MainChannel.request 'main:app:route'
 
-# start the app
-app.start()
+app.on 'before:start', ->
+  theme = MainChannel.request 'main:app:get-theme'
+  theme = if theme then theme else 'vanilla'
+  MainChannel.request 'main:app:switch-theme', theme
+
+app.on 'start', ->
+  show_footer()
+  setInterval show_footer, ms '5s'
+  setInterval keep_token_fresh, ms '10s'
+  
+  
+remaining = access_time_remaining()
+if remaining <= 0 and MainChannel.request 'main:app:decode-auth-token'
+  MessageChannel.request 'warning', 'deleting expired access token'
+  MainChannel.request 'main:app:destroy-auth-token'
+
+AuthRefresh = MainChannel.request 'main:app:AuthRefresh'
+refresh = new AuthRefresh
+response = refresh.fetch()
+response.fail ->
+  if response.status == 401
+    MainChannel.request 'main:app:destroy-auth-token'
+    if MainAppConfig.needLogin
+      window.location.hash = "#frontdoor/login"
+  app.start
+    state:
+      currentUser: null
+response.done ->
+  token = refresh.get 'token'
+  MainChannel.request 'main:app:set-auth-token', token
+  # start the app
+  app.start
+    state:
+      currentUser: MainChannel.request 'main:app:decode-auth-token'
 
   
 module.exports = app

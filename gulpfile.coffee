@@ -103,7 +103,7 @@ gulp.task 'serve:prod', (callback) ->
       ]
   
 gulp.task 'webpack:build-prod', (callback) ->
-  statopts = 
+  statopts =
     colors: true
     chunks: true
     modules: false

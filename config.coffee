@@ -16,7 +16,7 @@ module.exports =
       sessionSecret: "This should be secret. Don't look Ethyl!"
       httpsRedirect: false
     jwtOptions:
-      secret: "This is the jwt secret."
+      secret: process.env.JWT_SECRET or "This is the jwt secret."
       #expiresIn:'7d'
       expiresIn:'1h'
     adminUser:
@@ -42,7 +42,7 @@ module.exports =
       sessionSecret: "This should be secret. Don't look Ethyl!"
       httpsRedirect: true
     jwtOptions:
-      secret: "This is the jwt secret."
+      secret: process.env.JWT_SECRET or "This is the jwt secret."
       expiresIn:'7d'
     adminUser:
       name: 'Admin User'
