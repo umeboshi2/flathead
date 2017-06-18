@@ -25,18 +25,14 @@ setup = (app) ->
   app.get '/login', (req, res) ->
     res.redirect '/'
 
-  app.get '/admin', jwtAuth authOpts, (req, res) ->
-    console.log "Success!"
-    res.redirect '/'
-    
   app.get '/auth/refresh', jwtAuth authOpts
   app.get '/auth/refresh', (req, res) ->
-    console.log "Success!", req.user
+    #console.log "Success!", req.user
     payload =
       uid: req.user.uid
       username: req.user.username
       name: req.user.name
-    console.log "TOKEN PAYLOAD", payload
+    #console.log "TOKEN PAYLOAD", payload
     token = jwt.sign payload, jwtOptions.secret, expiresIn:jwtOptions.expiresIn
     res.json
       msg: 'ok'
@@ -55,7 +51,7 @@ setup = (app) ->
       where:
         uid: req.user.uid
     .fetchOne().then (model) ->
-      console.log "MODEL", model
+      #console.log "MODEL", model
       if model is null
         res.sendStatus 401
         return
@@ -69,7 +65,7 @@ setup = (app) ->
         res.json result
     
   app.post '/login', (req, res) ->
-    console.log "req.body", req.body
+    #console.log "req.body", req.body
     name = req.body.username
     password = req.body.password
     #tuser = new req.app.locals.models.User.forge(password:password)
@@ -83,7 +79,7 @@ setup = (app) ->
         res.sendStatus 401
         return
       password = model.get 'password'
-      console.log "password", password
+      #console.log "password", password
       model.compare req.body.password, password
       .then (isValid) ->
         if isValid
@@ -93,7 +89,7 @@ setup = (app) ->
             uid: model.get 'uid'
             username: model.get 'username'
             name: model.get 'name'
-          console.log "TOKEN PAYLOAD", payload
+          #console.log "TOKEN PAYLOAD", payload
           token = jwt.sign(payload,
             jwtOptions.secret, expiresIn:jwtOptions.expiresIn)
           res.json
