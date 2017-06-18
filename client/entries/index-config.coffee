@@ -21,6 +21,7 @@ misc_menu =
     {
       label: 'Ebcsv'
       url: '#ebcsv'
+      needUser: true
     }
     {
       label: 'Bumblr'
@@ -33,6 +34,7 @@ misc_menu =
   ]
 
 ebcsv_menu =
+  needUser: true
   label: 'Ebcsv'
   menu: [
     {
