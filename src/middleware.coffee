@@ -33,8 +33,8 @@ setup = (app) ->
     console.warn 'skipping httpsRedirect'
 
   # proxies
-  app.use '/proxy/google', proxy('http://google.com')
-
+  app.use '/clzcore', proxy('http://core.collectorz.com')
+  
 module.exports =
   setup: setup
   
