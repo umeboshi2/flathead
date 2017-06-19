@@ -56,7 +56,7 @@ ApiRoutes.setup app
 app.use '/assets', express.static(path.join __dirname, '../assets')
 # FIXME, don't use this long....
 tmpimages_dir = process.env.OPENSHIFT_DATA_DIR + 'tmpimages'
-app.use '/tmpimages', tmpimages_dir
+app.use '/tmpimages', express.static tmpimages_dir
 if UseMiddleware
   #require 'coffee-script/register'
   webpack = require 'webpack'
