@@ -28,14 +28,4 @@ class Applet extends TkApplet
     MainChannel.reply 'applet:dbdocs:controller', =>
       @router.controller
 
-MainChannel.reply 'applet:dbdocs:route', () ->
-  console.warn "Don't use applet:dbdocs:route"
-  controller = new Controller MainChannel
-  router = new Router
-    controller: controller
-  MainChannel.reply 'applet:dbdocs:router', ->
-    router
-  MainChannel.reply 'applet:dbdocs:controller', ->
-    controller
-    
 module.exports = Applet
