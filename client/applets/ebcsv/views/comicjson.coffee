@@ -23,11 +23,12 @@ class JsonView extends Backbone.Marionette.View
         tc.div '.modal-footer', ->
           tc.ul '.list-inline', ->
             btnclass = 'btn.btn-default.btn-sm'
-            tc.li "#confirm-delete-button", ->
+            tc.li "#close-modal", ->
               modal_close_button 'Close', 'check'
   ui:
     body: '.panel'
     expand_btn: '.expand-button'
+    close_btn: '#close-modal div'
   events:
     'click @ui.expand_btn': 'expand_view'
 
@@ -41,10 +42,20 @@ class JsonView extends Backbone.Marionette.View
       @expanded_view = true
       @ui.expand_btn.text 'Collapse'
     
+  keydownHandler: (event_object) =>
+    keyCode = event_object.keyCode
+    #console.log "keyCode", keyCode
+    if keyCode == 27
+      @ui.close_btn.click()
+      
   onDomRefresh: ->
+    $('html').keydown @keydownHandler
     @expanded_view = false
     @json_view = new JView @model.toJSON()
     @ui.body.prepend @json_view.dom
 
+  onBeforeDestroy: ->
+    $('html').unbind 'keydown', @keydownHandler
+    
 
 module.exports = JsonView

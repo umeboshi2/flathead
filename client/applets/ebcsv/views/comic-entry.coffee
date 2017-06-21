@@ -15,7 +15,22 @@ MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
-class ImageModalView extends Backbone.Marionette.View
+class BaseModalView extends Marionette.View
+  ui:
+    close_btn: '#close-modal div'
+    
+  keydownHandler: (event_object) =>
+    keyCode = event_object.keyCode
+    #console.log "keyCode", keyCode
+    if keyCode == 27
+      @ui.close_btn.click()
+      
+  onDomRefresh: ->
+    $('html').keydown @keydownHandler
+  onBeforeDestroy: ->
+    $('html').unbind 'keydown', @keydownHandler
+    
+class ImageModalView extends BaseModalView
   template: tc.renderable (model) ->
     main = model.mainsection
     tc.div '.modal-dialog', ->
@@ -25,11 +40,11 @@ class ImageModalView extends Backbone.Marionette.View
         tc.div '.modal-footer', ->
           tc.ul '.list-inline', ->
             btnclass = 'btn.btn-default.btn-sm'
-            tc.li "#confirm-delete-button", ->
+            tc.li "#close-modal", ->
               modal_close_button 'Close', 'check'
 
 
-class IFrameModalView extends Backbone.Marionette.View
+class IFrameModalView extends BaseModalView
   template: tc.renderable (model) ->
     main = model.mainsection
     tc.div '.modal-dialog.modal-lg', ->
@@ -40,10 +55,9 @@ class IFrameModalView extends Backbone.Marionette.View
         tc.div '.modal-footer', ->
           tc.ul '.list-inline', ->
             btnclass = 'btn.btn-default.btn-sm'
-            tc.li "#confirm-delete-button", ->
+            tc.li "#close-modal", ->
               modal_close_button 'Close', 'check'
-
-
+              
 
 ########################################
 class ComicImageView extends Backbone.Marionette.View
