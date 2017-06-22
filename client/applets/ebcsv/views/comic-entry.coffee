@@ -10,26 +10,12 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 { modal_close_button } = require 'tbirds/templates/buttons'
 
 JsonView = require './comicjson'
+BaseModalView = require './base-modal'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
-class BaseModalView extends Marionette.View
-  ui:
-    close_btn: '#close-modal div'
-    
-  keydownHandler: (event_object) =>
-    keyCode = event_object.keyCode
-    #console.log "keyCode", keyCode
-    if keyCode == 27
-      @ui.close_btn.click()
-      
-  onDomRefresh: ->
-    $('html').keydown @keydownHandler
-  onBeforeDestroy: ->
-    $('html').unbind 'keydown', @keydownHandler
-    
 class ImageModalView extends BaseModalView
   template: tc.renderable (model) ->
     main = model.mainsection

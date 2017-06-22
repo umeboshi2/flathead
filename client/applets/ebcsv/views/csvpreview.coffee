@@ -14,6 +14,7 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 
 ComicEntryView = require './comic-entry'
 ComicListView = require './comic-list'
+BaseModalView = require './base-modal'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
@@ -65,7 +66,7 @@ create_csv_data = () ->
 # csv info preview dialogs
 ############################################
   
-class ModalDescView extends Backbone.Marionette.View
+class ModalDescView extends BaseModalView
   template: tc.renderable (model) ->
     main = model.mainsection
     tc.div '.modal-dialog', ->
@@ -79,10 +80,10 @@ class ModalDescView extends Backbone.Marionette.View
         tc.div '.modal-footer', ->
           tc.ul '.list-inline', ->
             btnclass = 'btn.btn-default.btn-sm'
-            tc.li "#modal-close-button", ->
+            tc.li "#close-modal", ->
               modal_close_button 'Close', 'check'
 
-class ModalRowView extends Backbone.Marionette.View
+class ModalRowView extends BaseModalView
   templateContext: ->
     options = @options
     options.csvheader = AppChannel.request 'get-csv-header'
@@ -101,7 +102,7 @@ class ModalRowView extends Backbone.Marionette.View
                 tc.dd model[field]
         tc.div '.modal-footer', ->
           tc.ul '.list-inline', ->
-            tc.li "#modal-close-button", ->
+            tc.li "#close-modal", ->
               modal_close_button 'Close', 'check'
 
 ############################################
