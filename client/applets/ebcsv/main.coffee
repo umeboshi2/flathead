@@ -1,3 +1,4 @@
+Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 TkApplet = require 'tbirds/tkapplet'
 
@@ -7,8 +8,6 @@ Controller = require './controller'
 
 MainChannel = Backbone.Radio.channel 'global'
 ResourceChannel = Backbone.Radio.channel 'resources'
-
-window.ms = require 'ms'
 
 class Router extends Marionette.AppRouter
   appRoutes:
@@ -43,21 +42,4 @@ class Applet extends TkApplet
   Controller: Controller
   Router: Router
 
-  onBeforeStart: ->
-    super arguments
-    MainChannel.reply 'applet:ebcsv:router', =>
-      @router
-    MainChannel.reply 'applet:ebcsv:controller', =>
-      @router.controller
-
-MainChannel.reply 'applet:ebcsv:route', () ->
-  console.warn "Don't use applet:ebcsv:route"
-  controller = new Controller MainChannel
-  router = new Router
-    controller: controller
-  MainChannel.reply 'applet:ebcsv:router', ->
-    router
-  MainChannel.reply 'applet:ebcsv:controller', ->
-    controller
-    
 module.exports = Applet
