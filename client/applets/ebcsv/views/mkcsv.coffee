@@ -36,7 +36,11 @@ csv_cfg_select = tc.renderable (collection) ->
   tc.select '.form-control', name:'select_cfg', ->
     for m in collection.models
       name = m.get 'name'
-      tc.option selected:null, value:m.id, name
+      options =
+        value:m.id
+      if name is 'default'
+        options.selected = ''
+      tc.option options, name
     
 csv_dsc_select = tc.renderable (collection) ->
   tc.div '.form-group', ->
@@ -44,7 +48,11 @@ csv_dsc_select = tc.renderable (collection) ->
   tc.select '.form-control', name:'select_dsc', ->
     for m in collection.models
       name = m.get 'name'
-      tc.option selected:null, value:m.id, name
+      options =
+        value:m.id
+      if name is 'default'
+        options.selected = ''
+      tc.option options, name
 
 
 
