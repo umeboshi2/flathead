@@ -1,3 +1,4 @@
+$ = require 'jquery'
 Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 tc = require 'teacup'
@@ -13,54 +14,78 @@ MessageChannel = Backbone.Radio.channel 'messages'
 ResourceChannel = Backbone.Radio.channel 'resources'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
-class ToolbarView extends Backbone.Marionette.View
-  template: tc.renderable () ->
-    tc.div '.btn-group.btn-group-justified', ->
-      tc.div '#main-view-button.btn.btn-default', ->
-        tc.i '.fa.fa-eye', ' Main View'
-      tc.div '#list-configs-button.btn.btn-default', ->
-        tc.i '.fa.fa-list', ' List Configs'
-      tc.div '#list-dscs-button.btn.btn-default', ->
-        tc.i '.fa.fa-list', ' List Descriptions'
-      tc.div '#upload-xml-button.btn.btn-default', ->
-        tc.i '.fa.fa-upload', ' Upload CLZ/XML'
-      tc.div '#mkcsv-button.btn.btn-default', ->
-        tc.i '.fa.fa-cubes', ' Create CSV'
-      tc.div '#new-config-button.btn.btn-default', ->
-        tc.i '.fa.fa-plus', ' New Config'
-  ui:
-    main_view_btn: '#main-view-button'
-    list_btn: '#list-configs-button'
-    list_dsc_btn: '#list-dscs-button'
-    newcfg_btn: '#new-config-button'
-    uploadxml_btn: '#upload-xml-button'
-    mkcsv_btn: '#mkcsv-button'
-    
+toolbarEntries = [
+  {
+    id: 'main'
+    label: 'Main View'
+    url: '#ebcsv'
+    icon: '.fa.fa-eye'
+  }
+  {
+    id: 'cfglist'
+    label: 'Configs'
+    url: '#ebcsv/cfg/list'
+    icon: '.fa.fa-list'
+  }
+  {
+    id: 'dsclist'
+    label: 'Descriptions'
+    url: '#ebcsv/dsc/list'
+    icon: '.fa.fa-list'
+  }
+  {
+    id: 'uploadxml'
+    label: 'Upload CLZ/XML'
+    url: '#ebcsv/xml/upload'
+    icon: '.fa.fa-upload'
+  }
+  {
+    id: 'mkcsv'
+    label: 'Create CSV'
+    url: '#ebcsv/csv/create'
+    icon: '.fa.fa-cubes'
+  }
+  {
+    id: 'newcfg'
+    label: 'New Config'
+    url: '#ebcsv/cfg/add'
+    icon: '.fa.fa-plus'
+  }
+  ]
+
+toolbarEntryCollection = new Backbone.Collection toolbarEntries
+AppChannel.reply 'get-toolbar-entries', ->
+  toolbarEntryCollection
+  
+class ToolbarEntryView extends Marionette.View
+  attributes:
+    'class': 'btn btn-default'
+  template: tc.renderable (model) ->
+    tc.i model.icon, model.label
   events:
-    'click @ui.main_view_btn': 'show_main_view'
-    'click @ui.list_btn': 'list_configs'
-    'click @ui.list_dsc_btn': 'list_descriptions'
-    'click @ui.newcfg_btn': 'add_new_config'
-    'click @ui.uploadxml_btn': 'upload_xml'
-    'click @ui.mkcsv_btn': 'make_csv'
+    # we capture every click within the view
+    # we don't need ui hash
+    # https://gitter.im/marionettejs/backbone.marionette?at=59514dd876a757f808aa504f # noqa
+    'click': 'buttonClicked'
+  buttonClicked: (event) ->
+    navigate_to_url @model.get 'url'
 
-  show_main_view: ->
-    navigate_to_url '#ebcsv'
-    
-  list_configs: ->
-    navigate_to_url '#ebcsv/cfg/list'
-    
-  list_descriptions: ->
-    navigate_to_url '#ebcsv/dsc/list'
+class ToolbarEntryCollectionView extends Marionette.CollectionView
+  childView: ToolbarEntryView
+  className: 'btn-group btn-group-justified'
+  
+class ToolbarView extends Marionette.View
+  template: tc.renderable () ->
+    tc.div '.toolbar-entries'
+  regions:
+    entries:
+      el: '.toolbar-entries'
+      #replaceElement: true
+  onRender: ->
+    view = new ToolbarEntryCollectionView
+      collection: toolbarEntryCollection
+    @showChildView 'entries', view
 
-  add_new_config: ->
-    navigate_to_url '#ebcsv/cfg/add'
-
-  upload_xml: ->
-    navigate_to_url '#ebcsv/xml/upload'
-
-  make_csv: ->
-    navigate_to_url '#ebcsv/csv/create'
     
 class Controller extends MainController
   layoutClass: ToolbarAppletLayout
