@@ -5,12 +5,12 @@ FullCalendar = require 'fullcalendar'
 
 require 'fullcalendar/dist/fullcalendar.css'
 
-HubChannel = Backbone.Radio.channel 'hubby'
-
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
-TodoChannel = Backbone.Radio.channel 'todos'
+AppChannel = Backbone.Radio.channel 'todos'
 
+apiroot = "/api/dev/bapi"
+url = "#{apiroot}/fhtodos"
 
 todo_calendar = tc.renderable () ->
   tc.div '.listview-header', 'Todos'
@@ -35,7 +35,7 @@ render_calendar_event = (calEvent, element) ->
     'font-size' : '0.9em'
 
 calendar_view_render = (view, element) ->
-  TodoChannel.request 'maincalendar:set-date'
+  AppChannel.request 'maincalendar:set-date'
         
   
 class TodoCalendarView extends Backbone.Marionette.View
@@ -44,8 +44,8 @@ class TodoCalendarView extends Backbone.Marionette.View
     calendar: '#maincalendar'
     
   onDomRefresh: () ->
-    auth = MainChannel.request 'main:app:ghostauth'
-    date = TodoChannel.request 'maincalendar:get-date'
+    auth = MainChannel.request 'main:app:authBeforeSend'
+    date = AppChannel.request 'maincalendar:get-date'
     cal = @ui.calendar
     cal.fullCalendar
       header:

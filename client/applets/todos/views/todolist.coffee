@@ -1,10 +1,12 @@
 Backbone = require 'backbone'
-Templates = require 'tbirds/templates/basecrud'
-
-Views = require 'tbirds/crud/basecrudviews'
-
 tc = require 'teacup'
 
+Templates = require 'tbirds/templates/basecrud'
+Views = require 'tbirds/crud/basecrudviews'
+navigate_to_url = require 'tbirds/util/navigate-to-url'
+
+
+MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'todos'
 
@@ -12,20 +14,31 @@ base_item_template = (name, route_name) ->
   tc.renderable (model) ->
     item_btn = ".btn.btn-default.btn-xs"
     tc.li ".list-group-item.#{name}-item", ->
+      tc.span '.edit-button.btn.btn-default.btn-xs', 'Edit'
+      tc.text " "
       tc.span ->
         tc.a href:"##{route_name}/#{name}s/view/#{model.id}", model.name
         
       tc.div '.todo-completed.checkbox.pull-right', ->
         tc.label ->
-          tc.input '.todo-checkbox', type:'checkbox', checked:model.completed
+          opts =
+            type: 'checkbox'
+          if model.completed
+            opts.checked = ''
+          tc.input '.todo-checkbox', opts
           tc.text 'done'
         
+# FIXME use a better name
+rbool =
+  true: 1
+  false: 0
+
 class ItemView extends Views.BaseItemView
   route_name: 'todos'
   template: base_item_template 'todo', 'todos'
   item_type: 'todo'
   ui:
-    edit_item: '.edit-item'
+    edit_item: '.edit-button'
     delete_item: '.delete-item'
     item: '.list-item'
     completed: '.todo-checkbox'
@@ -48,12 +61,22 @@ class ItemView extends Views.BaseItemView
     show_modal view, true
 
   todo_completed: (event) ->
-    @model.set 'completed', event.target.checked
+    console.log event.target
+    
+    completed = rbool[event.target.checked]
+    console.log "COMPLETED", completed
+    @model.set 'completed', completed
     response = @model.save()
     response.done =>
+      applet = MainChannel.request 'main:applet:get-applet', 'todos'
+      console.log "APPLET", applet
       MessageChannel.request 'success', "Updated #{@model.get 'name'}"
-      controller = AppChannel.request 'main-controller'
-      controller.list_certain_todos not event.target.checked
+      #controller = AppChannel.request 'main-controller'
+      controller = applet.router.controller
+      checked = not event.target.checked
+      console.log "CHECKED", checked
+      checked = parseInt checked
+      controller.list_certain_todos rbool[checked]
       
   
 class ListView extends Views.BaseListView

@@ -10,7 +10,9 @@ AuthModel = MainChannel.request 'main:app:AuthModel'
 AuthCollection = MainChannel.request 'main:app:AuthCollection'
 
 
-url = '/api/dev/basic/todos'
+apiroot = "/api/dev/bapi"
+url = "#{apiroot}/fhtodos"
+
 class Todo extends AuthModel
   urlRoot: url
   defaults:

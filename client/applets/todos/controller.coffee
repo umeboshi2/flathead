@@ -3,6 +3,7 @@ Marionette = require 'backbone.marionette'
 tc = require 'teacup'
 ms = require 'ms'
 
+ToolbarView = require 'tbirds/views/button-toolbar'
 { MainController } = require 'tbirds/controllers'
 { ToolbarAppletLayout } = require 'tbirds/views/layout'
 navigate_to_url = require 'tbirds/util/navigate-to-url'
@@ -34,47 +35,25 @@ toolbarEntries = [
   }
   ]
 
-class ToolbarEntryView extends Marionette.View
-  attributes: ->
-    id: @model.get 'button'
-    'class': 'btn btn-default'
-  template: tc.renderable (model) ->
-    tc.i model.icon, model.label
-  ui: ->
-    button: @model.get 'button'
-  events:
-    'click @ui.button': 'buttonClicked'
-  buttonClicked: ->
-    navigate_to_url @model.get 'url'
 
-class ToolbarEntryCollectionView extends Marionette.CollectionView
-  childView: ToolbarEntryView
-  className: 'btn-group btn-group-justified'
-
-class ToolbarView extends Marionette.View
-  template: tc.renderable () ->
-    tc.div '.toolbar-entries'
-  regions:
-    entries:
-      el: '.toolbar-entries'
-      #replaceElement: true
-  onRender: =>
-    view = new ToolbarEntryCollectionView
-      collection: new Backbone.Collection toolbarEntries
-    @showChildView 'entries', view
-  
 # FIXME use a better name
 rbool =
   true: 1
   false: 0
   
 
+toolbarEntryCollection = new Backbone.Collection toolbarEntries
+AppChannel.reply 'get-toolbar-entries', ->
+  toolbarEntryCollection
+
 class Controller extends MainController
   layoutClass: ToolbarAppletLayout
   collection: AppChannel.request 'todo-collection'
   setup_layout_if_needed: ->
     super()
-    @layout.showChildView 'toolbar', new ToolbarView
+    toolbar = new ToolbarView
+      collection: toolbarEntryCollection
+    @layout.showChildView 'toolbar', toolbar
 
   _load_view: (vclass, model, objname) ->
     # FIXME
@@ -84,13 +63,12 @@ class Controller extends MainController
       response = model.fetch()
       response.done =>
         @_show_view vclass, model
-      response.fail =>
+      response.fail ->
         msg = "Failed to load #{objname} data."
         MessageChannel.request 'danger', msg
     else
       @_show_view vclass, model
     
-  
   list_certain_todos: (completed) ->
     @setup_layout_if_needed()
     require.ensure [], () =>
@@ -99,10 +77,11 @@ class Controller extends MainController
         collection: @collection
       response = @collection.fetch
         data:
-          completed: completed
+          where:
+            completed: completed
       response.done =>
-        @_show_content view
-      response.fail =>
+        @layout.showChildView 'content', view
+      response.fail ->
         MessageChannel.request 'danger', "Failed to load todos."
     # name the chunk
     , 'todos-list-todos'
@@ -110,16 +89,18 @@ class Controller extends MainController
   list_completed_todos: () ->
     # FIXME - fix rest inferface to use booleans
     @list_certain_todos rbool.true
+    #@list_certain_todos true
 
   list_todos: () ->
     # FIXME - fix rest inferface to use booleans
     @list_certain_todos rbool.false
+    #@list_certain_todos false
 
   new_todo: () ->
     @setup_layout_if_needed()
     require.ensure [], () =>
       { NewView } = require './views/editor'
-      @_show_content new NewView
+      @layout.showChildView 'content', new NewView
     # name the chunk
     , 'todos-new-todo'
 
