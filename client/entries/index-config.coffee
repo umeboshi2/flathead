@@ -65,6 +65,11 @@ ebcsv_menu =
 
 config.navbarEntries = [
   ebcsv_menu
+  {
+    label: 'Todos'
+    url: '#todos'
+    needUser: true
+    }
   misc_menu
   ]
 
