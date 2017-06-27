@@ -15,6 +15,10 @@ make_auth_header = ->
 send_auth_header = (xhr) ->
   xhr.setRequestHeader "Authorization", make_auth_header()
 
+MainChannel.reply 'main:app:authBeforeSend', ->
+  send_auth_header
+  
+
 auth_sync_options = (options) ->
   options = options || {}
   options.beforeSend = send_auth_header
