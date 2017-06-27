@@ -6,6 +6,8 @@ ms = require 'ms'
 
 { MainController } = require 'tbirds/controllers'
 { ToolbarAppletLayout } = require 'tbirds/views/layout'
+ToolbarView = require 'tbirds/views/button-toolbar'
+
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 scroll_top_fast = require 'tbirds/util/scroll-top-fast'
 
@@ -46,10 +48,10 @@ toolbarEntries = [
     icon: '.fa.fa-cubes'
   }
   {
-    id: 'newcfg'
-    label: 'New Config'
-    url: '#ebcsv/cfg/add'
-    icon: '.fa.fa-plus'
+    id: 'cached'
+    label: 'Cached Images'
+    url: '#ebcsv/clzpage'
+    icon: '.fa.fa-image'
   }
   ]
 
@@ -57,41 +59,13 @@ toolbarEntryCollection = new Backbone.Collection toolbarEntries
 AppChannel.reply 'get-toolbar-entries', ->
   toolbarEntryCollection
   
-class ToolbarEntryView extends Marionette.View
-  attributes:
-    'class': 'btn btn-default'
-  template: tc.renderable (model) ->
-    tc.i model.icon, model.label
-  events:
-    # we capture every click within the view
-    # we don't need ui hash
-    # https://gitter.im/marionettejs/backbone.marionette?at=59514dd876a757f808aa504f # noqa
-    'click': 'buttonClicked'
-  buttonClicked: (event) ->
-    navigate_to_url @model.get 'url'
-
-class ToolbarEntryCollectionView extends Marionette.CollectionView
-  childView: ToolbarEntryView
-  className: 'btn-group btn-group-justified'
-  
-class ToolbarView extends Marionette.View
-  template: tc.renderable () ->
-    tc.div '.toolbar-entries'
-  regions:
-    entries:
-      el: '.toolbar-entries'
-      #replaceElement: true
-  onRender: ->
-    view = new ToolbarEntryCollectionView
-      collection: toolbarEntryCollection
-    @showChildView 'entries', view
-
-    
 class Controller extends MainController
   layoutClass: ToolbarAppletLayout
   setup_layout_if_needed: ->
     super()
-    @layout.showChildView 'toolbar', new ToolbarView
+    toolbar = new ToolbarView
+      collection: toolbarEntryCollection
+    @layout.showChildView 'toolbar', toolbar
 
   
   ############################################
@@ -130,7 +104,7 @@ class Controller extends MainController
   _need_comics_view: (cb) ->
     comics = AppChannel.request 'get-comics'
     if not comics.length
-      if __DEV__
+      if __DEV__ and false
         window.comics = comics
         xml_url = '/assets/dev/comics.xml'
         xhr = Backbone.ajax
@@ -157,7 +131,7 @@ class Controller extends MainController
       dscs.fetch().then =>
         @_need_comics_view @_show_create_csv_view
     
-  preview_csv: =>
+  preview_csv: ->
     @setup_layout_if_needed()
     cfg = AppChannel.request 'get-current-csv-cfg'
     dsc = AppChannel.request 'get-current-csv-dsc'
@@ -181,7 +155,7 @@ class Controller extends MainController
           hlist.fetch().then =>
             @_need_comics_view @_show_preview_csv_view
     
-  main_view: =>
+  main_view: ->
     @setup_layout_if_needed()
     @_need_comics_view @_show_main_view
     
@@ -195,6 +169,21 @@ class Controller extends MainController
       @layout.showChildView 'content', view
     # name the chunk
     , 'ebcsv-view-upload-xml-view'
+    
+  view_cached_comics: ->
+    @setup_layout_if_needed()
+    require.ensure [], () =>
+      comics = AppChannel.request 'clzpage-collection'
+      response = comics.fetch()
+      response.done =>
+        View = require './views/cachedcomics'
+        view = new View
+          collection: comics
+        @layout.showChildView 'content', view
+      response.fail ->
+        MessageChannel.request 'danger', 'Failed to get cached comics'
+    # name the chunk
+    , 'ebcsv-view-cached-comics-view'
     
     
   ############################################
