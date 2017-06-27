@@ -50,11 +50,11 @@ AppChannel.reply 'get-comic-image-urls', ->
 
 AppChannel.reply 'add-comic-image-url', (url, image_src) ->
   comic_image_urls.set url, image_src
-  comic_image_urls.save()
+  #comic_image_urls.save()
   
 AppChannel.reply 'clear-comic-image-urls', ->
   comic_image_urls.destroy()
-  
+
   
 class EbConfigModel extends AuthModel
   urlRoot: cfg_apipath
