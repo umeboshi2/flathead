@@ -5,29 +5,22 @@ Masonry = require 'masonry-layout'
 imagesLoaded = require 'imagesloaded'
 tc = require 'teacup'
 
+EmptyView = require 'tbirds/views/empty'
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 { make_field_input
   make_field_select } = require 'tbirds/templates/forms'
 
 ComicEntryView = require './comic-entry'
+require './base-masonry'
 
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
-current_masonry_layout = undefined
-AppChannel.reply 'set-masonry-layout', (layout) ->
-  current_masonry_layout = layout
-  
-AppChannel.reply 'reload-layout', ->
-  items = $ '.item'
-  imagesLoaded items, ->
-    current_masonry_layout.reloadItems()
-    current_masonry_layout.layout()
-
 class ComicCollectionView extends Backbone.Marionette.CollectionView
   childView: ComicEntryView
+  emptyView: EmptyView
 
 class ComicListView extends Backbone.Marionette.View
   regions:
