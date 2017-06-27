@@ -36,12 +36,6 @@ toolbarEntries = [
   ]
 
 
-# FIXME use a better name
-rbool =
-  true: 1
-  false: 0
-  
-
 toolbarEntryCollection = new Backbone.Collection toolbarEntries
 AppChannel.reply 'get-toolbar-entries', ->
   toolbarEntryCollection
@@ -71,6 +65,8 @@ class Controller extends MainController
     
   list_certain_todos: (completed) ->
     @setup_layout_if_needed()
+    # https://jsperf.com/bool-to-int-many
+    completed = completed ^ 0
     require.ensure [], () =>
       ListView = require './views/todolist'
       view = new ListView
@@ -87,14 +83,10 @@ class Controller extends MainController
     , 'todos-list-todos'
 
   list_completed_todos: () ->
-    # FIXME - fix rest inferface to use booleans
-    @list_certain_todos rbool.true
-    #@list_certain_todos true
+    @list_certain_todos true
 
   list_todos: () ->
-    # FIXME - fix rest inferface to use booleans
-    @list_certain_todos rbool.false
-    #@list_certain_todos false
+    @list_certain_todos false
 
   new_todo: () ->
     @setup_layout_if_needed()

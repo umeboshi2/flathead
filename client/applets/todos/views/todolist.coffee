@@ -28,11 +28,6 @@ base_item_template = (name, route_name) ->
           tc.input '.todo-checkbox', opts
           tc.text 'done'
         
-# FIXME use a better name
-rbool =
-  true: 1
-  false: 0
-
 class ItemView extends Views.BaseItemView
   route_name: 'todos'
   template: base_item_template 'todo', 'todos'
@@ -61,22 +56,15 @@ class ItemView extends Views.BaseItemView
     show_modal view, true
 
   todo_completed: (event) ->
-    console.log event.target
-    
-    completed = rbool[event.target.checked]
-    console.log "COMPLETED", completed
+    completed = event.target.checked ^ 0
     @model.set 'completed', completed
     response = @model.save()
     response.done =>
       applet = MainChannel.request 'main:applet:get-applet', 'todos'
-      console.log "APPLET", applet
       MessageChannel.request 'success', "Updated #{@model.get 'name'}"
-      #controller = AppChannel.request 'main-controller'
       controller = applet.router.controller
       checked = not event.target.checked
-      console.log "CHECKED", checked
-      checked = parseInt checked
-      controller.list_certain_todos rbool[checked]
+      controller.list_certain_todos checked ^ 0
       
   
 class ListView extends Views.BaseListView
