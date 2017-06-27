@@ -17,9 +17,8 @@ dropzone_template = tc.renderable (model) ->
   tc.article '.document-view.content', ->
     tc.div '.body', ->
       tc.div '.panel.panel-default', ->
-        tc.div '.panel-heading', 'Drop it'
+        tc.div '.panel-heading', 'Drop an xml file.'
         tc.div '.panel-body', ->
-          tc.div '.mydropzone.pill.pill-default', type:'file', "Drop Something"
           tc.div '.parse-btn.btn.btn-default', style:'display:none', ->
             tc.text 'Parse Dropped File'
           tc.input '.xml-file-input.input', type:'file'
@@ -32,14 +31,14 @@ class DropZoneView extends Backbone.Marionette.View
   template: dropzone_template
   droppedFile: null
   ui:
-    dropzone: '.mydropzone'
+    status_msg: '.panel-heading'
     file_input: '.xml-file-input'
     parse_btn: '.parse-btn'
     chosen_btn: '.parse-chosen-button'
   events:
-    'dragover @ui.dropzone': 'handle_dragOver'
-    'dragenter @ui.dropzone': 'handle_dragEnter'
-    'drop @ui.dropzone': 'handle_drop'
+    'dragover': 'handle_dragOver'
+    'dragenter': 'handle_dragEnter'
+    'drop': 'handle_drop'
     'click @ui.parse_btn': 'parse_xml'
     'click @ui.file_input': 'file_input_clicked'
     'change @ui.file_input': 'file_input_changed'
@@ -58,12 +57,11 @@ class DropZoneView extends Backbone.Marionette.View
     
   handle_drop: (event) ->
     event.preventDefault()
-    @ui.dropzone.css 'border', '0px'
+    @$el.css 'border', '0px'
     dt = event.originalEvent.dataTransfer
     file = dt.files[0]
-    #fr = FileReader(file)
-    console.log 'file is', file
-    @ui.dropzone.text "File: #{file.name}"
+    #console.log 'file is', file
+    @ui.status_msg.text "File: #{file.name}"
     @droppedFile = file
     @ui.parse_btn.show()
     
@@ -74,20 +72,20 @@ class DropZoneView extends Backbone.Marionette.View
   handle_dragEnter: (event) ->
     event.stopPropagation()
     event.preventDefault()
-    @ui.dropzone.css 'border', '2px dotted'
+    @$el.css 'border', '2px dotted'
 
   successfulParse: =>
-    @ui.dropzone.text "Parse Successful"
+    @ui.status_msg.text "Parse Successful"
     if __DEV__
       window.comics = AppChannel.request 'get-comics'
     navigate_to_url "#ebcsv"
 
   parse_chosen_xml: ->
-    @ui.dropzone.text "Reading xml file..."
+    @ui.status_msg.text "Reading xml file..."
     filename = @ui.file_input.val()
-    console.log "PARSE #{filename}"
+    #console.log "PARSE #{filename}"
     fi = @ui.file_input
-    console.log 'fi', fi, fi[0].files
+    #console.log 'fi', fi, fi[0].files
     file = @ui.file_input[0].files[0]
     reader = new FileReader()
     reader.onload = @xmlReaderOnLoad
@@ -96,12 +94,12 @@ class DropZoneView extends Backbone.Marionette.View
     
   xmlReaderOnLoad: (event) =>
     content = event.target.result
-    @ui.dropzone.text 'Parsing xml.....'
+    @ui.status_msg.text 'Parsing xml.....'
     AppChannel.request 'parse-comics-xml', content, @successfulParse
     
   parse_xml: ->
-    @ui.dropzone.text "Reading xml file..."
-    console.log "PARSE #{@droppedFile.name}"
+    @ui.status_msg.text "Reading xml file..."
+    #console.log "PARSE #{@droppedFile.name}"
     reader = new FileReader()
     reader.onload = @xmlReaderOnLoad
     reader.readAsText(@droppedFile)
