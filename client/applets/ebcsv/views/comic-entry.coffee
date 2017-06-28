@@ -51,17 +51,16 @@ class ComicImageView extends Backbone.Marionette.View
     img = model.image_src.replace '/lg/', '/sm/'
     img = img.replace 'http://', '//'
     tc.img src:img
-  onDomRefresh: ->
-    AppChannel.request 'reload-layout'
   ui:
     image: 'img'
   events:
     'click @ui.image': 'show_large_image'
+  onDomRefresh: ->
+    @trigger 'show:image'
   show_large_image: ->
     view = new ImageModalView
       model: @model
     AppChannel.request 'show-modal', view
-    
 
 class ComicEntryView extends Backbone.Marionette.View
   template: tc.renderable (model) ->
@@ -79,25 +78,24 @@ class ComicEntryView extends Backbone.Marionette.View
         label = label or tc.strong 'UNTITLED'
         tc.a '.clz-link',
         href:"#{model.links.link.url}", target:'_blank', label
-  regions:
-    info: '.comic-info'
-    image: '.comic-image'
   ui:
     info_btn: '.info-button'
-    item: '.item'
     clz_link: '.clz-link'
+    item: '.item'
+    image: '.comic-image'
+  regions:
+    image: '@ui.image'
   events:
     'click @ui.info_btn': 'show_comic_json'
     'click @ui.clz_link': 'show_comic_page'
     'mouseenter @ui.item': 'mouse_enter_item'
     'mouseleave @ui.item': 'mouse_leave_item'
+  childViewTriggers:
+    'show:image': 'show:image'
     
   mouse_enter_item: (event) ->
-    #console.log "mouse_enter_item", event
     @ui.info_btn.show()
-    
   mouse_leave_item: (event) ->
-    #console.log "mouse_leave_item", event
     @ui.info_btn.hide()
     
   show_comic_json: (event) ->
@@ -122,11 +120,10 @@ class ComicEntryView extends Backbone.Marionette.View
     url = links.link.url
     urls = AppChannel.request 'get-comic-image-urls'
     if urls[url]
-      view = new ComicImageView
-        model: new Backbone.Model
-          image_src: urls[url]
-          url: url
-      @showChildView 'image', view
+      model = new Backbone.Model
+        image_src: urls[url]
+        url: url
+      @_show_comic_image model, false
     else
       @_get_comic_from_db()
     
@@ -184,17 +181,14 @@ class ComicEntryView extends Backbone.Marionette.View
         @_show_comic_image clzpage
 
   _set_local_images_url: (clzpage) ->
-    #urls = AppChannel.request 'get-comic-image-urls'
     url = clzpage.get 'url'
     image_src = clzpage.get 'image_src'
-    #urls[url] = image_src
     AppChannel.request 'add-comic-image-url', url, image_src
     
-  _show_comic_image: (clzpage) ->
-    @_set_local_images_url clzpage
+  _show_comic_image: (clzpage, set_local=true) ->
+    if set_local then @_set_local_images_url clzpage
     view = new ComicImageView
       model: clzpage
-    #console.log "show image"
     @showChildView 'image', view
     
   show_comic: ->
@@ -214,8 +208,6 @@ class ComicEntryView extends Backbone.Marionette.View
         MessageChannel.request 'warning', "#{url} is not unique!"
       if not collection.length
         @_get_comic_data url, @_add_comic_to_db
-      #else
-      #  console.log "we should have a model in the collection"
       
 
   get_comic_data: (url) ->

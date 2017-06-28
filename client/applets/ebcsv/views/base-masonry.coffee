@@ -1,15 +1,50 @@
 Backbone = require 'backbone'
+Marionette = require 'backbone.marionette'
+Masonry = require 'masonry-layout'
 imagesLoaded = require 'imagesloaded'
 
+MainChannel = Backbone.Radio.channel 'global'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
-current_masonry_layout = undefined
-AppChannel.reply 'set-masonry-layout', (layout) ->
-  current_masonry_layout = layout
-  
-AppChannel.reply 'reload-layout', ->
-  items = $ '.item'
-  imagesLoaded items, ->
-    current_masonry_layout.reloadItems()
-    current_masonry_layout.layout()
 
+
+
+class HasMasonryView extends Marionette.Behavior
+  options:
+    listContainer: '.list-container'
+    channel: 'global'
+    masonryOptions:
+      gutter: 1
+      isInitLayout: false
+      itemSelector: '.item'
+      columnWidth: 10
+      horizontalOrder: true
+  ui: ->
+    list: @getOption 'listContainer'
+  regions:
+    list: '@ui.list'
+  
+  setMasonry: ->
+    container = @getOption 'listContainer'
+    masonryOptions = @getOption 'masonryOptions'
+    @view.masonry = new Masonry container, masonryOptions
+
+  setMasonryLayout: ->
+    masonryOptions = @getOption 'masonryOptions'
+    items = @$ masonryOptions.itemSelector
+    imagesLoaded items, =>
+      @view.masonry.reloadItems()
+      @view.masonry.layout()
+
+  onBeforeDestroy: ->
+    @view.masonry.destroy()
+    
+
+  onDomRefresh: () ->
+    @setMasonry()
+    @setMasonryLayout()
+    if @view?.afterDomRefresh
+      @view.afterDomRefresh()
+    
+  
+module.exports = HasMasonryView

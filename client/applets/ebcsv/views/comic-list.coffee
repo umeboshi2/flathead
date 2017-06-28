@@ -11,48 +11,48 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
   make_field_select } = require 'tbirds/templates/forms'
 
 ComicEntryView = require './comic-entry'
-require './base-masonry'
+HasMasonryView = require './base-masonry'
 
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
+
+class HasLateImages extends HasMasonryView
+  onChildviewShowImage: (child) ->
+    @setMasonryLayout()
+
 class ComicCollectionView extends Backbone.Marionette.CollectionView
   childView: ComicEntryView
   emptyView: EmptyView
-
+  childViewTriggers:
+    'show:image': 'show:image'
+    
+listContainer = '#comiclist-container'
 class ComicListView extends Backbone.Marionette.View
+  options:
+    listContainer: listContainer
+  ui: ->
+    list: @getOption 'listContainer'
   regions:
-    list: '#comiclist-container'
+    list: '@ui.list'
+  behaviors:
+    HasLateImages:
+      behaviorClass: HasLateImages
+      listContainer: listContainer
+      masonryOptions:
+        gutter: 1
+        isInitLayout: false
+        itemSelector: '.item'
+        columnWidth: 10
+        horizontalOrder: false
   template: tc.renderable (model) ->
-    tc.div ->
-      #tc.div '#comiclist-container.listview-list'
-      tc.div '#comiclist-container'
-  onRender: =>
+    tc.div '#comiclist-container'
+  onRender: ->
     view = new ComicCollectionView
       collection: @collection
     @showChildView 'list', view
-
-  onBeforeDestroy: ->
-    @masonry.destroy()
-    
-  onDomRefresh: () ->
-    #console.log 'onDomRefresh called on ComicListView'
-    @masonry = new Masonry "#comiclist-container",
-      gutter: 1
-      isInitLayout: false
-      itemSelector: '.item'
-      columnWidth: 10
-      horizontalOrder: true
-    @set_layout()
-    AppChannel.request 'set-masonry-layout', @masonry
-
-  set_layout: ->
-    items = $ '.item'
-    imagesLoaded items, =>
-      @masonry.reloadItems()
-      @masonry.layout()
     
 module.exports = ComicListView
 
