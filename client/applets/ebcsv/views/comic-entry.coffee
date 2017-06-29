@@ -11,24 +11,11 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 
 JsonView = require './comicjson'
 BaseModalView = require './base-modal'
+HasImageModal = require './has-image-modal'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
-
-class ImageModalView extends BaseModalView
-  template: tc.renderable (model) ->
-    main = model.mainsection
-    tc.div '.modal-dialog', ->
-      tc.div '.modal-content', ->
-        tc.div '.modal-body', ->
-          tc.img src: model.image_src
-        tc.div '.modal-footer', ->
-          tc.ul '.list-inline', ->
-            btnclass = 'btn.btn-default.btn-sm'
-            tc.li "#close-modal", ->
-              modal_close_button 'Close', 'check'
-
 
 class IFrameModalView extends BaseModalView
   template: tc.renderable (model) ->
@@ -53,15 +40,12 @@ class ComicImageView extends Backbone.Marionette.View
     tc.img src:img
   ui:
     image: 'img'
-  events:
-    'click @ui.image': 'show_large_image'
+  triggers:
+    'click @ui.image': 'show:image:modal'
+  behaviors: [HasImageModal]
   onDomRefresh: ->
     @trigger 'show:image'
-  show_large_image: ->
-    view = new ImageModalView
-      model: @model
-    AppChannel.request 'show-modal', view
-
+    
 class ComicEntryView extends Backbone.Marionette.View
   template: tc.renderable (model) ->
     main = model.mainsection
@@ -90,6 +74,7 @@ class ComicEntryView extends Backbone.Marionette.View
     'click @ui.clz_link': 'show_comic_page'
     'mouseenter @ui.item': 'mouse_enter_item'
     'mouseleave @ui.item': 'mouse_leave_item'
+  # relay show:image event to parent
   childViewTriggers:
     'show:image': 'show:image'
     

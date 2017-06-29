@@ -26,6 +26,7 @@ class HasLateImages extends HasMasonryView
 class ComicCollectionView extends Backbone.Marionette.CollectionView
   childView: ComicEntryView
   emptyView: EmptyView
+  # relay show:image event to parent
   childViewTriggers:
     'show:image': 'show:image'
     
