@@ -5,8 +5,9 @@ tc = require 'teacup'
 ms = require 'ms'
 
 { MainController } = require 'tbirds/controllers'
-{ ToolbarAppletLayout } = require 'tbirds/views/layout'
 ToolbarView = require 'tbirds/views/button-toolbar'
+ShowInitialEmptyContent = require 'tbirds/behaviors/show-initial-empty'
+SlideDownRegion = require 'tbirds/regions/slidedown'
 
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 scroll_top_fast = require 'tbirds/util/scroll-top-fast'
@@ -15,6 +16,26 @@ MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 ResourceChannel = Backbone.Radio.channel 'resources'
 AppChannel = Backbone.Radio.channel 'ebcsv'
+
+
+
+class ToolbarAppletLayout extends Backbone.Marionette.View
+  behaviors:
+    ShowInitialEmptyContent:
+      behaviorClass: ShowInitialEmptyContent
+  template: tc.renderable (model) ->
+    console.log "ToolbarAppletLayout", model
+    tc.div '.col-sm-12', ->
+      tc.div '.row', ->
+        tc.div  '#main-toolbar.col-sm-10.col-sm-offset-1'
+      tc.div '.row', ->
+        tc.div '#main-content.col-sm-10.col-sm-offset-1'
+  regions: ->
+    region = new SlideDownRegion
+      el: '#main-content'
+    region.slide_speed = ms '.01s'
+    content: region
+    toolbar: '#main-toolbar'
 
 toolbarEntries = [
   {
@@ -58,12 +79,24 @@ toolbarEntries = [
 toolbarEntryCollection = new Backbone.Collection toolbarEntries
 AppChannel.reply 'get-toolbar-entries', ->
   toolbarEntryCollection
+
+button_style = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
   
+class EbCsvToolbar extends ToolbarView
+  options:
+    entryTemplate: tc.renderable (model) ->
+      opts =
+        style: button_style
+      tc.span opts, ->
+        tc.i model.icon
+        tc.text " "
+        tc.text model.label
+
 class Controller extends MainController
   layoutClass: ToolbarAppletLayout
   setup_layout_if_needed: ->
     super()
-    toolbar = new ToolbarView
+    toolbar = new EbCsvToolbar
       collection: toolbarEntryCollection
     @layout.showChildView 'toolbar', toolbar
 
@@ -173,15 +206,9 @@ class Controller extends MainController
   view_cached_comics: ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      comics = AppChannel.request 'clzpage-collection'
-      response = comics.fetch()
-      response.done =>
-        View = require './views/cachedcomics'
-        view = new View
-          collection: comics
-        @layout.showChildView 'content', view
-      response.fail ->
-        MessageChannel.request 'danger', 'Failed to get cached comics'
+      View = require './views/cachedcomics'
+      view = new View
+      @layout.showChildView 'content', view
     # name the chunk
     , 'ebcsv-view-cached-comics-view'
     
