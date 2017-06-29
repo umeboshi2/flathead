@@ -3,12 +3,6 @@ Marionette = require 'backbone.marionette'
 Masonry = require 'masonry-layout'
 imagesLoaded = require 'imagesloaded'
 
-MainChannel = Backbone.Radio.channel 'global'
-AppChannel = Backbone.Radio.channel 'ebcsv'
-
-
-
-
 class HasMasonryView extends Marionette.Behavior
   options:
     listContainer: '.list-container'
@@ -23,12 +17,12 @@ class HasMasonryView extends Marionette.Behavior
     list: @getOption 'listContainer'
   regions:
     list: '@ui.list'
-  
+    
   setMasonry: ->
     container = @getOption 'listContainer'
     masonryOptions = @getOption 'masonryOptions'
     @view.masonry = new Masonry container, masonryOptions
-
+    
   setMasonryLayout: ->
     masonryOptions = @getOption 'masonryOptions'
     items = @$ masonryOptions.itemSelector
@@ -39,7 +33,6 @@ class HasMasonryView extends Marionette.Behavior
   onBeforeDestroy: ->
     @view.masonry.destroy()
     
-
   onDomRefresh: () ->
     @setMasonry()
     @setMasonryLayout()
