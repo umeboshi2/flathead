@@ -1,3 +1,4 @@
+_ = require 'underscore'
 Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 Masonry = require 'masonry-layout'
@@ -11,7 +12,9 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
   make_field_select } = require 'tbirds/templates/forms'
 { form_group_input_div } = require 'tbirds/templates/forms'
 
-require './base-masonry'
+HasMasonryView = require './base-masonry'
+HasImageModal = require './has-image-modal'
+HasHeader = require './has-header'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
@@ -19,34 +22,16 @@ AppChannel = Backbone.Radio.channel 'ebcsv'
 
 toolbarEntries = [
   {
-    id: 'main'
-    label: 'Main View'
+    id: 'server'
+    label: 'Server Images'
     url: '#ebcsv'
-    icon: '.fa.fa-eye'
+    icon: '.fa.fa-server'
   }
   {
     id: 'browser'
-    label: 'Browser'
+    label: 'Browser Images'
     url: '#ebcsv'
-    icon: '.fa.fa-eye'
-  }
-  {
-    id: 'cfglist'
-    label: 'Configs'
-    url: '#ebcsv/cfg/list'
-    icon: '.fa.fa-list'
-  }
-  {
-    id: 'dsclist'
-    label: 'Descriptions'
-    url: '#ebcsv/dsc/list'
-    icon: '.fa.fa-list'
-  }
-  {
-    id: 'cached'
-    label: 'Cached Images'
-    url: '#ebcsv/clzpage'
-    icon: '.fa.fa-image'
+    icon: '.fa.fa-browser'
   }
   ]
 
@@ -61,6 +46,11 @@ class CachedComicToolbar extends ToolbarView
     console.log "onChildviewToolbarEntryClicked", child.model.id
       
 class CachedComicEntryView extends Marionette.View
+  ui:
+    image: 'img'
+  triggers:
+    'click @ui.image': 'show:image:modal'
+  behaviors: [HasImageModal]
   template: tc.renderable (model) ->
     img = model.image_src.replace '/lg/', '/sm/'
     img = img.replace 'http://', '//'
@@ -71,69 +61,88 @@ class CachedComicCollectionView extends Marionette.CollectionView
   childView: CachedComicEntryView
   emptyView: EmptyView
 
-class ComicListView extends Backbone.Marionette.View
-  ui:
-    list: '.comiclist-container'
-    toolbar: '.images-toolbar'
+destroy_entry =
+  id: 'destroy'
+  label: 'Delete All'
+  icon: '.fa.fa-erase'
+  
+browser_image_toolbar_entries = [
+  destroy_entry
+  ]
+server_image_toolbar_entries = []
+
+imgtoolbar_entries =
+  browser: browser_image_toolbar_entries
+  server: server_image_toolbar_entries
+  
+class ImageToolbar extends ToolbarView
+  onChildviewToolbarEntryClicked: (child) ->
+    console.log "a button pressed", child
+    console.log "#{@getOption 'cacheType'} toolbar"
+    cacheType = @getOption 'cacheType'
+    
+    
+listContainer = '.list-container'
+class CachedComicListView extends Marionette.View
+  ui: ->
+    toolbar: '.toolbar'
+    list: listContainer
+    header: '.listview-header'
   regions:
-    list: '@ui.list'
     toolbar: '@ui.toolbar'
+    list: '@ui.list'
+  behaviors:
+    HasMasonryView:
+      behaviorClass: HasMasonryView
+      listContainer: listContainer
+      masonryOptions:
+        gutter: 1
+        isInitLayout: false
+        itemSelector: '.item'
+        columnWidth: 10
+        horizontalOrder: false
+    HasHeader:
+      behaviorClass: HasHeader
   template: tc.renderable (model) ->
     tc.div ->
-      tc.div '.images-toolbar'
-      #tc.div '#comiclist-container.listview-list'
-      tc.div '.btn.btn-default'
-      tc.div '.comiclist-container'
+      tc.div '.listview-header'
+      tc.div '.toolbar'
+      tc.div listContainer
   onRender: ->
-    toolbar = new CachedComicToolbar
-      collection: new Backbone.Collection toolbarEntries
-    @showChildView 'toolbar', toolbar
-    view = new CachedComicCollectionView
+    list = new CachedComicCollectionView
       collection: @collection
-    @showChildView 'list', view
-
-  onBeforeDestroy: ->
-    @masonry.destroy()
-    
-  onDomRefresh: () ->
-    #console.log 'onDomRefresh called on ComicListView'
-    @masonry = new Masonry ".comiclist-container",
-      gutter: 1
-      isInitLayout: false
-      itemSelector: '.item'
-      columnWidth: 10
-      horizontalOrder: true
-    @set_layout()
-    AppChannel.request 'set-masonry-layout', @masonry
-
-  set_layout: ->
-    items = $ '.item'
-    imagesLoaded items, =>
-      @masonry.reloadItems()
-      @masonry.layout()
+    @showChildView 'list', list
+    cacheType = @getOption 'cacheType'
+    toolbar = new ImageToolbar
+      collection: new Backbone.Collection imgtoolbar_entries[cacheType]
+      cacheType: cacheType
+    @showChildView 'toolbar', toolbar
+    @triggerMethod 'set:header',
+    "#{@collection.length} images stored in the #{@getOption 'cacheType'}"
 
 class ComicMainView extends Marionette.View
   ui:
     content: '.content-container'
     toolbar: '.images-toolbar'
+    header: '.listview-header'
   regions:
     content: '@ui.content'
     toolbar: '@ui.toolbar'
+  behaviors: [HasHeader]
   template: tc.renderable (model) ->
     tc.div ->
+      tc.div '.listview-header'
       tc.div '.images-toolbar'
-      #tc.div '#comiclist-container.listview-list'
-      tc.div '.btn.btn-default'
       tc.div '.content-container'
   onRender: ->
     toolbar = new CachedComicToolbar
       collection: new Backbone.Collection toolbarEntries
     @showChildView 'toolbar', toolbar
-  
-
+    @triggerMethod 'set:header', "Cached Comic Cover Images"
+    
   childViewEvents:
     'toolbar:browser:click': 'view_local_storage'
-    'toolbar:main:click': 'main_view'
+    'toolbar:server:click': 'view_server_storage'
     'toolbar:cfglist:click': 'show_empty'
 
   show_empty: ->
@@ -141,25 +150,31 @@ class ComicMainView extends Marionette.View
     @showChildView 'content', view
     
   view_local_storage: ->
-        
+    console.log "view_local_storage"
     cachedImages = new Backbone.Collection
-    view = new CachedComicCollectionView
-      collection: new Backbone.Collection cachedImages
-    local_urls = AppChannel.request 'get-comic-image-urls'
-    # FIXME we should do this better
-    Object.keys local_urls, (key) ->
+    locals = _.clone AppChannel.request 'get-comic-image-urls'
+    delete locals.id
+    Object.keys(locals).forEach (key) ->
       item =
         url: key
-        image_src: local_urls[key]
-      if key != 'id'
-        cachedImages.add item
+        image_src: locals[key]
+      cachedImages.add item
+    view = new CachedComicListView
+      collection: cachedImages
+      cacheType: 'browser'
     @showChildView 'content', view
     
-  main_view: ->
-    view = new CachedComicCollectionView
-      collection: @collection
-    @showChildView 'content', view
-    
+  view_server_storage: ->
+    comics = AppChannel.request 'clzpage-collection'
+    response = comics.fetch()
+    response.done =>
+      view = new CachedComicListView
+        collection: comics
+        cacheType: 'server'
+      @showChildView 'content', view
+    response.fail ->
+      MessageChannel.request 'danger', 'Failed to get cached comics'
+        
   onChildviewToolbarEntryClicked: (child) ->
     @trigger "toolbar:#{child.model.id}:click", child
     console.log "****onChildviewToolbarEntryClicked", child.model.id
