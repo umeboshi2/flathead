@@ -55,8 +55,10 @@ common_plugins = [
   # This is to ignore moment locales with fullcalendar
   # https://github.com/moment/moment/issues/2416#issuecomment-111713308
   new webpack.IgnorePlugin /^\.\/locale$/, /moment$/
+  new webpack.ProvidePlugin
+    'Tether': 'tether'
   ]
-
+    
 if BuildEnvironment is 'dev'
   dev_only_plugins = []
   AllPlugins = common_plugins.concat dev_only_plugins

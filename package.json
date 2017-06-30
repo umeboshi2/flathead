@@ -29,7 +29,7 @@
     "backbone.marionette": "^3.3.1",
     "backbone.paginator": "^2.0.6",
     "backbone.radio": "^2.0.0",
-    "bootstrap": "^3.3.7",
+    "bootstrap": "^4.0.0-alpha.6",
     "bootstrap-fileinput": "^4.4.1",
     "brace": "^0.10.0",
     "chunk-manifest-webpack-plugin": "^1.1.0",
