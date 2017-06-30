@@ -42,19 +42,24 @@ class BaseLocalStorageModel extends Backbone.Model
 
 
   
-comic_image_urls = new BaseLocalStorageModel
-  id: 'comic-image-urls'
   
 AppChannel.reply 'get-comic-image-urls', ->
+  comic_image_urls = new BaseLocalStorageModel
+    id: 'comic-image-urls'
   comic_image_urls.toJSON()
 
 AppChannel.reply 'add-comic-image-url', (url, image_src) ->
+  comic_image_urls = new BaseLocalStorageModel
+    id: 'comic-image-urls'
   comic_image_urls.set url, image_src
   #comic_image_urls.save()
   
 AppChannel.reply 'clear-comic-image-urls', ->
+  comic_image_urls = new BaseLocalStorageModel
+    id: 'comic-image-urls'
   comic_image_urls.destroy()
-
+  #delete localStorage[comic_image_urls.id]
+  console.log "localStorage", localStorage[comic_image_urls.id]
   
 class EbConfigModel extends AuthModel
   urlRoot: cfg_apipath
