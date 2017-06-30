@@ -19,10 +19,10 @@ dropzone_template = tc.renderable (model) ->
       tc.div '.panel.panel-default', ->
         tc.div '.panel-heading', 'Drop an xml file.'
         tc.div '.panel-body', ->
-          tc.div '.parse-btn.btn.btn-default', style:'display:none', ->
+          tc.div '.parse-btn.btn.btn-secondary', style:'display:none', ->
             tc.text 'Parse Dropped File'
           tc.input '.xml-file-input.input', type:'file'
-          tc.span '.parse-chosen-button.btn.btn-default',
+          tc.span '.parse-chosen-button.btn.btn-secondary',
           style:'display:none', ->
             tc.text 'Parse input file.'
   

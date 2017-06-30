@@ -18,11 +18,11 @@ class JsonView extends Backbone.Marionette.View
       tc.div '.modal-content', ->
         tc.h3 "#{main.series.displayname} ##{main.issue}"
         tc.div '.modal-body', ->
-          tc.div '.expand-button.btn.btn-default', 'Expand'
+          tc.div '.expand-button.btn.btn-secondary', 'Expand'
           tc.div '.panel'
         tc.div '.modal-footer', ->
           tc.ul '.list-inline', ->
-            btnclass = 'btn.btn-default.btn-sm'
+            btnclass = 'btn.btn-secondary.btn-sm'
             tc.li "#close-modal", ->
               modal_close_button 'Close', 'check'
   ui:

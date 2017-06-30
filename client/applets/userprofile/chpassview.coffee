@@ -36,7 +36,7 @@ chpass_form = tc.renderable () ->
       type: 'password'
       placeholder: 'Confirm your new password'
       'data-validation': 'confirm'
-  tc.input '.btn.btn-default.btn-xs', type:'submit', value:"Change Password"
+  tc.input '.btn.btn-secondary.btn-sm', type:'submit', value:"Change Password"
       
 
 class ChangePasswordView extends BootstrapFormView

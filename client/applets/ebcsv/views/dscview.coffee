@@ -22,8 +22,8 @@ dsc_template = tc.renderable (model) ->
   input_data = mkInputData 'destname', 'New Description', 'newdescription'
   tc.div '.form-inline', ->
     form_group_input_div input_data
-    tc.div '#copy-dsc-btn.btn.btn-default', 'Copy'
-    tc.div '#edit-dsc-btn.btn.btn-default', 'Edit'
+    tc.div '#copy-dsc-btn.btn.btn-secondary', 'Copy'
+    tc.div '#edit-dsc-btn.btn.btn-secondary', 'Edit'
   tc.div '.listview-header', ->
     tc.text "Viewing Description #{model.name}"
   tc.hr()

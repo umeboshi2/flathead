@@ -23,9 +23,9 @@ EditForm = tc.renderable (model) ->
   tc.div '.listview-header', 'Document'
   for field in ['name', 'title']
     make_field_input(field)(model)
-  tc.div '#editor-mode-button.btn.btn-default', 'Change to handlebars mode'
+  tc.div '#editor-mode-button.btn.btn-secondary', 'Change to handlebars mode'
   tc.div '#ace-editor', style:'position:relative;width:100%;height:40em;'
-  tc.input '.btn.btn-default', type:'submit', value:"Submit"
+  tc.input '.btn.btn-secondary', type:'submit', value:"Submit"
   tc.div '.spinner.fa.fa-spinner.fa-spin'
   
 

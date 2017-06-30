@@ -8,7 +8,6 @@ AppChannel = Backbone.Radio.channel 'ebcsv'
 AuthModel = MainChannel.request 'main:app:AuthModel'
 AuthCollection = MainChannel.request 'main:app:AuthCollection'
 
-#apiroot = "/api/dev/booky"
 apiroot = "/api/dev/bapi"
 cfg_apipath = "#{apiroot}/ebcsvcfg"
 dsc_apipath = "#{apiroot}/ebcsvdsc"
@@ -50,7 +49,6 @@ AppChannel.reply 'get-comic-image-urls', ->
 
 AppChannel.reply 'add-comic-image-url', (url, image_src) ->
   comic_image_urls.set url, image_src
-  #comic_image_urls.save()
   
 AppChannel.reply 'clear-comic-image-urls', ->
   comic_image_urls.destroy()

@@ -25,7 +25,7 @@ class ThemeSwitchView extends Backbone.Marionette.View
   template: tc.renderable (model) ->
     tc.div ->
       THEMES.forEach (theme) ->
-        tc.div ".theme.btn.btn-default", theme
+        tc.div ".theme.btn.btn-secondary", theme
   switch_theme: (event) ->
     target = $(event.target)
     theme = target.html()

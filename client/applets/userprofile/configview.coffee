@@ -30,7 +30,7 @@ config_template = tc.renderable (model) ->
           tc.option selected:null, value:opt, opt
         else
           tc.option value:opt, opt
-  tc.input '.btn.btn-default', type:'submit', value:"Submit"
+  tc.input '.btn.btn-secondary', type:'submit', value:"Submit"
   tc.div '.spinner.fa.fa-spinner.fa-spin'
 
 class UserConfigView extends BootstrapFormView

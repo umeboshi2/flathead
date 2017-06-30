@@ -19,7 +19,7 @@ new_cfg_form_view = tc.renderable (model) ->
       name: 'cfg_name'
       placeholder: 'Type a config name'
       value: 'default'
-  tc.input '.btn.btn-default.btn-xs', type:'submit', value:'Add Cfg'
+  tc.input '.btn.btn-secondary.btn-sm', type:'submit', value:'Add Cfg'
 
 ########################################
 

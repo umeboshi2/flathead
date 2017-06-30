@@ -21,7 +21,7 @@ class ImageModalView extends BaseModalView
           tc.img src: model.image_src
         tc.div '.modal-footer', ->
           tc.ul '.list-inline', ->
-            btnclass = 'btn.btn-default.btn-sm'
+            btnclass = 'btn.btn-secondary.btn-sm'
             tc.li "#close-modal", ->
               modal_close_button 'Close', 'check'
 

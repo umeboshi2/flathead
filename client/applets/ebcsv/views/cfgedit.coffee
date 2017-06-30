@@ -69,7 +69,7 @@ csvfields_form = tc.renderable (model) ->
     tc.div '.panel-body', ->
       for field in OptFieldNames
         make_form_input field, csvfields_form_data, model
-  tc.input '.btn.btn-default', type:'submit', value:'Submit'
+  tc.input '.btn.btn-secondary', type:'submit', value:'Submit'
 
 class BaseFormDataView extends BootstrapFormView
   ui: ->

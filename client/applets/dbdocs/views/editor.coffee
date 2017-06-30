@@ -21,7 +21,7 @@ EditForm = tc.renderable (model) ->
     make_field_input(field)(model)
   make_field_select(field, ['html', 'markdown'])(model)
   tc.div '#ace-editor', style:'position:relative;width:100%;height:40em;'
-  tc.input '.btn.btn-default', type:'submit', value:"Submit"
+  tc.input '.btn.btn-secondary', type:'submit', value:"Submit"
   tc.div '.spinner.fa.fa-spinner.fa-spin'
   
 

@@ -27,7 +27,7 @@ class IFrameModalView extends BaseModalView
           tc.iframe style:"width:97%;height:75vh;", src: src
         tc.div '.modal-footer', ->
           tc.ul '.list-inline', ->
-            btnclass = 'btn.btn-default.btn-sm'
+            btnclass = 'btn.btn-secondary.btn-sm'
             tc.li "#close-modal", ->
               modal_close_button 'Close', 'check'
               
@@ -55,7 +55,7 @@ class ComicEntryView extends Backbone.Marionette.View
         tc.text 'loading'
       tc.div '.caption', ->
         tc.span ->
-          tc.i '.info-button.fa.fa-info.fa-pull-left.btn.btn-default.btn-sm'
+          tc.i '.info-button.fa.fa-info.fa-pull-left.btn.btn-secondary.btn-sm'
           tc.h5 style:"text-overflow: ellipsis;",
           "#{main.series.displayname} ##{model.issue}"
         label = main?.title or model?.edition?.displayname

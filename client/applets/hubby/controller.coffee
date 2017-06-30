@@ -14,15 +14,15 @@ HubChannel = Backbone.Radio.channel 'hubby'
 class ToolbarView extends Backbone.Marionette.View
   template: tc.renderable () ->
     tc.div '.btn-group.btn-group-justified', ->
-      tc.div '#show-calendar-button.btn.btn-default', ->
+      tc.div '#show-calendar-button.btn.btn-secondary', ->
         tc.i '.fa.fa-calendar', ' Calendar'
-      tc.div '#list-meetings-button.btn.btn-default', ->
+      tc.div '#list-meetings-button.btn.btn-secondary', ->
         tc.i '.fa.fa-list', ' List Meetings'
     tc.div '.input-group', ->
       tc.input '.form-control', type:'text', placeholder:'search',
       name:'search'
       tc.span '.input-group-btn', ->
-        tc.button '#search-button.btn.btn-default', ->
+        tc.button '#search-button.btn.btn-secondary', ->
           tc.i '.fa.fa-search', 'Search'
         
   ui:

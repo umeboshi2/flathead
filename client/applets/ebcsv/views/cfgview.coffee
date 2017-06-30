@@ -23,8 +23,8 @@ mkInputData = (field, label, placeholder) ->
 cfg_template = tc.renderable (model) ->
   tc.div '.form-inline', ->
     form_group_input_div mkInputData 'destname', 'New Config', 'newconfig'
-    tc.div '#copy-cfg-btn.btn.btn-default', 'Copy Config'
-    tc.div '#edit-cfg-btn.btn.btn-default', 'Edit Config'
+    tc.div '#copy-cfg-btn.btn.btn-secondary', 'Copy Config'
+    tc.div '#edit-cfg-btn.btn.btn-secondary', 'Edit Config'
   tc.div '.listview-header', ->
     tc.text "Viewing Config #{model.name}"
   tc.hr()
