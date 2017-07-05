@@ -24,7 +24,6 @@ class ToolbarAppletLayout extends Backbone.Marionette.View
     ShowInitialEmptyContent:
       behaviorClass: ShowInitialEmptyContent
   template: tc.renderable (model) ->
-    console.log "ToolbarAppletLayout", model
     tc.div '.col-sm-12', ->
       tc.div '.row', ->
         tc.div  '#main-toolbar.col-sm-10.col-sm-offset-1'
