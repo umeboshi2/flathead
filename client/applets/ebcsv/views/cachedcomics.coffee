@@ -31,7 +31,7 @@ toolbarEntries = [
     id: 'browser'
     label: 'Browser Images'
     url: '#ebcsv'
-    icon: '.fa.fa-browser'
+    icon: '.fa.fa-internet-explorer'
   }
   ]
 
@@ -44,6 +44,13 @@ class CachedComicToolbar extends ToolbarView
   onChildviewToolbarEntryClicked: (child) ->
     @trigger "toolbar:#{child.model.id}:click", child
     console.log "onChildviewToolbarEntryClicked", child.model.id
+  onDomRefresh: ->
+    console.log "onDomRefresh", @regions
+    eview = @getChildView 'entries'
+    el = eview.$el
+    console.log "el is",el
+    el.removeClass 'btn-group-justified'
+    
       
 class CachedComicEntryView extends Marionette.View
   ui:
@@ -65,23 +72,57 @@ destroy_entry =
   id: 'destroy'
   label: 'Delete All'
   icon: '.fa.fa-erase'
-  
+
+server_backup_entry =
+  id: 'backup'
+  label: 'Backup'
+  icon: '.fa.fa-download'
+
+server_restore_entry =
+  id: 'restore'
+  label: 'Restore'
+  icon: '.fa.fa-upload'
+
 browser_image_toolbar_entries = [
   destroy_entry
   ]
-server_image_toolbar_entries = []
+server_image_toolbar_entries = [
+  server_backup_entry
+  server_restore_entry
+  ]
 
 imgtoolbar_entries =
   browser: browser_image_toolbar_entries
   server: server_image_toolbar_entries
   
-class ImageToolbar extends ToolbarView
+class ImageToolbarOrig extends ToolbarView
   onChildviewToolbarEntryClicked: (child) ->
     console.log "a button pressed", child
     console.log "#{@getOption 'cacheType'} toolbar"
     cacheType = @getOption 'cacheType'
+    cacheTypes = ['browser', 'server']
+    if cacheType in cacheTypes
+      @["#{cacheType}ButtonClicked"](child)
+    else
+      @toolbarButtonClicked child
+      
+  toolbarButtonClicked: (child) ->
+    console.warn "we don't have a cacheType on this toolbar"
+
+  browserButtonClicked: (child) ->
+    console.log 'browser button', child
+
+  serverButtonClicked: (child) ->
+    console.log 'server button', child
     
-    
+
+class ImageToolbar extends ToolbarView
+  # skip navigating to url and bubble event up
+  # to list view
+  onChildviewToolbarEntryClicked: ->
+  childViewTriggers:
+    'toolbar:entry:clicked': 'toolbar:entry:clicked'
+
 listContainer = '.list-container'
 class CachedComicListView extends Marionette.View
   ui: ->
@@ -119,7 +160,55 @@ class CachedComicListView extends Marionette.View
     @showChildView 'toolbar', toolbar
     @triggerMethod 'set:header',
     "#{@collection.length} images stored in the #{@getOption 'cacheType'}"
+  onChildviewToolbarEntryClicked: (child) ->
+    console.log "a button pressed", child
+    console.log "#{@getOption 'cacheType'} toolbar"
+    cacheType = @getOption 'cacheType'
+    cacheTypes = ['browser', 'server']
+    if cacheType in cacheTypes
+      @["#{cacheType}ButtonClicked"](child)
+    else
+      @toolbarButtonClicked child
+      
+  toolbarButtonClicked: (child) ->
+    console.warn "we don't have a cacheType on this toolbar"
 
+  browserButtonClicked: (child) ->
+    button = child.model.id
+    if button == 'destroy'
+      @destroyLocalImages()
+      
+  serverButtonClicked: (child) ->
+    button = child.model.id
+    if button == 'backup'
+      @backupServerImages()
+    else if button == 'restore'
+      @restoreServerImages()
+
+  backupServerImages: ->
+    response = @collection.fetch()
+    response.done =>
+      items = []
+      for item in @collection.toJSON()
+        delete item.id
+        items.push item
+      console.log 'ITEMS', items
+      options =
+        type: 'data:text/json;charset=utf-8'
+        data: JSON.stringify items: items
+        el_id: 'exported-urls-anchor'
+        filename: 'url-backup.json'
+      AppChannel.request 'export-to-file', options
+    response.fail ->
+      MessageChannel.request 'danger', 'Failed to get image urls!'
+      
+  restoreServerImages: ->
+    console.warn 'restoreServerImages'
+    
+  destroyLocalImages: ->
+    AppChannel.request 'clear-comic-image-urls'
+    @collection.reset()
+    
 class ComicMainView extends Marionette.View
   ui:
     content: '.content-container'
@@ -143,14 +232,8 @@ class ComicMainView extends Marionette.View
   childViewEvents:
     'toolbar:browser:click': 'view_local_storage'
     'toolbar:server:click': 'view_server_storage'
-    'toolbar:cfglist:click': 'show_empty'
-
-  show_empty: ->
-    view = new EmptyView
-    @showChildView 'content', view
     
   view_local_storage: ->
-    console.log "view_local_storage"
     cachedImages = new Backbone.Collection
     locals = _.clone AppChannel.request 'get-comic-image-urls'
     delete locals.id
@@ -175,10 +258,6 @@ class ComicMainView extends Marionette.View
     response.fail ->
       MessageChannel.request 'danger', 'Failed to get cached comics'
         
-  onChildviewToolbarEntryClicked: (child) ->
-    @trigger "toolbar:#{child.model.id}:click", child
-    console.log "****onChildviewToolbarEntryClicked", child.model.id
-
 module.exports = ComicMainView
 
 
