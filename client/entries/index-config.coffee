@@ -10,6 +10,8 @@ config.authToken = {}
 config.authToken.refreshInterval = '5m'
 config.authToken.refreshIntervalMultiple = 3
 
+fileexchange_upload_url = \
+  "http://bulksell.ebay.com/ws/eBayISAPI.dll?FileExchangeUploadForm"
 
 misc_menu =
   label: 'Misc Applets'
@@ -69,7 +71,12 @@ config.navbarEntries = [
     label: 'Todos'
     url: '#todos'
     needUser: true
-    }
+  }
+  {
+    label: 'File Exchange'
+    url: fileexchange_upload_url
+    needUser: true
+  }
   misc_menu
   ]
 
