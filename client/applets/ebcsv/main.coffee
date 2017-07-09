@@ -3,7 +3,9 @@ Marionette = require 'backbone.marionette'
 TkApplet = require 'tbirds/tkapplet'
 
 require './dbchannel'
-require './ebutil'
+require './ebutils'
+
+
 Controller = require './controller'
 
 MainChannel = Backbone.Radio.channel 'global'
