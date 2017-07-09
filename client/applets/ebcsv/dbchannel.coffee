@@ -117,13 +117,6 @@ AppChannel.reply 'get-current-csv-dsc', ->
   current_csv_dsc
   
 
-AppChannel.reply 'show-modal', (view) ->
-  app = MainChannel.request 'main:app:object'
-  modal_region = app.getView().getRegion 'modal'
-  modal_region.backdrop = true
-  modal_region.keyboard = true
-  modal_region.show view
-
 module.exports =
   EbConfigCollection: EbConfigCollection
   EbDescCollection: EbDescCollection

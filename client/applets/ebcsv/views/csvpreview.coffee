@@ -12,13 +12,12 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 { form_group_input_div } = require 'tbirds/templates/forms'
 { modal_close_button } = require 'tbirds/templates/buttons'
 
-ComicEntryView = require './comic-entry'
-ComicListView = require './comic-list'
-BaseModalView = require './base-modal'
-
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
+
+BaseModalView = MainChannel.request 'main:app:BaseModalView'
+
 fileexchange_upload_url = \
   "http://bulksell.ebay.com/ws/eBayISAPI.dll?FileExchangeUploadForm"
 
@@ -142,16 +141,14 @@ class CsvTableRow extends Backbone.Marionette.View
     'click @ui.row_btn': 'show_row'
 
   show_row: ->
-    #console.log 'show_row'
     view = new ModalRowView
       model: @model
-    show_modal view
+    MainChannel.request 'show-modal', view
     
   show_description: ->
-    #console.log 'show_description'
     view = new ModalDescView
       model: @model
-    show_modal view
+    MainChannel.request 'show-modal', view
     
   
 class CsvTableBody extends Backbone.Marionette.CollectionView

@@ -2,15 +2,15 @@ Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 tc = require 'teacup'
 
-
-
 { make_field_input
   make_field_select } = require 'tbirds/templates/forms'
 { modal_close_button } = require 'tbirds/templates/buttons'
 
-BaseModalView = require './base-modal'
-
+MainChannel = Backbone.Radio.channel 'global'
+MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
+
+BaseModalView = MainChannel.request 'main:app:BaseModalView'
 
 class ImageModalView extends BaseModalView
   template: tc.renderable (model) ->
@@ -29,7 +29,7 @@ class HasImageModal extends Marionette.Behavior
   onShowImageModal: ->
     view = new ImageModalView
       model: @view.model
-    AppChannel.request 'show-modal', view
+    MainChannel.request 'show-modal', view
 
     
 module.exports = HasImageModal

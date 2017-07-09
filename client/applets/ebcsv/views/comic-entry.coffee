@@ -10,12 +10,13 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 { modal_close_button } = require 'tbirds/templates/buttons'
 
 JsonView = require './comicjson'
-BaseModalView = require './base-modal'
 HasImageModal = require './has-image-modal'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
+
+BaseModalView = MainChannel.request 'main:app:BaseModalView'
 
 class IFrameModalView extends BaseModalView
   template: tc.renderable (model) ->
@@ -89,7 +90,7 @@ class ComicEntryView extends Backbone.Marionette.View
       return
     view = new JsonView
       model: @model
-    AppChannel.request 'show-modal', view
+    MainChannel.request 'show-modal', view
 
   show_comic_page: (event) ->
     event.preventDefault()
@@ -97,7 +98,7 @@ class ComicEntryView extends Backbone.Marionette.View
     if target.tagName is "A"
       view = new IFrameModalView
         model: new Backbone.Model src:target.href
-      AppChannel.request 'show-modal', view
+      MainChannel.request 'show-modal', view
       
   onDomRefresh: ->
     @ui.info_btn.hide()
