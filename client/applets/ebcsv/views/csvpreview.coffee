@@ -246,7 +246,7 @@ class ComicsView extends Backbone.Marionette.View
       data: create_csv_data()
       el_id: 'exported-csv-anchor'
       filename: filename
-    AppChannel.request 'export-to-file', options
+    MainChannel.request 'export-to-file', options
     
   createCsvRows: ->
     action = AppChannel.request 'get-current-csv-action'
