@@ -33,6 +33,11 @@ misc_menu =
       label: 'Hubby'
       url: '#hubby'
     }
+    {
+      label: 'Todos'
+      url: '#todos'
+      needUser: true
+    }
   ]
 
 ebcsv_menu =
@@ -67,11 +72,6 @@ ebcsv_menu =
 
 config.navbarEntries = [
   ebcsv_menu
-  {
-    label: 'Todos'
-    url: '#todos'
-    needUser: true
-  }
   {
     label: 'File Exchange'
     url: fileexchange_upload_url

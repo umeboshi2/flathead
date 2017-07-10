@@ -27,6 +27,8 @@ user_menu = tc.renderable (user) ->
       if user.username is 'admin'
         tc.li ->
           tc.a href:'/admin', 'Administration'
+        tc.li ->
+          tc.a href:'#dbadmin', 'Database'
       tc.li ->
         tc.a href:"#frontdoor/logout", 'logout'
 
