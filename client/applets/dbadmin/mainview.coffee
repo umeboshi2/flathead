@@ -10,6 +10,9 @@ yaml = require 'yamljs/dist/yaml'
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 capitalize = require 'tbirds/util/capitalize'
 
+# FIXME puth this in tbirds if works
+IsEscapeModal = require '../../is-escape-modal'
+
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'dbadmin'
@@ -32,11 +35,14 @@ ConfirmDeleteTemplate = tc.renderable (model) ->
             modal_close_button 'Cancel'
     
 class ConfirmDeleteModal extends Marionette.View
+  behaviors: [IsEscapeModal]
   template: ConfirmDeleteTemplate
-  ui:
+  ui: ->
+    # close_btn is for IsEscapeModal
+    close_btn = '#cancel-delete-button'
     confirm_delete: '#confirm-delete-button'
-    cancel_button: '#cancel-delete-button'
-    
+    cancel_button: close_btn
+    close_btn: close_btn
   events: ->
     'click @ui.confirm_delete': 'really_delete_items'
     
