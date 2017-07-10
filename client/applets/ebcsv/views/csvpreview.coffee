@@ -25,13 +25,6 @@ csvRowCollection = new Backbone.Collection
 AppChannel.reply 'get-csvrow-collection', ->
   csvRowCollection
   
-show_modal = (view, backdrop=false) ->
-  app = MainChannel.request 'main:app:object'
-  modal_region = app.getView().getRegion 'modal'
-  modal_region.backdrop = backdrop
-  modal_region.show view
-
-
 make_csv_headline = () ->
   csvheader = AppChannel.request 'get-csv-header'
   fields = []

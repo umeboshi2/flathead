@@ -9,6 +9,7 @@ if __DEV__
 
 require 'tbirds/applet-router'
 require '../authmodels'
+IsEscapeModal = require '../is-escape-modal'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
@@ -43,21 +44,10 @@ MainChannel.reply 'export-to-file', (options) ->
   
 
 class BaseModalView extends Marionette.View
+  behaviors: [IsEscapeModal]
   ui:
     close_btn: '#close-modal div'
     
-  keydownHandler: (event_object) =>
-    keyCode = event_object.keyCode
-    #console.log "keyCode", keyCode
-    # handle escape('esc') key
-    if keyCode == 27
-      @ui.close_btn.click()
-      
-  onDomRefresh: ->
-    $('html').keydown @keydownHandler
-  onBeforeDestroy: ->
-    $('html').unbind 'keydown', @keydownHandler
-
 MainChannel.reply 'main:app:BaseModalView', ->
   BaseModalView
   
