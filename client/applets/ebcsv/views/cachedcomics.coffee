@@ -198,7 +198,7 @@ class CachedComicListView extends Marionette.View
         data: JSON.stringify items: items
         el_id: 'exported-urls-anchor'
         filename: 'url-backup.json'
-      AppChannel.request 'export-to-file', options
+      MainChannel.request 'export-to-file', options
     response.fail ->
       MessageChannel.request 'danger', 'Failed to get image urls!'
       
