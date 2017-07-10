@@ -31,6 +31,7 @@
     "backbone.radio": "^2.0.0",
     "bootstrap": "^3.3.7",
     "bootstrap-fileinput": "^4.4.1",
+    "bootstrap-filestyle": "^1.2.1",
     "brace": "^0.10.0",
     "chunk-manifest-webpack-plugin": "^1.1.0",
     "clean-webpack-plugin": "^0.1.16",
@@ -68,13 +69,16 @@
     "marked": "^0.3.6",
     "masonry-layout": "^4.2.0",
     "minimist": "^1.2.0",
+    "mocha": "^3.4.2",
+    "mocha-webpack": "^0.7.0",
     "raw-loader": "^0.5.1",
     "resolve-url-loader": "^2.0.3",
     "sass-loader": "^6.0.6",
     "shelljs": "^0.7.8",
+    "soap-everywhere": "^1.0.7",
     "stats-webpack-plugin": "^0.6.0",
     "style-loader": "^0.18.2",
-    "tbirds": "^0.3.13",
+    "tbirds": "^0.3.14",
     "url-loader": "^0.5.9",
     "webpack": "^2.6.1",
     "webpack-dev-middleware": "^1.10.2",
@@ -117,6 +121,7 @@
     "serve-favicon": "^2.4.3",
     "sqlite3": "^3.1.8",
     "teacup": "^2.0.0",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "yamljs": "^0.3.0"
   }
 }
