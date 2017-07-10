@@ -8,10 +8,14 @@ marked = require 'marked'
 
 { modal_close_button } = require 'tbirds/templates/buttons'
 
+# FIXME
+IsEscapeModal = require '../../../is-escape-modal'
+
 MainChannel = Backbone.Radio.channel 'global'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
 class JsonView extends Backbone.Marionette.View
+  behaviors: [IsEscapeModal]
   template: tc.renderable (model) ->
     main = model.mainsection
     tc.div '.modal-dialog', ->
@@ -42,20 +46,14 @@ class JsonView extends Backbone.Marionette.View
       @expanded_view = true
       @ui.expand_btn.text 'Collapse'
     
-  keydownHandler: (event_object) =>
-    keyCode = event_object.keyCode
-    #console.log "keyCode", keyCode
-    if keyCode == 27
-      @ui.close_btn.click()
-      
   onDomRefresh: ->
-    $('html').keydown @keydownHandler
+    console.log 'onDomRefresh->jsonview'
     @expanded_view = false
     @json_view = new JView @model.toJSON()
     @ui.body.prepend @json_view.dom
 
-  onBeforeDestroy: ->
-    $('html').unbind 'keydown', @keydownHandler
+  #onBeforeDestroy: ->
+  #  @json_view.destroy()
     
 
 module.exports = JsonView
