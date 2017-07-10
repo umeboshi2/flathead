@@ -98,24 +98,53 @@ class ClzPageCollection extends AuthCollection
 make_dbchannel AppChannel, 'clzpage', ClzPage, ClzPageCollection
 
 
+class ClzComic extends AuthModel
+  urlRoot: "#{apiroot}/ebclzcomic"
+  parse: (response, options) ->
+    if typeof(response.content) is 'string'
+      response.content = JSON.parse response.content
+    super response, options
+
+class ClzComicCollection extends AuthCollection
+  url: "#{apiroot}/ebclzcomic"
+  model: ClzComic
+  
+make_dbchannel AppChannel, 'clzcomic', ClzComic, ClzComicCollection
+
+AppletLocals = {}
+AppChannel.reply 'applet:local:get', (name) ->
+  AppletLocals[name]
+
+AppChannel.reply 'applet:local:set', (name, value) ->
+  AppletLocals[name] = value
+AppChannel.reply 'applet:local:delete', (name) ->
+  delete AppletLocals[name]
+  
+  
+
 current_csv_action = undefined
 AppChannel.reply 'set-current-csv-action', (action) ->
-  current_csv_action = action
+  #current_csv_action = action
+  AppChannel.request 'applet:local:set', 'currentCsvAction', action
 AppChannel.reply 'get-current-csv-action', ->
-  current_csv_action
+  #current_csv_action
+  AppChannel.request 'applet:local:get', 'currentCsvAction'
   
 current_csv_cfg = undefined
 AppChannel.reply 'set-current-csv-cfg', (cfg) ->
-  current_csv_cfg = cfg
+  #current_csv_cfg = cfg
+  AppChannel.request 'applet:local:set', 'currentCsvCfg', cfg
 AppChannel.reply 'get-current-csv-cfg', ->
-  current_csv_cfg
+  #current_csv_cfg
+  AppChannel.request 'applet:local:get', 'currentCsvCfg'
   
 current_csv_dsc = undefined
 AppChannel.reply 'set-current-csv-dsc', (dsc) ->
-  current_csv_dsc = dsc
+  #current_csv_dsc = dsc
+  AppChannel.request 'applet:local:set', 'currentCsvDsc', dsc
 AppChannel.reply 'get-current-csv-dsc', ->
-  current_csv_dsc
-  
+  #current_csv_dsc
+  AppChannel.request 'applet:local:get', 'currentCsvDsc'
 
 module.exports =
   EbConfigCollection: EbConfigCollection
