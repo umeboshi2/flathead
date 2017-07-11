@@ -6,10 +6,8 @@ JView = require 'json-view'
 require 'json-view/devtools.css'
 marked = require 'marked'
 
+IsEscapeModal = require 'tbirds/behaviors/is-escape-modal'
 { modal_close_button } = require 'tbirds/templates/buttons'
-
-# FIXME
-IsEscapeModal = require '../../../is-escape-modal'
 
 MainChannel = Backbone.Radio.channel 'global'
 AppChannel = Backbone.Radio.channel 'ebcsv'

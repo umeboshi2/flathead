@@ -9,9 +9,7 @@ yaml = require 'yamljs/dist/yaml'
 { modal_close_button } = require 'tbirds/templates/buttons'
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 capitalize = require 'tbirds/util/capitalize'
-
-# FIXME puth this in tbirds if works
-IsEscapeModal = require '../../is-escape-modal'
+IsEscapeModal = require 'tbirds/behaviors/is-escape-modal'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
