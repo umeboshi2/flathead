@@ -124,6 +124,13 @@ class ImageToolbar extends ToolbarView
     'toolbar:entry:clicked': 'toolbar:entry:clicked'
 
 listContainer = '.list-container'
+masonryOptions =
+  gutter: 1
+  isInitLayout: false
+  itemSelector: '.item'
+  columnWidth: 10
+  horizontalOrder: false
+  
 class CachedComicListView extends Marionette.View
   ui: ->
     toolbar: '.toolbar'
@@ -136,12 +143,7 @@ class CachedComicListView extends Marionette.View
     HasMasonryView:
       behaviorClass: HasMasonryView
       listContainer: listContainer
-      masonryOptions:
-        gutter: 1
-        isInitLayout: false
-        itemSelector: '.item'
-        columnWidth: 10
-        horizontalOrder: false
+      masonryOptions: masonryOptions
     HasHeader:
       behaviorClass: HasHeader
   template: tc.renderable (model) ->
@@ -204,11 +206,85 @@ class CachedComicListView extends Marionette.View
       
   restoreServerImages: ->
     console.warn 'restoreServerImages'
+    @trigger 'restore:server:images'
     
   destroyLocalImages: ->
     AppChannel.request 'clear-comic-image-urls'
     @collection.reset()
+
+insert_item = (item, options) ->
+  collection = options.collection
+  console.log "insert_model", collection, item
+  collection.create item
+  
+restore_item = (item, options) ->
+  collection = options.collection
+  response = collection.fetch
+    data:
+      where:
+        url: item.url
+  response.fail ->
+    msg = "There was a problem talking to the server"
+    MessageChannel.request 'warning', msg
+  response.done ->
+    if not collection.length
+      insert_item item, options
+  
+restore_comic_images = (items) ->
+  comics = AppChannel.request 'clzpage-collection'
+  options =
+    collection: comics
+  items.forEach (item) ->
+    restore_item item, options
     
+class RestoreUrlsView extends Marionette.View
+  ui:
+    restore_btn: '.restore-button'
+    restore_lbl: '.restore-label'
+    upload_btn: '.upload-button'
+  events:
+    'click @ui.upload_btn': 'upload_items'
+    'change @ui.restore_btn': 'restore_changed'
+    
+  template: tc.renderable (model) ->
+    tc.div '.listview-header', ->
+      tc.div "Restore the image urls to the server."
+    tc.label '.restore-label.btn.btn-default.btn-file', ->
+      tc.span 'restore '
+      tc.input '.restore-button.input', type:'file', style: 'display:none'
+    tc.button '.upload-button.btn.btn-default', style: 'display:none'
+    
+  restore_changed: (event) ->
+    #@ui.restore_btn.show()
+    @ui.restore_btn.hide()
+    @ui.upload_btn.show()
+    @ui.restore_lbl.hide()
+    @ui.restore_lbl.removeClass('btn btn-default')
+    fname = event.target.files[0].name
+    @ui.upload_btn.text "Upload #{fname}"
+    
+  reset_restore_button: ->
+    @ui.restore_btn.hide()
+    @ui.restore_lbl.show()
+    @ui.restore_lbl.addClass('btn btn-default')
+    @ui.restore_lbl.val ''
+    @ui.upload_btn.hide()
+    
+  upload_items: ->
+    file = @ui.restore_btn[0].files[0]
+    reader = new FileReader()
+    reader.onload = @jsonReaderOnLoad
+    reader.readAsText file
+
+  jsonReaderOnLoad: (event) =>
+    content = event.target.result
+    data = JSON.parse content
+    if data?.items
+      restore_comic_images data.items
+    else
+      @reset_restore_button()
+    @reset_restore_button()
+
 class ComicMainView extends Marionette.View
   ui:
     content: '.content-container'
@@ -232,6 +308,11 @@ class ComicMainView extends Marionette.View
   childViewEvents:
     'toolbar:browser:click': 'view_local_storage'
     'toolbar:server:click': 'view_server_storage'
+    'restore:server:images': 'restore_server_images'
+
+  restore_server_images: ->
+    view = new RestoreUrlsView
+    @showChildView 'content', view
     
   view_local_storage: ->
     cachedImages = new Backbone.Collection
