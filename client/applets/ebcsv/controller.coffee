@@ -9,8 +9,7 @@ ToolbarView = require 'tbirds/views/button-toolbar'
 ShowInitialEmptyContent = require 'tbirds/behaviors/show-initial-empty'
 SlideDownRegion = require 'tbirds/regions/slidedown'
 
-navigate_to_url = require 'tbirds/util/navigate-to-url'
-scroll_top_fast = require 'tbirds/util/scroll-top-fast'
+EbCsvToolbar = require './applet-toolbar'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
@@ -36,51 +35,10 @@ class ToolbarAppletLayout extends Backbone.Marionette.View
     content: region
     toolbar: '#main-toolbar'
 
-toolbarEntries = [
-  {
-    id: 'main'
-    label: 'Main View'
-    url: '#ebcsv'
-    icon: '.fa.fa-eye'
-  }
-  {
-    id: 'cfglist'
-    label: 'Configs'
-    url: '#ebcsv/cfg/list'
-    icon: '.fa.fa-list'
-  }
-  {
-    id: 'dsclist'
-    label: 'Descriptions'
-    url: '#ebcsv/dsc/list'
-    icon: '.fa.fa-list'
-  }
-  {
-    id: 'uploadxml'
-    label: 'Upload CLZ/XML'
-    url: '#ebcsv/xml/upload'
-    icon: '.fa.fa-upload'
-  }
-  {
-    id: 'mkcsv'
-    label: 'Create CSV'
-    url: '#ebcsv/csv/create'
-    icon: '.fa.fa-cubes'
-  }
-  {
-    id: 'cached'
-    label: 'Cached Images'
-    url: '#ebcsv/clzpage'
-    icon: '.fa.fa-image'
-  }
-  ]
-
-toolbarEntryCollection = new Backbone.Collection toolbarEntries
-AppChannel.reply 'get-toolbar-entries', ->
-  toolbarEntryCollection
-
 button_style = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-  
+
+defaultColumns = ['id', 'name']
+
 class EbCsvToolbar extends ToolbarView
   options:
     entryTemplate: tc.renderable (model) ->
@@ -96,7 +54,7 @@ class Controller extends MainController
   setup_layout_if_needed: ->
     super()
     toolbar = new EbCsvToolbar
-      collection: toolbarEntryCollection
+      collection: AppChannel.request 'get-toolbar-entries'
     @layout.showChildView 'toolbar', toolbar
 
   
@@ -108,7 +66,6 @@ class Controller extends MainController
       comics = AppChannel.request 'get-comics'
       View = require './views/mainview'
       view = new View
-        collection: comics
       @layout.showChildView 'content', view
     # name the chunk
     , 'ebcsv-view-main-view-helper'
@@ -135,52 +92,30 @@ class Controller extends MainController
     
   _need_comics_view: (cb) ->
     comics = AppChannel.request 'get-comics'
-    if not comics.length
-      if __DEV__ and false
-        window.comics = comics
-        xml_url = '/assets/dev/comics.xml'
-        xhr = Backbone.ajax
-          type: 'GET'
-          dataType: 'text'
-          url: xml_url
-        xhr.done ->
-          content = xhr.responseText
-          AppChannel.request 'parse-comics-xml', content, (err, json) ->
-            #@_show_main_view()
-            cb()
-        xhr.fail ->
-          navigate_to_url '#ebcsv/xml/upload'
-      else
-        navigate_to_url '#ebcsv/xml/upload'
-    else
+    if comics.length
       cb()
+    else
+      @navigate_to_url '#ebcsv/xml/upload'
       
   create_csv: =>
     @setup_layout_if_needed()
-    cfgs = AppChannel.request 'ebcfg-collection'
-    dscs = AppChannel.request 'ebdsc-collection'
-    cfgs.fetch().then =>
-      dscs.fetch().then =>
+    cfgs = AppChannel.request 'db:ebcfg:collection'
+    dscs = AppChannel.request 'db:ebdsc:collection'
+    options =
+      data:
+        columns: defaultColumns
+    cfgs.fetch(options).then =>
+      dscs.fetch(options).then =>
         @_need_comics_view @_show_create_csv_view
     
   preview_csv: ->
     @setup_layout_if_needed()
-    cfg = AppChannel.request 'get-current-csv-cfg'
-    dsc = AppChannel.request 'get-current-csv-dsc'
+    cfg = AppChannel.request 'locals:get', 'currentCsvCfg'
+    dsc = AppChannel.request 'locals:get', 'currentCsvDsc'
     hlist = AppChannel.request 'get-superheroes-model'
     if cfg is undefined
-      if __DEV__
-        cfg = AppChannel.request 'get-ebcfg', 1
-        dsc = AppChannel.request 'get-ebdsc', 1
-        AppChannel.request 'set-current-csv-cfg', cfg
-        AppChannel.request 'set-current-csv-dsc', dsc
-        cfg.fetch().then =>
-          dsc.fetch().then =>
-            hlist.fetch().then =>
-              @_need_comics_view @_show_preview_csv_view
-      else
-        navigate_to_url '#ebcsv'
-        return
+      @navigate_to_url '#ebcsv'
+      return
     else
       cfg.fetch().then =>
         dsc.fetch().then =>
@@ -189,7 +124,32 @@ class Controller extends MainController
     
   main_view: ->
     @setup_layout_if_needed()
-    @_need_comics_view @_show_main_view
+    @_show_main_view()
+
+  dbcomics_main: ->
+    @setup_layout_if_needed()
+    require.ensure [], () =>
+      comics = AppChannel.request 'get-comics'
+      View = require './views/mainview'
+      view = new View
+        collection: comics
+      @layout.showChildView 'content', view
+    # name the chunk
+    , 'ebcsv:views:mainview'
+
+  _showLocalComics: =>
+    require.ensure [], () =>
+      comics = AppChannel.request 'get-comics'
+      View = require './views/comic-list'
+      view = new View
+        collection: comics
+      @layout.showChildView 'content', view
+    # name the chunk
+    , 'ebcsv:views:'
+    
+  view_local_comics: ->
+    @setup_layout_if_needed()
+    @_need_comics_view @_showLocalComics
     
   upload_xml: ->
     @setup_layout_if_needed()
@@ -218,8 +178,10 @@ class Controller extends MainController
   list_configs: ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      cfgs = AppChannel.request 'ebcfg-collection'
-      response = cfgs.fetch()
+      cfgs = AppChannel.request 'db:ebcfg:collection'
+      response = cfgs.fetch
+        data:
+          columns: defaultColumns
       response.done =>
         View = require './views/cfglist'
         view = new View
@@ -236,7 +198,7 @@ class Controller extends MainController
       Views = require './views/cfgedit'
       view = new Views.NewFormView
       @layout.showChildView 'content', view
-      scroll_top_fast()
+      @scroll_top()
     # name the chunk
     , 'ebcsv-view-add-cfg'
 
@@ -244,13 +206,13 @@ class Controller extends MainController
     @setup_layout_if_needed()
     require.ensure [], () =>
       View = require './views/cfgview'
-      model = AppChannel.request 'get-ebcfg', id
+      model = AppChannel.request 'db:ebcfg:get', id
       response = model.fetch()
       response.done =>
         view = new View
           model: model
         @layout.showChildView 'content', view
-        scroll_top_fast()
+        @scroll_top()
       response.fail ->
         MessageChannel.request 'danger', 'Failed to get configs'
     # name the chunk
@@ -260,7 +222,7 @@ class Controller extends MainController
     @setup_layout_if_needed()
     require.ensure [], () =>
       Views = require './views/cfgedit'
-      model = AppChannel.request 'get-ebcfg', id
+      model = AppChannel.request 'db:ebcfg:get', id
       response = model.fetch()
       response.done =>
         view = new Views.EditFormView
@@ -280,8 +242,10 @@ class Controller extends MainController
   list_descriptions: ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      dscs = AppChannel.request 'ebdsc-collection'
-      response = dscs.fetch()
+      dscs = AppChannel.request 'db:ebdsc:collection'
+      response = dscs.fetch
+        data:
+          columns: defaultColumns
       response.done =>
         View = require './views/dsclist'
         view = new View
@@ -298,7 +262,7 @@ class Controller extends MainController
       Views = require './views/dscedit'
       view = new Views.NewFormView
       @layout.showChildView 'content', view
-      scroll_top_fast()
+      @scroll_top()
     # name the chunk
     , 'ebcsv-view-add-dsc'
 
@@ -306,13 +270,13 @@ class Controller extends MainController
     @setup_layout_if_needed()
     require.ensure [], () =>
       View = require './views/dscview'
-      model = AppChannel.request 'get-ebdsc', id
+      model = AppChannel.request 'db:ebdsc:get', id
       response = model.fetch()
       response.done =>
         view = new View
           model: model
         @layout.showChildView 'content', view
-        scroll_top_fast()
+        @scroll_top()
       response.fail ->
         MessageChannel.request 'danger', 'Failed to get descriptions'
     # name the chunk
@@ -322,7 +286,7 @@ class Controller extends MainController
     @setup_layout_if_needed()
     require.ensure [], () =>
       Views = require './views/dscedit'
-      model = AppChannel.request 'get-ebdsc', id
+      model = AppChannel.request 'db:ebdsc:get', id
       response = model.fetch()
       response.done =>
         view = new Views.EditFormView

@@ -15,6 +15,9 @@ class Router extends Marionette.AppRouter
   appRoutes:
     'ebcsv': 'main_view'
 
+    'ebcsv/comics': 'dbcomics_main'
+    'ebcsv/comics/local': 'view_local_comics'
+
     'ebcsv/xml/upload': 'upload_xml'
     'ebcsv/csv/create': 'create_csv'
     'ebcsv/csv/preview': 'preview_csv'
