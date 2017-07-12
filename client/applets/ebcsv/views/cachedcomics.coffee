@@ -43,12 +43,11 @@ class CachedComicToolbar extends ToolbarView
       tc.text model.label
   onChildviewToolbarEntryClicked: (child) ->
     @trigger "toolbar:#{child.model.id}:click", child
-    console.log "onChildviewToolbarEntryClicked", child.model.id
+    #console.log "onChildviewToolbarEntryClicked", child.model.id
   onDomRefresh: ->
     console.log "onDomRefresh", @regions
     eview = @getChildView 'entries'
     el = eview.$el
-    console.log "el is",el
     el.removeClass 'btn-group-justified'
     
       
@@ -59,8 +58,7 @@ class CachedComicEntryView extends Marionette.View
     'click @ui.image': 'show:image:modal'
   behaviors: [HasImageModal]
   template: tc.renderable (model) ->
-    img = model.image_src.replace '/lg/', '/sm/'
-    img = img.replace 'http://', '//'
+    img = AppChannel.request 'fix-image-url', model.image_src
     tc.div '.item', ->
       tc.img src:img
 
@@ -95,27 +93,6 @@ imgtoolbar_entries =
   browser: browser_image_toolbar_entries
   server: server_image_toolbar_entries
   
-class ImageToolbarOrig extends ToolbarView
-  onChildviewToolbarEntryClicked: (child) ->
-    console.log "a button pressed", child
-    console.log "#{@getOption 'cacheType'} toolbar"
-    cacheType = @getOption 'cacheType'
-    cacheTypes = ['browser', 'server']
-    if cacheType in cacheTypes
-      @["#{cacheType}ButtonClicked"](child)
-    else
-      @toolbarButtonClicked child
-      
-  toolbarButtonClicked: (child) ->
-    console.warn "we don't have a cacheType on this toolbar"
-
-  browserButtonClicked: (child) ->
-    console.log 'browser button', child
-
-  serverButtonClicked: (child) ->
-    console.log 'server button', child
-    
-
 class ImageToolbar extends ToolbarView
   # skip navigating to url and bubble event up
   # to list view
@@ -163,8 +140,6 @@ class CachedComicListView extends Marionette.View
     @triggerMethod 'set:header',
     "#{@collection.length} images stored in the #{@getOption 'cacheType'}"
   onChildviewToolbarEntryClicked: (child) ->
-    console.log "a button pressed", child
-    console.log "#{@getOption 'cacheType'} toolbar"
     cacheType = @getOption 'cacheType'
     cacheTypes = ['browser', 'server']
     if cacheType in cacheTypes
@@ -194,7 +169,6 @@ class CachedComicListView extends Marionette.View
       for item in @collection.toJSON()
         delete item.id
         items.push item
-      console.log 'ITEMS', items
       options =
         type: 'data:text/json;charset=utf-8'
         data: JSON.stringify items: items
@@ -205,7 +179,6 @@ class CachedComicListView extends Marionette.View
       MessageChannel.request 'danger', 'Failed to get image urls!'
       
   restoreServerImages: ->
-    console.warn 'restoreServerImages'
     @trigger 'restore:server:images'
     
   destroyLocalImages: ->

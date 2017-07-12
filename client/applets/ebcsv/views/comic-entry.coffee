@@ -36,8 +36,7 @@ class IFrameModalView extends BaseModalView
 ########################################
 class ComicImageView extends Backbone.Marionette.View
   template: tc.renderable (model) ->
-    img = model.image_src.replace '/lg/', '/sm/'
-    img = img.replace 'http://', '//'
+    img = AppChannel.request 'fix-image-url', model.image_src
     tc.img src:img
   ui:
     image: 'img'
