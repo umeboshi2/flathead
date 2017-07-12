@@ -19,6 +19,9 @@ dropzone_template = tc.renderable (model) ->
       tc.div '.panel.panel-default', ->
         tc.div '.panel-heading', 'Drop an xml file.'
         tc.div '.panel-body', ->
+          tc.label '.checkbox-inline', ->
+            tc.input '.forsale-cbox.checkbox', type:'checkbox', checked:''
+            tc.text "Select only comics for sale."
           tc.div '.parse-btn.btn.btn-default', style:'display:none', ->
             tc.text 'Parse Dropped File'
           tc.input '.xml-file-input.input', type:'file'
@@ -31,6 +34,7 @@ class DropZoneView extends Backbone.Marionette.View
   template: dropzone_template
   droppedFile: null
   ui:
+    forsale_cbox: '.forsale-cbox'
     status_msg: '.panel-heading'
     file_input: '.xml-file-input'
     parse_btn: '.parse-btn'
@@ -95,8 +99,12 @@ class DropZoneView extends Backbone.Marionette.View
   xmlReaderOnLoad: (event) =>
     content = event.target.result
     @ui.status_msg.text 'Parsing xml.....'
-    AppChannel.request 'parse-comics-xml', content, @successfulParse
-    
+    console.log 'hello there', @ui.forsale_cbox
+    if @ui.forsale_cbox.is ':checked'
+      AppChannel.request 'parse-comics-xml', content, @successfulParse
+    else
+      AppChannel.request 'parse-all-comics-xml', content, @successfulParse
+      
   parse_xml: ->
     @ui.status_msg.text "Reading xml file..."
     #console.log "PARSE #{@droppedFile.name}"
