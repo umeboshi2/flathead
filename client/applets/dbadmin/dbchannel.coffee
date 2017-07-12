@@ -1,7 +1,8 @@
+_ = require 'underscore'
 Backbone = require 'backbone'
+Marionette = require 'backbone.marionette'
 
-{ make_dbchannel } = require 'tbirds/crud/basecrudchannel'
-
+DbCollection = require 'tbirds/dbcollection'
 MainChannel = Backbone.Radio.channel 'global'
 AppChannel = Backbone.Radio.channel 'dbadmin'
 
@@ -12,10 +13,10 @@ AuthCollection = MainChannel.request 'main:app:AuthCollection'
 apiroot = "/api/dev/bapi"
 cfg_apipath = "#{apiroot}/ebcsvcfg"
 dsc_apipath = "#{apiroot}/ebcsvdsc"
-apipath = "/api/dev/booky/DbDoc"
 
-
-
+defaultOptions =
+  channelName: 'dbadmin'
+  
 class EbConfigModel extends AuthModel
   urlRoot: cfg_apipath
   parse: (response, options) ->
@@ -27,7 +28,10 @@ class EbConfigCollection extends AuthCollection
   url: cfg_apipath
   model: EbConfigModel
 
-make_dbchannel AppChannel, 'ebcfg', EbConfigModel, EbConfigCollection
+dbcfg = new DbCollection _.extend defaultOptions,
+  modelName: 'ebcfg'
+  modelClass: EbConfigModel
+  collectionClass: EbConfigCollection
 
 class EbDescModel extends AuthModel
   urlRoot: dsc_apipath
@@ -36,7 +40,10 @@ class EbDescCollection extends AuthCollection
   url: dsc_apipath
   model: EbDescModel
 
-make_dbchannel AppChannel, 'ebdsc', EbDescModel, EbDescCollection
+dbdsc = new DbCollection _.extend defaultOptions,
+  modelName: 'ebdsc'
+  modelClass: EbDescModel
+  collectionClass: EbDescCollection
 
 class ClzPage extends AuthModel
   urlRoot: "#{apiroot}/ebclzpage"
@@ -48,20 +55,25 @@ class ClzPage extends AuthModel
 class ClzPageCollection extends AuthCollection
   url: "#{apiroot}/ebclzpage"
   model: ClzPage
-  
-make_dbchannel AppChannel, 'clzpage', ClzPage, ClzPageCollection
 
+dbclzpage = new DbCollection _.extend defaultOptions,
+  modelName: 'clzpage'
+  modelClass: ClzPage
+  collectionClass: ClzPageCollection
 
+docpath = "/api/dev/booky/DbDoc"
 
 class Document extends AuthModel
-  urlRoot: apipath
+  urlRoot: docpath
   
 class DocumentCollection extends AuthCollection
-  url: apipath
+  url: docpath
   model: Document
 
-make_dbchannel AppChannel, 'document', Document, DocumentCollection
-
+dbdoc = new DbCollection _.extend defaultOptions,
+  modelName: 'document'
+  modelClass: Document
+  collectionClass: DocumentCollection
 
 todos_url = "/api/dev/bapi/fhtodos"
 
@@ -75,7 +87,10 @@ class TodoCollection extends AuthCollection
   url: todos_url
   model: Todo
 
-make_dbchannel AppChannel, 'todo', Todo, TodoCollection
+dbtodo = new DbCollection _.extend defaultOptions,
+  modelName: 'todo'
+  modelClass: Todo
+  collectionClass: TodoCollection
 
 
 module.exports =

@@ -1,4 +1,5 @@
 $ = require 'jquery'
+_ = require 'underscore'
 Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 tc = require 'teacup'
@@ -31,7 +32,7 @@ ConfirmDeleteTemplate = tc.renderable (model) ->
             modal_close_button 'OK', 'check'
           tc.li "#cancel-delete-button", ->
             modal_close_button 'Cancel'
-    
+
 class ConfirmDeleteModal extends Marionette.View
   behaviors: [IsEscapeModal]
   template: ConfirmDeleteTemplate
@@ -76,8 +77,6 @@ mtypeCollectionMap =
   description: 'ebdsc'
   todo: 'todo'
 
-check_coll_att_params = (collection, attributes) ->
-
 strip_id = (attributes) ->
   if attributes?.id
     delete attributes.id
@@ -89,55 +88,66 @@ must_have_one = (collection) ->
 must_have_zero = (collection) ->
   if collection.length
     throw new Error "We cannot insert!!!!"
+      
+class RestorationManager extends Marionette.Object
+  channelName: 'dbadmin'
+  initialize: (options) ->
+    @modelName = options.type
+    @dbPrefix = "db:#{mtypeCollectionMap[options.type]}"
+    @collection = AppChannel.request "#{@dbPrefix}:collection"
+    @curentItems = _.clone options.items
+    #console.log "initialize @curentItems", @curentItems
+    @channel = @getChannel()
+    @channel.on "#{@dbPrefix}:inserted", @restore_items
+    @channel.on "#{@dbPrefix}:updated", @restore_items
+    @modelId = options.modelId or 'name'
+
+  insert_item: (item) ->
+    #console.log 'insert_item', item
+    strip_id item
+    must_have_zero @collection
+    #console.log "@channel", @channel
+    @channel.request "#{@dbPrefix}:add", item
+  
+  update_item: (item) ->
+    #console.log 'update_item', item
+    strip_id item
+    must_have_one @collection
+    model = @collection.models[0]
+    @channel.request "#{@dbPrefix}:updatePassed", model, item
     
-  
-update_model = (attributes, options) ->
-  collection = options.collection
-  console.log "update_model", collection, attributes
-  strip_id attributes
-  must_have_one collection
-  model = collection.models[0]
-  model.set attributes
-  model.save()
-  
-insert_model = (attributes, options) ->
-  collection = options.collection
-  console.log "insert_model", collection, attributes
-  strip_id attributes
-  must_have_zero collection
-  ctype = mtypeCollectionMap[options.modelType]
-  model = AppChannel.request "new-#{ctype}"
-  model.set attributes
-  collection.add model
-  model.save()
-  
-restore_model = (attributes, options) ->
-  collection = options.collection
-  # FIXME we are using name as unique column!
-  response = collection.fetch
-    data:
-      where:
-        name: attributes.name
-  response.fail ->
-    msg = "There was a problem talking to the server"
-    MessageChannel.request 'warning', msg
-  response.done ->
-    if collection.length > 1
-      MessageChannel.request 'warning', "#{name} is not unique!"
-    if not collection.length
-      insert_model attributes, options
+  restore_item: (item) ->
+    #console.log "restore_item", item
+    # reset collection to help check for multiples
+    @collection.reset()
+    response = @collection.fetch
+      data:
+        where:
+          "#{@modelId}": item[@modelId]
+    response.fail ->
+      msg = "There was a problem talking to the server"
+      MessageChannel.request 'warning', msg
+    response.done =>
+      if @collection.length > 1
+        MessageChannel.request 'warning', "#{name} is not unique!"
+      if not @collection.length
+        @insert_item item
+      else
+        @update_item item
+      
+  restore_items: =>
+    #console.log "restore_items @curentItems", @curentItems
+    if @curentItems.length
+      item = @curentItems.pop()
+      @restore_item item
     else
-      update_model attributes, options
-        
+      MessageChannel.request 'success', "Restoration Successful"
+      applet = MainChannel.request 'main:applet:get-applet', 'dbadmin'
+      applet.router.controller.mainview()
+      
 restore_data = (data) ->
-  mtype = data.type
-  collection = AppChannel.request "#{mtypeCollectionMap[mtype]}-collection"
-  options =
-    modelType: mtype
-    collection: collection
-  data.items.forEach (item) ->
-    restore_model item, options
-    
+  mgr = new RestorationManager data
+  mgr.restore_items()
     
 class SimpleMgr extends Marionette.View
   template: simple_template
@@ -225,7 +235,7 @@ class SimpleMgr extends Marionette.View
     @ui.status_msg.text "Parse Successful"
     if __DEV__
       window.comics = AppChannel.request 'get-comics'
-    navigate_to_url "#ebcsv"
+    navigate_to_url "#dbadmin"
     
 class EbCfgMgr extends SimpleMgr
   templateContext:
@@ -247,13 +257,12 @@ class MainView extends Marionette.View
     tc.div '.dsc-container'
     tc.div '.todo-container'
   renderItems: (mtype, ctype) ->
-    collection = AppChannel.request "#{ctype}-collection"
+    collection = AppChannel.request "db:#{ctype}:collection"
     response = collection.fetch()
     response.done =>
       view = new SimpleMgr
         modelType: mtype
         collection: collection
-      console.log "View", view
       @showChildView mtype, view
     response.fail ->
       MessageChannel.request 'danger', "Failed to get #{mtype}s."
