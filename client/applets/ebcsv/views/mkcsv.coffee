@@ -60,8 +60,8 @@ csv_dsc_select = tc.renderable (collection) ->
 class ComicsView extends Backbone.Marionette.View
   templateContext: ->
     options = @options
-    options.ebcfg_collection = AppChannel.request 'ebcfg-collection'
-    options.ebdsc_collection = AppChannel.request 'ebdsc-collection'
+    options.ebcfg_collection = AppChannel.request 'db:ebcfg:collection'
+    options.ebdsc_collection = AppChannel.request 'db:ebdsc:collection'
     options
   regions:
     body: '.body'
@@ -87,11 +87,11 @@ class ComicsView extends Backbone.Marionette.View
 
   make_csv: ->
     action = @ui.action_sel.val()
-    cfg = AppChannel.request 'get-ebcfg', @ui.cfg_sel.val()
-    dsc = AppChannel.request 'get-ebdsc', @ui.dsc_sel.val()
-    AppChannel.request 'set-current-csv-action', action
-    AppChannel.request 'set-current-csv-cfg', cfg
-    AppChannel.request 'set-current-csv-dsc', dsc
+    cfg = AppChannel.request 'db:ebcfg:get', @ui.cfg_sel.val()
+    dsc = AppChannel.request 'db:ebdsc:get', @ui.dsc_sel.val()
+    AppChannel.request 'locals:set', 'currentCsvAction', action
+    AppChannel.request 'locals:set', 'currentCsvCfg', cfg
+    AppChannel.request 'locals:set', 'currentCsvDsc', dsc
     navigate_to_url '#ebcsv/csv/preview'
     
   show_comics: ->

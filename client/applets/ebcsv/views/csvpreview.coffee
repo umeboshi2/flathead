@@ -161,8 +161,8 @@ class CsvMainView extends Backbone.Marionette.View
   className: bstableclasses.join ' '
   templateContext: ->
     options = @options
-    options.ebcfg_collection = AppChannel.request 'ebcfg-collection'
-    options.ebdsc_collection = AppChannel.request 'ebdsc-collection'
+    options.ebcfg_collection = AppChannel.request 'db:ebcfg:collection'
+    options.ebdsc_collection = AppChannel.request 'db:ebdsc:collection'
     options.csvheader = AppChannel.request 'get-csv-header'
     options
     

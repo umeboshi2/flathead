@@ -1,6 +1,6 @@
+_ = require 'underscore'
 Backbone = require 'backbone'
-
-{ make_dbchannel } = require 'tbirds/crud/basecrudchannel'
+DbCollection = require 'tbirds/dbcollection'
 
 MainChannel = Backbone.Radio.channel 'global'
 AppChannel = Backbone.Radio.channel 'ebcsv'
@@ -8,11 +8,13 @@ AppChannel = Backbone.Radio.channel 'ebcsv'
 AuthModel = MainChannel.request 'main:app:AuthModel'
 AuthCollection = MainChannel.request 'main:app:AuthCollection'
 
-#apiroot = "/api/dev/booky"
 apiroot = "/api/dev/bapi"
 cfg_apipath = "#{apiroot}/ebcsvcfg"
 dsc_apipath = "#{apiroot}/ebcsvdsc"
 
+defaultOptions =
+  channelName: 'ebcsv'
+  
 class SuperHeroList extends Backbone.Model
   url: '/assets/data/superheroes.json'
 
@@ -72,8 +74,10 @@ class EbConfigCollection extends AuthCollection
   url: cfg_apipath
   model: EbConfigModel
 
-make_dbchannel AppChannel, 'ebcfg', EbConfigModel, EbConfigCollection
-
+dbcfg = new DbCollection _.extend defaultOptions,
+  modelName: 'ebcfg'
+  modelClass: EbConfigModel
+  collectionClass: EbConfigCollection
 
 class EbDescModel extends AuthModel
   urlRoot: dsc_apipath
@@ -82,7 +86,10 @@ class EbDescCollection extends AuthCollection
   url: dsc_apipath
   model: EbDescModel
 
-make_dbchannel AppChannel, 'ebdsc', EbDescModel, EbDescCollection
+dbdsc = new DbCollection _.extend defaultOptions,
+  modelName: 'ebdsc'
+  modelClass: EbDescModel
+  collectionClass: EbDescCollection
 
 class ClzPage extends AuthModel
   urlRoot: "#{apiroot}/ebclzpage"
@@ -94,10 +101,12 @@ class ClzPage extends AuthModel
 class ClzPageCollection extends AuthCollection
   url: "#{apiroot}/ebclzpage"
   model: ClzPage
+
+dbclzpage = new DbCollection _.extend defaultOptions,
+  modelName: 'clzpage'
+  modelClass: ClzPage
+  collectionClass: ClzPageCollection
   
-make_dbchannel AppChannel, 'clzpage', ClzPage, ClzPageCollection
-
-
 class ClzComic extends AuthModel
   urlRoot: "#{apiroot}/ebclzcomic"
   parse: (response, options) ->
@@ -108,16 +117,18 @@ class ClzComic extends AuthModel
 class ClzComicCollection extends AuthCollection
   url: "#{apiroot}/ebclzcomic"
   model: ClzComic
-  
-make_dbchannel AppChannel, 'clzcomic', ClzComic, ClzComicCollection
+
+dbclzcomic = new DbCollection _.extend defaultOptions,
+  modelName: 'clzcomic'
+  modelClass: ClzComic
+  collectionClass: ClzComicCollection
 
 AppletLocals = {}
-AppChannel.reply 'applet:local:get', (name) ->
+AppChannel.reply 'locals:get', (name) ->
   AppletLocals[name]
-
-AppChannel.reply 'applet:local:set', (name, value) ->
+AppChannel.reply 'locals:set', (name, value) ->
   AppletLocals[name] = value
-AppChannel.reply 'applet:local:delete', (name) ->
+AppChannel.reply 'locals:delete', (name) ->
   delete AppletLocals[name]
   
   
@@ -125,26 +136,32 @@ AppChannel.reply 'applet:local:delete', (name) ->
 current_csv_action = undefined
 AppChannel.reply 'set-current-csv-action', (action) ->
   #current_csv_action = action
-  AppChannel.request 'applet:local:set', 'currentCsvAction', action
+  console.warn "deprecated"
+  AppChannel.request 'locals:set', 'currentCsvAction', action
 AppChannel.reply 'get-current-csv-action', ->
   #current_csv_action
-  AppChannel.request 'applet:local:get', 'currentCsvAction'
+  console.warn "deprecated"
+  AppChannel.request 'locals:get', 'currentCsvAction'
   
 current_csv_cfg = undefined
 AppChannel.reply 'set-current-csv-cfg', (cfg) ->
   #current_csv_cfg = cfg
-  AppChannel.request 'applet:local:set', 'currentCsvCfg', cfg
+  console.warn "deprecated"
+  AppChannel.request 'locals:set', 'currentCsvCfg', cfg
 AppChannel.reply 'get-current-csv-cfg', ->
   #current_csv_cfg
-  AppChannel.request 'applet:local:get', 'currentCsvCfg'
+  console.warn "deprecated"
+  AppChannel.request 'locals:get', 'currentCsvCfg'
   
 current_csv_dsc = undefined
 AppChannel.reply 'set-current-csv-dsc', (dsc) ->
   #current_csv_dsc = dsc
-  AppChannel.request 'applet:local:set', 'currentCsvDsc', dsc
+  console.warn "deprecated"
+  AppChannel.request 'locals:set', 'currentCsvDsc', dsc
 AppChannel.reply 'get-current-csv-dsc', ->
   #current_csv_dsc
-  AppChannel.request 'applet:local:get', 'currentCsvDsc'
+  console.warn "deprecated"
+  AppChannel.request 'locals:get', 'currentCsvDsc'
 
 module.exports =
   EbConfigCollection: EbConfigCollection
