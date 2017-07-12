@@ -3,12 +3,8 @@ _ = require 'underscore'
 Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 
-{ BaseLocalStorageCollection } = require 'tbirds/lscollection'
-{ BaseCollection } = require 'tbirds/collections'
-
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
-DocChannel = Backbone.Radio.channel 'static-documents'
 
 class StaticDocument extends Backbone.Model
   url: ->
@@ -22,12 +18,8 @@ class StaticDocument extends Backbone.Model
   parse: (response) ->
     return content: response
     
-class StaticDocumentCollection extends BaseCollection
-  model: StaticDocument
   
-
-  
-DocChannel.reply 'get-document', (name) ->
+MainChannel.reply 'main:app:get-document', (name) ->
   model = new StaticDocument
     id: name
 
@@ -36,4 +28,3 @@ DocChannel.reply 'get-document', (name) ->
 module.exports =
   StaticDocument: StaticDocument
   
-
