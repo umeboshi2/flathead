@@ -79,10 +79,10 @@ class BaseFormView extends BootstrapFormView
     
 class NewFormView extends BaseFormView
   createModel: ->
-    AppChannel.request 'new-ebdsc'
+    AppChannel.request 'db:ebdsc:new'
 
   saveModel: ->
-    collection = AppChannel.request 'ebdsc-collection'
+    collection = AppChannel.request 'db:ebdsc:collection'
     collection.add @model
     super
     

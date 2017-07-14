@@ -4,21 +4,15 @@ Marionette = require 'backbone.marionette'
 tc = require 'teacup'
 ms = require 'ms'
 
-{ BaseController } = require 'tbirds/controllers'
-ToolbarView = require 'tbirds/views/button-toolbar'
-ShowInitialEmptyContent = require 'tbirds/behaviors/show-initial-empty'
-SlideDownRegion = require 'tbirds/regions/slidedown'
-
-EbCsvToolbar = require './applet-toolbar'
+{ ExtraController } = require 'tbirds/controllers'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
-ResourceChannel = Backbone.Radio.channel 'resources'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
 defaultColumns = ['id', 'name']
 
-class Controller extends BaseController
+class DscController extends ExtraController
   channelName: 'ebcsv'
   initialize: (options) ->
     @applet = MainChannel.request 'main:applet:get-applet', 'ebcsv'
@@ -39,7 +33,7 @@ class Controller extends BaseController
         data:
           columns: defaultColumns
       response.done =>
-        View = require './views/dsclist'
+        View = require './dsclist'
         view = new View
           collection: dscs
         @showChildView 'content', view
@@ -51,7 +45,7 @@ class Controller extends BaseController
   add_new_description: ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      Views = require './views/dscedit'
+      Views = require './dscedit'
       view = new Views.NewFormView
       @showChildView 'content', view
       @scroll_top()
@@ -61,7 +55,7 @@ class Controller extends BaseController
   view_description: (id) ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      View = require './views/dscview'
+      View = require './dscview'
       model = AppChannel.request 'db:ebdsc:get', id
       response = model.fetch()
       response.done =>
@@ -77,7 +71,7 @@ class Controller extends BaseController
   edit_description: (id) ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      Views = require './views/dscedit'
+      Views = require './dscedit'
       model = AppChannel.request 'db:ebdsc:get', id
       response = model.fetch()
       response.done =>
@@ -89,5 +83,5 @@ class Controller extends BaseController
     # name the chunk
     , 'ebcsv-edit-description'
 
-module.exports = Controller
+module.exports = DscController
 
