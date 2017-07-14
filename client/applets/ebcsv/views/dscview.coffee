@@ -50,7 +50,7 @@ class DscView extends Backbone.Marionette.View
     if not destname
       MessageChannel.request 'warning', 'Please input a new description name.'
       return
-    ndsc = AppChannel.request 'new-ebdsc'
+    ndsc = AppChannel.request 'db:ebdsc:new'
     ndsc.set 'name', destname
     ndsc.set 'title', @model.get 'title'
     ndsc.set 'content', @model.get 'content'

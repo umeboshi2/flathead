@@ -204,7 +204,7 @@ restore_item = (item, options) ->
       insert_item item, options
   
 restore_comic_images = (items) ->
-  comics = AppChannel.request 'clzpage-collection'
+  comics = AppChannel.request 'db:clzpage:collection'
   options =
     collection: comics
   items.forEach (item) ->
@@ -302,7 +302,7 @@ class ComicMainView extends Marionette.View
     @showChildView 'content', view
     
   view_server_storage: ->
-    comics = AppChannel.request 'clzpage-collection'
+    comics = AppChannel.request 'db:clzpage:collection'
     response = comics.fetch()
     response.done =>
       view = new CachedComicListView

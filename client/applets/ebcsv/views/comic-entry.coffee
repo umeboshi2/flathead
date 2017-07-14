@@ -125,7 +125,7 @@ class ComicEntryView extends Backbone.Marionette.View
           
   _add_comic_to_db: (url, content) =>
     #console.log "_add_comic_to_db", @model
-    model = AppChannel.request 'new-clzpage'
+    model = AppChannel.request 'db:clzpage:new'
     model.set 'url', url
     cdoc = $.parseHTML content
     links = []
@@ -136,7 +136,7 @@ class ComicEntryView extends Backbone.Marionette.View
       MessageChannel.request 'warning', 'Too many links for this comic.'
     link = links[0]
     model.set 'image_src', link.href
-    collection = AppChannel.request 'clzpage-collection'
+    collection = AppChannel.request 'db:clzpage:collection'
     collection.add model
     response = model.save()
     response.done =>
@@ -147,7 +147,7 @@ class ComicEntryView extends Backbone.Marionette.View
     links = @model.get 'links'
     url = links.link.url
     u = new URL url
-    collection = AppChannel.request 'clzpage-collection'
+    collection = AppChannel.request 'db:clzpage:collection'
     response = collection.fetch
       data:
         where:
@@ -180,7 +180,7 @@ class ComicEntryView extends Backbone.Marionette.View
     links = @model.get 'links'
     url = links.link.url
     u = new URL url
-    collection = AppChannel.request 'clzpage-collection'
+    collection = AppChannel.request 'db:clzpage:collection'
     response = collection.fetch
       data:
         where:

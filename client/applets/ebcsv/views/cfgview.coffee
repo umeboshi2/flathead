@@ -58,7 +58,7 @@ class CfgView extends Backbone.Marionette.View
     if not destname
       MessageChannel.request 'warning', 'Please input a new config name.'
       return
-    ncfg = AppChannel.request 'new-ebcfg'
+    ncfg = AppChannel.request 'db:ebcfg:new'
     ncfg.set 'name', destname
     ncfg.set 'content', @model.get 'content'
     collection = AppChannel.request 'ebcfg-collection'
