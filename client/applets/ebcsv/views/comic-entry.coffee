@@ -102,7 +102,11 @@ class ComicEntryView extends Backbone.Marionette.View
   onDomRefresh: ->
     @ui.info_btn.hide()
     links = @model.get 'links'
-    url = links.link.url
+    url = links?.link?.url
+    if url
+      @_prepare_show_comic_image url
+
+  _prepare_show_comic_image: (url) ->
     urls = AppChannel.request 'get-comic-image-urls'
     if urls[url]
       model = new Backbone.Model
