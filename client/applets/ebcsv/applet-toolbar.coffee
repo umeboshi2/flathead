@@ -25,9 +25,9 @@ toolbarEntries = [
     icon: '.fa.fa-eye'
   }
   {
-    id: 'localcomics'
-    label: 'Local Comics'
-    url: '#ebcsv/comics/local'
+    id: 'dbcomics'
+    label: 'DbComics'
+    url: '#ebcsv/comics'
     icon: '.fa.fa-list'
   }
   {
