@@ -42,6 +42,18 @@ class BasicPageableCollection extends PageableCollection
     firstPage: 0
     pageSize: 10
     sortColumn: 'id'
+  parse: (response) ->
+    # FIXME we need to check if the total changes, if
+    # it was previously set
+    @state.totalRecords = response.total
+    # This should only run on the first fetch
+    if @state.totalPages is null
+      @state.totalPages = Math.ceil response.total / @state.pageSize
+      # we start at page zero
+      @state.lastPage = @state.totalPages - 1
+    # we don't have to send just items, but also
+    # something for the pageable state
+    super response.items
     
 class AuthCollection extends BasicPageableCollection
   sync: (method, model, options) ->
