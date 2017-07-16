@@ -1,6 +1,7 @@
 Backbone = require 'backbone'
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 jwtDecode = require 'jwt-decode'
+PageableCollection = require 'backbone.paginator'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
@@ -29,7 +30,20 @@ class AuthModel extends Backbone.Model
     options = auth_sync_options options
     super method, model, options
 
-class AuthCollection extends Backbone.Collection
+class BasicPageableCollection extends PageableCollection
+  queryParams:
+    sort: ->
+      @state.sortColumn
+    pageSize: 'limit'
+    currentPage: ''
+    offset: ->
+      @state.currentPage * @state.pageSize
+  state:
+    firstPage: 0
+    pageSize: 10
+    sortColumn: 'id'
+    
+class AuthCollection extends BasicPageableCollection
   sync: (method, model, options) ->
     options = auth_sync_options options
     super method, model, options
