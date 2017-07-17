@@ -5,6 +5,7 @@ Masonry = require 'masonry-layout'
 tc = require 'teacup'
 dateFormat = require 'dateformat'
 #require('editable-table/mindmup-editabletable')
+require 'jquery-ui/ui/widgets/droppable'
 
 DbComicEntry = require './dbcomic-entry'
 DbComicsSidebar = require './dbcomics-sidebar'
@@ -90,7 +91,7 @@ class ComicsView extends Marionette.View
     tc.div '.listview-header', ->
       tc.text "DbComics"
     tc.div '.row', ->
-      tc.div '.sidebar.col-sm-4'
+      tc.div '.sidebar.col-sm-4', style:'height: calc(100% - 50px);'
       tc.div '.body.col-sm-7.col-sm-offset-1'
   ui:
     body: '.body'
@@ -105,6 +106,10 @@ class ComicsView extends Marionette.View
     view = new DbComicsView
       collection: @collection
     @showChildView 'body', view
+    #@ui.sidebar.css 'height', 'calc(100% - 50px)'
+    @ui.sidebar.css 'height', '300px'
+    @ui.sidebar.droppable()
+    
     
       
     

@@ -26,6 +26,8 @@ class Router extends Marionette.AppRouter
     
 
 class Applet extends TkApplet
+  appletName: 'ebcsv'
+  channelName: 'ebcsv'
   Controller: Controller
   Router: Router
   extraRouters:
