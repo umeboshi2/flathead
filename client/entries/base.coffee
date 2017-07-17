@@ -11,6 +11,7 @@ require 'tbirds/applet-router'
 IsEscapeModal = require 'tbirds/behaviors/is-escape-modal'
 
 require '../authmodels'
+require '../crudcontroller'
 require '../static-documents'
 
 MainChannel = Backbone.Radio.channel 'global'
