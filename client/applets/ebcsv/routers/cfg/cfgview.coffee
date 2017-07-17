@@ -61,7 +61,7 @@ class CfgView extends Backbone.Marionette.View
     ncfg = AppChannel.request 'db:ebcfg:new'
     ncfg.set 'name', destname
     ncfg.set 'content', @model.get 'content'
-    collection = AppChannel.request 'ebcfg-collection'
+    collection = AppChannel.request 'db:ebcfg:collection'
     collection.add ncfg
     response = ncfg.save()
     response.fail ->

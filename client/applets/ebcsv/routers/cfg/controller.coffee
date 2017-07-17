@@ -11,75 +11,47 @@ MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'ebcsv'
 
 defaultColumns = ['id', 'name']
+CrudController = MainChannel.request 'main:app:CrudController'
 
-class CfgController extends ExtraController
+class CfgController extends CrudController
   channelName: 'ebcsv'
+  objName: 'config'
+  modelName: 'ebcfg'
   initialize: (options) ->
     @applet = MainChannel.request 'main:applet:get-applet', 'ebcsv'
     @mainController = @applet.router.controller
     @channel = @getChannel()
-  setup_layout_if_needed: ->
-    @mainController.setup_layout_if_needed()
-  showChildView: (region, view) ->
-    @mainController.layout.showChildView region, view
+    console.log "@channel", @channel
+    
+
   ############################################
   # ebcsv configs
   ############################################
   list_configs: ->
-    @setup_layout_if_needed()
     require.ensure [], () =>
-      cfgs = @channel.request 'db:ebcfg:collection'
-      response = cfgs.fetch
-        data:
-          columns: defaultColumns
-      response.done =>
-        View = require './cfglist'
-        view = new View
-          collection: cfgs
-        @showChildView 'content', view
-      response.fail ->
-        MessageChannel.request 'danger', 'Failed to get configs'
+      ViewClass = require './cfglist'
+      @listItems ViewClass
     # name the chunk
     , 'ebcsv-view-list-configs'
     
   add_new_config: ->
-    @setup_layout_if_needed()
     require.ensure [], () =>
-      Views = require './cfgedit'
-      view = new Views.NewFormView
-      @showChildView 'content', view
-      @scroll_top()
+      { NewFormView } = require './cfgedit'
+      @addItem NewFormView
     # name the chunk
     , 'ebcsv-view-add-cfg'
 
   view_config: (id) ->
-    @setup_layout_if_needed()
     require.ensure [], () =>
-      View = require './cfgview'
-      model = AppChannel.request 'db:ebcfg:get', id
-      response = model.fetch()
-      response.done =>
-        view = new View
-          model: model
-        @showChildView 'content', view
-        @scroll_top()
-      response.fail ->
-        MessageChannel.request 'danger', 'Failed to get configs'
+      ViewClass = require './cfgview'
+      @viewItem ViewClass, id
     # name the chunk
     , 'ebcsv-view-config'
     
   edit_config: (id) ->
-    @setup_layout_if_needed()
     require.ensure [], () =>
-      Views = require './cfgedit'
-      model = AppChannel.request 'db:ebcfg:get', id
-      response = model.fetch()
-      response.done =>
-        view = new Views.EditFormView
-          model: model
-        @showChildView 'content', view
-      response.fail ->
-        MessageChannel.request 'danger', 'Failed to get configs'
+      { EditFormView } = require './cfgedit'
+      @editItem EditFormView, id
     # name the chunk
     , 'ebcsv-edit-config'
 

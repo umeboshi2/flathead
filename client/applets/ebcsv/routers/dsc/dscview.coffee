@@ -54,7 +54,7 @@ class DscView extends Backbone.Marionette.View
     ndsc.set 'name', destname
     ndsc.set 'title', @model.get 'title'
     ndsc.set 'content', @model.get 'content'
-    collection = AppChannel.request 'ebdsc-collection'
+    collection = AppChannel.request 'db:ebdsc:collection'
     collection.add ndsc
     response = ndsc.save()
     response.fail ->
