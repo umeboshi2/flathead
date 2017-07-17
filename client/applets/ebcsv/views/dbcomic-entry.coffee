@@ -3,6 +3,8 @@ Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 Masonry = require 'masonry-layout'
 tc = require 'teacup'
+require 'jquery-ui/ui/widgets/draggable'
+require 'jquery-ui/ui/widgets/droppable'
 
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 { make_field_input
@@ -19,12 +21,40 @@ AppChannel = Backbone.Radio.channel 'ebcsv'
 
 BaseModalView = MainChannel.request 'main:app:BaseModalView'
 
+make_simple_dl = tc.renderable (dt, dd) ->
+  tc.dl '.dl-horizontal', ->
+    tc.dt dt
+    tc.dd dd
+    
+make_entry_buttons = tc.renderable (model) ->
+  btn_style = '.btn.btn-default'
+  tc.span ".info-button#{btn_style}", ->
+    tc.i '.fa.fa-info', 'Info'
+    
+dtFields = ['seriesgroup', 'series', 'issue', 'currentprice',
+  'publisher', 'releasedate', 'quantity']
 
+bstableclasses = [
+  'table'
+  'table-striped'
+  'table-bordered'
+  'table-hover'
+  'table-condensed'
+  ]
+  
+make_comics_row = tc.renderable (model) ->
+  tc.div '.col-sm-8', ->
+    tc.table ".#{bstableclasses.join('.')}", ->
+      for field in dtFields
+        tc.tr ->
+          tc.td -> tc.strong field
+          tc.td model[field]
+      
 ########################################
 class ComicEntryView extends BaseComicEntryView
   templateContext: ->
     context = super
-    context.columnClass = 'col-sm-2'
+    context.columnClass = 'col-sm-5'
     # do something if necessary
     atts = @model.toJSON()
     unless atts?.series
@@ -38,7 +68,30 @@ class ComicEntryView extends BaseComicEntryView
       else
         context.url = 'UNAVAILABLE'
     return context
-    
+
+  template:  tc.renderable (model) ->
+    issue = model.issue
+    if model?.issueext
+      issue = "#{model.issue}#{model.issueext}"
+    # .panel.panel-info
+    tc.div "#{model.entryClasses}.#{model.columnClass}", ->
+      tc.div '.panel-content.media', ->
+        tc.div '.comic-image.media-left.col-sm-3'
+        tc.div '.media-body.panel-body', ->
+          tc.h4 "#{model.series} ##{issue}"
+          make_comics_row model
+          if model.url isnt 'UNAVAILABLE'
+            tc.a '.clz-link',
+            href:"#{model.url}", target:'_blank', 'cloud link'
+          else
+            console.log "MODEL.URL", model.url
+            tc.span ".alert.alert-danger", "URL UNAVAILABLE"
+          make_entry_buttons model
+
+  # don't hide info button
+  mouse_leave_item: (event) ->
+    @ui.info_btn.show()
+          
   show_comic_json: (event) ->
     target = event.target
     if target.tagName is "A"
@@ -52,7 +105,8 @@ class ComicEntryView extends BaseComicEntryView
         MainChannel.request 'show-modal', view
 
   onDomRefresh: ->
-    super
+    @$el.draggable()
+    @$el.droppable()
     url = @model.get 'url'
     if url isnt 'UNAVAILABLE'
       image_src = @model.get 'image_src'
