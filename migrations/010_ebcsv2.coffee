@@ -20,7 +20,8 @@ exports.up = (knex, Promise) ->
       t.date 'releasedate'
       t.text('seriesgroup').defaultTo('UNGROUPED')
       t.text 'series'
-      t.text 'issue'
+      t.integer 'issue'
+      t.text 'issueext'
       t.integer 'quantity'
       t.float('currentprice').defaultTo(0.0)
       t.text('url').defaultTo('UNAVAILABLE')
