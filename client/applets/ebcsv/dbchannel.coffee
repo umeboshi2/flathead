@@ -127,7 +127,7 @@ dbclzcomic = new DbCollection _.extend defaultOptions,
 dbComicColumns = ['id', 'comic_id', 'list_id', 'bpcomicid',
   'bpseriesid', 'rare', 'publisher', 'releasedate',
   'seriesgroup', 'series', 'issue', 'quantity', 'currentprice',
-  'url', 'image_src']
+  'url', 'image_src', 'created_at', 'updated_at']
 
 AppChannel.reply 'dbComicColumns', ->
   dbComicColumns
