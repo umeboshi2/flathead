@@ -13,7 +13,7 @@ HasHeader = require './has-header'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
-AppChannel = Backbone.Radio.channel 'ebcsv'
+AppChannel = Backbone.Radio.channel 'sofi'
 
 default_entry_template = tc.renderable (model) ->
   tc.div "default_entry_template"

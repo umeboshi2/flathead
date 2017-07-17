@@ -17,7 +17,7 @@ BaseComicEntryView = require './base-comic-entry'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
-AppChannel = Backbone.Radio.channel 'ebcsv'
+AppChannel = Backbone.Radio.channel 'sofi'
 
 BaseModalView = MainChannel.request 'main:app:BaseModalView'
 

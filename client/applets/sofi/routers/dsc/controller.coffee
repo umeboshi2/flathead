@@ -8,52 +8,51 @@ ms = require 'ms'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
-AppChannel = Backbone.Radio.channel 'ebcsv'
+AppChannel = Backbone.Radio.channel 'sofi'
 
 defaultColumns = ['id', 'name']
 CrudController = MainChannel.request 'main:app:CrudController'
 
-class CfgController extends CrudController
-  channelName: 'ebcsv'
-  objName: 'config'
-  modelName: 'ebcfg'
+
+class DscController extends CrudController
+  channelName: 'sofi'
+  objName: 'description'
+  modelName: 'ebdsc'
   initialize: (options) ->
-    @applet = MainChannel.request 'main:applet:get-applet', 'ebcsv'
+    @applet = MainChannel.request 'main:applet:get-applet', 'sofi'
     @mainController = @applet.router.controller
     @channel = @getChannel()
-    console.log "@channel", @channel
     
-
   ############################################
-  # ebcsv configs
+  # sofi descriptions
   ############################################
-  list_configs: ->
+  list_descriptions: ->
     require.ensure [], () =>
-      ViewClass = require './cfglist'
+      ViewClass = require './dsclist'
       @listItems ViewClass
     # name the chunk
-    , 'ebcsv-view-list-configs'
+    , 'sofi-view-list-descriptions'
     
-  add_new_config: ->
+  add_new_description: ->
     require.ensure [], () =>
-      { NewFormView } = require './cfgedit'
+      { NewFormView } = require './dscedit'
       @addItem NewFormView
     # name the chunk
-    , 'ebcsv-view-add-cfg'
+    , 'sofi-view-add-dsc'
 
-  view_config: (id) ->
+  view_description: (id) ->
     require.ensure [], () =>
-      ViewClass = require './cfgview'
+      ViewClass = require './dscview'
       @viewItem ViewClass, id
     # name the chunk
-    , 'ebcsv-view-config'
+    , 'sofi-view-description'
     
-  edit_config: (id) ->
+  edit_description: (id) ->
     require.ensure [], () =>
-      { EditFormView } = require './cfgedit'
+      { EditFormView } = require './dscedit'
       @editItem EditFormView, id
     # name the chunk
-    , 'ebcsv-edit-config'
+    , 'sofi-edit-description'
 
-module.exports = CfgController
+module.exports = DscController
 

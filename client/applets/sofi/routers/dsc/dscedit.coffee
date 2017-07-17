@@ -17,7 +17,7 @@ tc = require 'teacup'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
-AppChannel = Backbone.Radio.channel 'ebcsv'
+AppChannel = Backbone.Radio.channel 'sofi'
 
 EditForm = tc.renderable (model) ->
   tc.div '.listview-header', 'Document'
@@ -75,7 +75,7 @@ class BaseFormView extends BootstrapFormView
   onSuccess: (model) ->
     name = @model.get 'name'
     MessageChannel.request 'success', "#{name} saved successfully."
-    navigate_to_url "#ebcsv/dsc/view/#{@model.id}"
+    navigate_to_url "#sofi/dsc/view/#{@model.id}"
     
 class NewFormView extends BaseFormView
   createModel: ->
@@ -87,7 +87,7 @@ class NewFormView extends BaseFormView
     super
     
   onSuccess: (model) ->
-    navigate_to_url "#ebcsv/dsc/view/#{model.id}"
+    navigate_to_url "#sofi/dsc/view/#{model.id}"
     
 
 class EditFormView extends BaseFormView

@@ -11,10 +11,11 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 
 JsonView = require './comicjson'
 HasImageModal = require './has-image-modal'
+BaseComicEntryView = require './base-comic-entry'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
-AppChannel = Backbone.Radio.channel 'ebcsv'
+AppChannel = Backbone.Radio.channel 'sofi'
 
 BaseModalView = MainChannel.request 'main:app:BaseModalView'
 
@@ -36,8 +37,7 @@ class IFrameModalView extends BaseModalView
 ########################################
 class ComicImageView extends Backbone.Marionette.View
   template: tc.renderable (model) ->
-    img = model.image_src.replace '/lg/', '/sm/'
-    img = img.replace 'http://', '//'
+    img = AppChannel.request 'fix-image-url', model.image_src
     tc.img src:img
   ui:
     image: 'img'
@@ -47,43 +47,7 @@ class ComicImageView extends Backbone.Marionette.View
   onDomRefresh: ->
     @trigger 'show:image'
     
-class ComicEntryView extends Backbone.Marionette.View
-  template: tc.renderable (model) ->
-    main = model.mainsection
-    tc.div '.item.listview-list-entry.thumbnail.col-sm-2', ->
-      tc.div '.comic-image', ->
-        tc.i '.fa.fa-spinner.fa-spin'
-        tc.text 'loading'
-      tc.div '.caption', ->
-        tc.span ->
-          tc.i '.info-button.fa.fa-info.fa-pull-left.btn.btn-default.btn-sm'
-          tc.h5 style:"text-overflow: ellipsis;",
-          "#{main.series.displayname} ##{model.issue}"
-        label = main?.title or model?.edition?.displayname
-        label = label or tc.strong 'UNTITLED'
-        tc.a '.clz-link',
-        href:"#{model.links.link.url}", target:'_blank', label
-  ui:
-    info_btn: '.info-button'
-    clz_link: '.clz-link'
-    item: '.item'
-    image: '.comic-image'
-  regions:
-    image: '@ui.image'
-  events:
-    'click @ui.info_btn': 'show_comic_json'
-    'click @ui.clz_link': 'show_comic_page'
-    'mouseenter @ui.item': 'mouse_enter_item'
-    'mouseleave @ui.item': 'mouse_leave_item'
-  # relay show:image event to parent
-  childViewTriggers:
-    'show:image': 'show:image'
-    
-  mouse_enter_item: (event) ->
-    @ui.info_btn.show()
-  mouse_leave_item: (event) ->
-    @ui.info_btn.hide()
-    
+class ComicEntryView extends BaseComicEntryView
   show_comic_json: (event) ->
     target = event.target
     if target.tagName is "A"
@@ -92,24 +56,20 @@ class ComicEntryView extends Backbone.Marionette.View
       model: @model
     MainChannel.request 'show-modal', view
 
-  show_comic_page: (event) ->
-    event.preventDefault()
-    target = event.target
-    if target.tagName is "A"
-      view = new IFrameModalView
-        model: new Backbone.Model src:target.href
-      MainChannel.request 'show-modal', view
-      
   onDomRefresh: ->
-    @ui.info_btn.hide()
+    super
     links = @model.get 'links'
-    url = links.link.url
+    url = links?.link?.url
+    if url
+      @_prepare_show_comic_image url
+
+  _prepare_show_comic_image: (url) ->
     urls = AppChannel.request 'get-comic-image-urls'
     if urls[url]
       model = new Backbone.Model
         image_src: urls[url]
         url: url
-      @_show_comic_image model, false
+      @_show_comic_image model
     else
       @_get_comic_from_db()
     
@@ -126,7 +86,7 @@ class ComicEntryView extends Backbone.Marionette.View
           
   _add_comic_to_db: (url, content) =>
     #console.log "_add_comic_to_db", @model
-    model = AppChannel.request 'new-clzpage'
+    model = AppChannel.request 'db:clzpage:new'
     model.set 'url', url
     cdoc = $.parseHTML content
     links = []
@@ -137,7 +97,7 @@ class ComicEntryView extends Backbone.Marionette.View
       MessageChannel.request 'warning', 'Too many links for this comic.'
     link = links[0]
     model.set 'image_src', link.href
-    collection = AppChannel.request 'clzpage-collection'
+    collection = AppChannel.request 'db:clzpage:collection'
     collection.add model
     response = model.save()
     response.done =>
@@ -148,7 +108,7 @@ class ComicEntryView extends Backbone.Marionette.View
     links = @model.get 'links'
     url = links.link.url
     u = new URL url
-    collection = AppChannel.request 'clzpage-collection'
+    collection = AppChannel.request 'db:clzpage:collection'
     response = collection.fetch
       data:
         where:
@@ -163,7 +123,7 @@ class ComicEntryView extends Backbone.Marionette.View
         @_get_comic_data url, @_add_comic_to_db
       else
         clzpage = collection.models[0]
-        #console.log "we should have a model in the collection"
+        @_set_local_images_url clzpage
         @_show_comic_image clzpage
 
   _set_local_images_url: (clzpage) ->
@@ -171,17 +131,10 @@ class ComicEntryView extends Backbone.Marionette.View
     image_src = clzpage.get 'image_src'
     AppChannel.request 'add-comic-image-url', url, image_src
     
-  _show_comic_image: (clzpage, set_local=true) ->
-    if set_local then @_set_local_images_url clzpage
-    view = new ComicImageView
-      model: clzpage
-    @showChildView 'image', view
-    
   show_comic: ->
     links = @model.get 'links'
     url = links.link.url
-    u = new URL url
-    collection = AppChannel.request 'clzpage-collection'
+    collection = AppChannel.request 'db:clzpage:collection'
     response = collection.fetch
       data:
         where:

@@ -7,7 +7,7 @@ tc = require 'teacup'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
-AppChannel = Backbone.Radio.channel 'ebcsv'
+AppChannel = Backbone.Radio.channel 'sofi'
 
 class ProgressModel extends Backbone.Model
   defaults:
@@ -33,7 +33,7 @@ class ProgressView extends Marionette.View
   
       
 class UploadManager extends Marionette.Object
-  channelName: 'ebcsv'
+  channelName: 'sofi'
   initialize: (options) =>
     @modelName = options.modelName or 'clzcomic'
     @modelId = options.modelId or 'comic_id'

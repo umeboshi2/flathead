@@ -15,49 +15,49 @@ scroll_top_fast = require 'tbirds/util/scroll-top-fast'
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 ResourceChannel = Backbone.Radio.channel 'resources'
-AppChannel = Backbone.Radio.channel 'ebcsv'
+AppChannel = Backbone.Radio.channel 'sofi'
 
 toolbarEntries = [
   {
     id: 'main'
     label: 'Main View'
-    url: '#ebcsv'
+    url: '#sofi'
     icon: '.fa.fa-eye'
   }
   {
     id: 'dbcomics'
     label: 'DbComics'
-    url: '#ebcsv/comics'
+    url: '#sofi/comics'
     icon: '.fa.fa-list'
   }
   {
     id: 'cfglist'
     label: 'Configs'
-    url: '#ebcsv/cfg/list'
+    url: '#sofi/cfg/list'
     icon: '.fa.fa-list'
   }
   {
     id: 'dsclist'
     label: 'Descriptions'
-    url: '#ebcsv/dsc/list'
+    url: '#sofi/dsc/list'
     icon: '.fa.fa-list'
   }
   {
     id: 'uploadxml'
     label: 'Upload CLZ/XML'
-    url: '#ebcsv/xml/upload'
+    url: '#sofi/xml/upload'
     icon: '.fa.fa-upload'
   }
   {
     id: 'mkcsv'
     label: 'Create CSV'
-    url: '#ebcsv/csv/create'
+    url: '#sofi/csv/create'
     icon: '.fa.fa-cubes'
   }
   {
     id: 'cached'
     label: 'Cached Images'
-    url: '#ebcsv/clzpage'
+    url: '#sofi/clzpage'
     icon: '.fa.fa-image'
   }
   ]
@@ -68,7 +68,7 @@ AppChannel.reply 'get-toolbar-entries', ->
 
 button_style = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
 
-class EbCsvToolbar extends ToolbarView
+class SofiToolbar extends ToolbarView
   options:
     entryTemplate: tc.renderable (model) ->
       opts =
@@ -78,5 +78,5 @@ class EbCsvToolbar extends ToolbarView
         tc.text " "
         tc.text model.label
 
-module.exports = EbCsvToolbar
+module.exports = SofiToolbar
 

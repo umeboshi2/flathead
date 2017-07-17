@@ -8,8 +8,7 @@ marked = require 'marked'
 capitalize = require 'tbirds/util/capitalize'
 
 MessageChannel = Backbone.Radio.channel 'messages'
-AppChannel = Backbone.Radio.channel 'ebcsv'
-
+AppChannel = Backbone.Radio.channel 'sofi'
 
 XmlParser = new xml.Parser
   explicitArray: false
@@ -32,14 +31,6 @@ AppChannel.reply 'set-comics', (comics) ->
 AppChannel.reply 'get-comics', ->
   CurrentCollection
 
-DbCollection = new XmlComicCollection
-AppChannel.reply 'set-all-comics', (comics) ->
-  DbCollection.set comics
-
-AppChannel.reply 'get-all-comics', ->
-  DbCollection
-  
-
 AppChannel.reply 'parse-all-comics-xml', (content, cb) ->
   XmlParser.parseString content, (err, json) ->
     comics = json.comicinfo.comiclist.comic
@@ -49,7 +40,7 @@ AppChannel.reply 'parse-all-comics-xml', (content, cb) ->
     if not comics?.length
       console.warn "Single comic!"
       comics = [comics]
-    AppChannel.request 'set-all-comics', forsale
+    AppChannel.request 'set-comics', comics
     cb()
     
 AppChannel.reply 'parse-comics-xml', (content, cb) ->

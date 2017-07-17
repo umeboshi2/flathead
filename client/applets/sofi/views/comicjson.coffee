@@ -6,17 +6,16 @@ JView = require 'json-view'
 require 'json-view/devtools.css'
 marked = require 'marked'
 
+IsEscapeModal = require 'tbirds/behaviors/is-escape-modal'
 { modal_close_button } = require 'tbirds/templates/buttons'
 
-# FIXME
-IsEscapeModal = require '../../../is-escape-modal'
-
 MainChannel = Backbone.Radio.channel 'global'
-AppChannel = Backbone.Radio.channel 'ebcsv'
+AppChannel = Backbone.Radio.channel 'sofi'
 
 class JsonView extends Backbone.Marionette.View
   behaviors: [IsEscapeModal]
   template: tc.renderable (model) ->
+    model = model?.content or model
     main = model.mainsection
     tc.div '.modal-dialog', ->
       tc.div '.modal-content', ->
@@ -49,7 +48,12 @@ class JsonView extends Backbone.Marionette.View
   onDomRefresh: ->
     console.log 'onDomRefresh->jsonview'
     @expanded_view = false
-    @json_view = new JView @model.toJSON()
+    if @model.has 'content'
+      content = @model.get 'content'
+    else
+      content = @model.toJSON()
+    console.log "CONTENT", content
+    @json_view = new JView content
     @ui.body.prepend @json_view.dom
 
   #onBeforeDestroy: ->

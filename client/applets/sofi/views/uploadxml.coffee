@@ -10,7 +10,7 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
-AppChannel = Backbone.Radio.channel 'ebcsv'
+AppChannel = Backbone.Radio.channel 'sofi'
 
 ########################################
 dropzone_template = tc.renderable (model) ->
@@ -19,6 +19,10 @@ dropzone_template = tc.renderable (model) ->
       tc.div '.panel.panel-default', ->
         tc.div '.panel-heading', 'Drop an xml file.'
         tc.div '.panel-body', ->
+          tc.label '.checkbox-inline', ->
+            #tc.input '.forsale-cbox.checkbox', type:'checkbox', checked:''
+            tc.input '.forsale-cbox.checkbox', type:'checkbox',
+            tc.text "Select only comics for sale."
           tc.div '.parse-btn.btn.btn-default', style:'display:none', ->
             tc.text 'Parse Dropped File'
           tc.input '.xml-file-input.input', type:'file'
@@ -31,6 +35,7 @@ class DropZoneView extends Backbone.Marionette.View
   template: dropzone_template
   droppedFile: null
   ui:
+    forsale_cbox: '.forsale-cbox'
     status_msg: '.panel-heading'
     file_input: '.xml-file-input'
     parse_btn: '.parse-btn'
@@ -78,7 +83,7 @@ class DropZoneView extends Backbone.Marionette.View
     @ui.status_msg.text "Parse Successful"
     if __DEV__
       window.comics = AppChannel.request 'get-comics'
-    navigate_to_url "#ebcsv"
+    navigate_to_url "#sofi"
 
   parse_chosen_xml: ->
     @ui.status_msg.text "Reading xml file..."
@@ -95,8 +100,12 @@ class DropZoneView extends Backbone.Marionette.View
   xmlReaderOnLoad: (event) =>
     content = event.target.result
     @ui.status_msg.text 'Parsing xml.....'
-    AppChannel.request 'parse-comics-xml', content, @successfulParse
-    
+    console.log 'hello there', @ui.forsale_cbox
+    if @ui.forsale_cbox.is ':checked'
+      AppChannel.request 'parse-comics-xml', content, @successfulParse
+    else
+      AppChannel.request 'parse-all-comics-xml', content, @successfulParse
+      
   parse_xml: ->
     @ui.status_msg.text "Reading xml file..."
     #console.log "PARSE #{@droppedFile.name}"

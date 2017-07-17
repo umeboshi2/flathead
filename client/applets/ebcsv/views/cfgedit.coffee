@@ -105,10 +105,10 @@ class NewFormView extends BaseFormDataView
   form_data: csvfields_form_data
   
   createModel: ->
-    AppChannel.request 'db:ebcfg:new'
+    AppChannel.request 'new-ebcfg'
 
   saveModel: ->
-    collection = AppChannel.request 'db:ebcfg:collection'
+    collection = AppChannel.request 'ebcfg-collection'
     collection.add @model
     super
     
