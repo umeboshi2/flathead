@@ -8,6 +8,7 @@ dateFormat = require 'dateformat'
 
 DbComicEntry = require './dbcomic-entry'
 HasHeader = require './has-header'
+SeriesGroupSelect = require './dbcomics-sidebar-seriesgroup'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
@@ -18,9 +19,6 @@ default_entry_template = tc.renderable (model) ->
 
 dbComicColumns = AppChannel.request 'dbComicColumns'
 defaultComicSort = ['seriesgroup', 'series', 'issue']
-
-currentQueryWhere = {}
-
 
 sortbyInput = tc.renderable (sortColumn) ->
   tc.span '.input-group', ->
@@ -58,12 +56,12 @@ class CollectionStatusSelect extends Marionette.View
   selectionChanged: (event) ->
     collectionStatus = @ui.collectionStatus.val()
     comicCollection = @getOption 'comicCollection'
-    where = currentQueryWhere
+    where = AppChannel.request 'locals:get', 'currentQueryWhere'
     if collectionStatus is 'ALL'
       delete where.list_id
     else
       where.list_id = collectionStatus
-    currentQueryWhere = where
+    AppChannel.request 'locals:set', 'currentQueryWhere', where
     response = comicCollection.fetch
       data:
         where: where
@@ -89,47 +87,9 @@ class SortBySelect extends Marionette.View
     @collection.state.currentPage = 0
     response = @collection.fetch
       data:
-        where: currentQueryWhere
+        where: AppChannel.request 'locals:get', 'currentQueryWhere'
     response.done =>
       @collection.trigger 'pageable:state:change'
-    #response.done =>
-    #  @collection.getFirstPage()
-
-class SeriesGroupSelect extends Marionette.View
-  ui:
-    seriesgroup: 'select[name="select_seriesgroup"]'
-  events:
-    'change @ui.seriesgroup': 'selectionChanged'
-  templateContext: ->
-    collection: @collection
-  template: tc.renderable (model) ->
-    tc.span '.input-group', ->
-      tc.label '.control-label', for:'select_seriesgroup',
-      'Series Group'
-      tc.select '.form-control', name:'select_seriesgroup', ->
-        tc.option value:'ALL', selected:'', 'Every Series Group'
-        for item in model.items
-          opts =
-            value: item.seriesgroup
-          tc.option opts, item.seriesgroup
-  selectionChanged: (event) ->
-    seriesgroup = @ui.seriesgroup.val()
-    comicCollection = @getOption 'comicCollection'
-    where = currentQueryWhere
-    if seriesgroup is 'ALL'
-      delete where.seriesgroup
-    else
-      where.seriesgroup = seriesgroup
-    currentQueryWhere = where
-    comicCollection.state.currentPage = 0
-    response = comicCollection.fetch
-      data:
-        where: where
-    response.done ->
-      comicCollection.state.currentPage = 0
-      comicCollection.trigger 'pageable:state:change'
-      
-ClzComicCollection = AppChannel.request 'db:clzcomic:collectionClass'
 
 AuthCollection = MainChannel.request 'main:app:AuthCollection'
 apiroot = "/api/dev/bapi"
@@ -154,7 +114,6 @@ class WorkspaceDrop extends Marionette.View
     'drop': 'handle_drop'
   templateContext: ->
     collection: @collection
-  #template: tc.renderable (model) ->
   template: tc.renderable (model) ->
     tc.div 'workspace'
     
@@ -245,7 +204,6 @@ class DbComicsSidebar extends Marionette.View
       @get_another_page command
 
   keydownHandler: (event_object) =>
-    #console.log 'keydownHandler ' + event_object
     for key, value of @keycommands
       if event_object.keyCode == value
         @handle_key_command key
@@ -260,10 +218,9 @@ class DbComicsSidebar extends Marionette.View
       icon.removeClass 'fa-arrow-down'
       icon.addClass 'fa-arrow-up'
       @collection.state.sortDirection = 'asc'
-    console.log "toggle_sort_direction", @collection
     response = @collection.fetch
       data:
-        where: currentQueryWhere
+        where: AppChannel.request 'locals:get', 'currentQueryWhere'
     response.done =>
       @collection.trigger 'pageable:state:change'
     
@@ -277,8 +234,6 @@ class DbComicsSidebar extends Marionette.View
       @showChildView 'collectionStatusFilterBox', view
     #sgcollClass = AppChannel.request 'db:clzcomic:collectionClass'
     sgcoll = new SeriesGroupCollection
-    window.sgcoll = sgcoll
-    console.log 'sgcoll', sgcoll
     response = sgcoll.fetch
       data:
         #columns: ['id', 'seriesgroup']
@@ -306,17 +261,19 @@ class DbComicsSidebar extends Marionette.View
 
   get_another_page: (direction) ->
     # we need to add the where clause
-    where = currentQueryWhere
+    where = AppChannel.request 'locals:get', 'currentQueryWhere'
     @collection.queryParams.where = where
     currentPage = @collection.state.currentPage
     onLastPage = currentPage is @collection.state.lastPage
+    response = undefined
     if direction is 'prev' and currentPage
       response = @collection.getPreviousPage()
     else if direction is 'next' and not onLastPage
       response = @collection.getNextPage()
-    response.done =>
-      # remove the where clause when done
-      delete @collection.queryParams.where
+    if response
+      response.done =>
+        # remove the where clause when done
+        delete @collection.queryParams.where
     
   get_prev_page: () ->
     @get_another_page 'prev'
