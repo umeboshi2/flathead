@@ -95,7 +95,90 @@ class SortBySelect extends Marionette.View
     #response.done =>
     #  @collection.getFirstPage()
 
+class SeriesGroupSelect extends Marionette.View
+  ui:
+    seriesgroup: 'select[name="select_seriesgroup"]'
+  events:
+    'change @ui.seriesgroup': 'selectionChanged'
+  templateContext: ->
+    collection: @collection
+  template: tc.renderable (model) ->
+    tc.span '.input-group', ->
+      tc.label '.control-label', for:'select_seriesgroup',
+      'Series Group'
+      tc.select '.form-control', name:'select_seriesgroup', ->
+        tc.option value:'ALL', selected:'', 'Every Series Group'
+        for item in model.items
+          opts =
+            value: item.seriesgroup
+          tc.option opts, item.seriesgroup
+  selectionChanged: (event) ->
+    seriesgroup = @ui.seriesgroup.val()
+    comicCollection = @getOption 'comicCollection'
+    where = currentQueryWhere
+    if seriesgroup is 'ALL'
+      delete where.seriesgroup
+    else
+      where.seriesgroup = seriesgroup
+    currentQueryWhere = where
+    comicCollection.state.currentPage = 0
+    response = comicCollection.fetch
+      data:
+        where: where
+    response.done ->
+      comicCollection.state.currentPage = 0
+      comicCollection.trigger 'pageable:state:change'
+      
+ClzComicCollection = AppChannel.request 'db:clzcomic:collectionClass'
+
+AuthCollection = MainChannel.request 'main:app:AuthCollection'
+apiroot = "/api/dev/bapi"
+class SeriesGroupCollection extends AuthCollection
+  url: "#{apiroot}/ebclzcomic"
+  model: AppChannel.request 'db:clzcomic:modelClass'
+  state:
+    firstPage: 0
+    pageSize: 100
+    sortColumn: ['seriesgroup']
+    sortDirection: 'asc'
+  queryParams: ->
+    qp = super
+    console.log 'queryParams', qp
+    qp
+  
+  
+class WorkspaceDrop extends Marionette.View
+  events:
+    'dragover': 'handle_dragOver'
+    'dragenter': 'handle_dragEnter'
+    'drop': 'handle_drop'
+  templateContext: ->
+    collection: @collection
+  #template: tc.renderable (model) ->
+  template: tc.renderable (model) ->
+    tc.div 'workspace'
     
+  handle_drop: (event) ->
+    event.preventDefault()
+    @$el.css 'border', '0px'
+    console.log "event", event
+    dt = event.originalEvent.dataTransfer
+    console.log 'dt', dt
+    #file = dt.files[0]
+    #console.log 'file is', file
+    #@ui.status_msg.text "File: #{file.name}"
+    #@droppedFile = file
+    #@ui.parse_btn.show()
+    
+  handle_dragOver: (event) ->
+    event.preventDefault()
+    event.stopPropagation()
+    
+  handle_dragEnter: (event) ->
+    event.stopPropagation()
+    event.preventDefault()
+    @$el.css 'border', '2px dotted'
+
 class DbComicsSidebar extends Marionette.View
   ui:
     prev_li: '.previous'
@@ -106,9 +189,13 @@ class DbComicsSidebar extends Marionette.View
     next_button: '.next-page-button'
     sortByBox: '.sort-by-box'
     collectionStatusFilterBox: '.collection-status-filter-box'
+    seriesgroupFilterBox: '.seriesgroup-filter-box'
+    workspaceDrop: '.workspace-drop'
   regions:
     sortByBox: '@ui.sortByBox'
     collectionStatusFilterBox: '@ui.collectionStatusFilterBox'
+    seriesgroupFilterBox: '@ui.seriesgroupFilterBox'
+    workspaceDrop: '@ui.workspaceDrop'
   templateContext: ->
     collection: @collection
   template: tc.renderable (model) ->
@@ -128,6 +215,10 @@ class DbComicsSidebar extends Marionette.View
           tc.i '.fa.fa-arrow-right'
     tc.div '.sort-by-box.listview-list-entry'
     tc.div '.collection-status-filter-box.listview-list-entry'
+    tc.div '.seriesgroup-filter-box.listview-list-entry'
+    tc.div '.workspace-drop.listview-list-entry',
+    style:'min-height: calc(100% - 50px);'
+    
   events:
     'click @ui.prev_button': 'get_prev_page'
     'click @ui.dir_button': 'toggle_sort_direction'
@@ -184,9 +275,26 @@ class DbComicsSidebar extends Marionette.View
         collection: selections
         comicCollection: @collection
       @showChildView 'collectionStatusFilterBox', view
-    view = new SortBySelect
+    #sgcollClass = AppChannel.request 'db:clzcomic:collectionClass'
+    sgcoll = new SeriesGroupCollection
+    window.sgcoll = sgcoll
+    console.log 'sgcoll', sgcoll
+    response = sgcoll.fetch
+      data:
+        #columns: ['id', 'seriesgroup']
+        distinct: 'seriesgroup'
+    response.done =>
+      sgview = new SeriesGroupSelect
+        collection: sgcoll
+        comicCollection: @collection
+      @showChildView 'seriesgroupFilterBox', sgview
+    sortbyview = new SortBySelect
       collection: @collection
-    @showChildView 'sortByBox', view
+    @showChildView 'sortByBox', sortbyview
+    wsview = new WorkspaceDrop
+    @showChildView 'workspaceDrop', wsview
+    #@ui.workspaceDrop.css 'height', 'calc(100% - 50px)'
+    @ui.workspaceDrop.css 'height', '300px'
     @update_nav_buttons()
     @collection.on 'pageable:state:change', =>
       @update_nav_buttons()
@@ -195,14 +303,21 @@ class DbComicsSidebar extends Marionette.View
   onBeforeDestroy: ->
     @collection.off 'pageable:state:change'
     $('html').unbind 'keydown', @keydownHandler
-    
+
   get_another_page: (direction) ->
+    # we need to add the where clause
+    where = currentQueryWhere
+    @collection.queryParams.where = where
     currentPage = @collection.state.currentPage
     onLastPage = currentPage is @collection.state.lastPage
     if direction is 'prev' and currentPage
-      @collection.getPreviousPage()
+      response = @collection.getPreviousPage()
     else if direction is 'next' and not onLastPage
-      @collection.getNextPage()
+      response = @collection.getNextPage()
+    response.done =>
+      # remove the where clause when done
+      delete @collection.queryParams.where
+    
   get_prev_page: () ->
     @get_another_page 'prev'
   get_next_page: () ->
