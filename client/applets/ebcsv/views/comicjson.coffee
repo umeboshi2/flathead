@@ -9,7 +9,7 @@ marked = require 'marked'
 { modal_close_button } = require 'tbirds/templates/buttons'
 
 # FIXME
-IsEscapeModal = require '../../../is-escape-modal'
+IsEscapeModal = require 'tbirds/behaviors/is-escape-modal'
 
 MainChannel = Backbone.Radio.channel 'global'
 AppChannel = Backbone.Radio.channel 'ebcsv'

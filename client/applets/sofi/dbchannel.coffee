@@ -9,8 +9,8 @@ AuthModel = MainChannel.request 'main:app:AuthModel'
 AuthCollection = MainChannel.request 'main:app:AuthCollection'
 
 apiroot = "/api/dev/bapi"
-cfg_apipath = "#{apiroot}/soficfg"
-dsc_apipath = "#{apiroot}/sofidsc"
+cfg_apipath = "#{apiroot}/ebcsvcfg"
+dsc_apipath = "#{apiroot}/ebcsvdsc"
 
 defaultOptions =
   channelName: 'sofi'

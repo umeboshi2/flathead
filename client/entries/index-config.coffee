@@ -21,6 +21,11 @@ misc_menu =
       url: '#frontdoor/themes'
     }
     {
+      label: 'Sofi'
+      url: '#sofi'
+      needUser: true
+    }
+    {
       label: 'Ebcsv'
       url: '#ebcsv'
       needUser: true

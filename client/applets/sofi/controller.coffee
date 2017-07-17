@@ -135,7 +135,7 @@ class Controller extends MainController
     
   main_view: ->
     @setup_layout_if_needed()
-    if __DEV__
+    if __DEV__ and false
       comics = AppChannel.request 'get-comics'
       if not comics.length
         xml_url = '/assets/dev/comics.xml'
@@ -151,6 +151,8 @@ class Controller extends MainController
           @navigate_to_url '#sofi/xml/upload'
       else
         @_show_main_view()
+    else
+      @_show_main_view()
       
   dbcomics_main: ->
     @setup_layout_if_needed()
