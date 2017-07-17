@@ -40,12 +40,7 @@ button_style = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
 
 defaultColumns = ['id', 'name']
 
-# get all except content
-dbComicColumns = ['id', 'comic_id', 'list_id', 'bpcomicid',
-  'bpseriesid', 'rare', 'publisher', 'releasedate',
-  'seriesgroup', 'series', 'issue', 'quantity', 'currentprice',
-  'url', 'image_src']
-
+dbComicColumns = AppChannel.request 'dbComicColumns'
 
 class EbCsvToolbar extends ToolbarView
   options:

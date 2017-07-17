@@ -123,6 +123,16 @@ dbclzcomic = new DbCollection _.extend defaultOptions,
   modelClass: ClzComic
   collectionClass: ClzComicCollection
 
+# get all except content
+dbComicColumns = ['id', 'comic_id', 'list_id', 'bpcomicid',
+  'bpseriesid', 'rare', 'publisher', 'releasedate',
+  'seriesgroup', 'series', 'issue', 'quantity', 'currentprice',
+  'url', 'image_src']
+
+AppChannel.reply 'dbComicColumns', ->
+  dbComicColumns
+  
+
 AppletLocals = {}
 AppChannel.reply 'locals:get', (name) ->
   AppletLocals[name]
