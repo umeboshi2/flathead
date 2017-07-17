@@ -170,7 +170,9 @@ AppChannel.reply 'locals:set', (name, value) ->
   AppletLocals[name] = value
 AppChannel.reply 'locals:delete', (name) ->
   delete AppletLocals[name]
-  
+
+AppChannel.request 'locals:set', 'currentQueryWhere', {}
+
   
 module.exports =
   EbConfigCollection: EbConfigCollection
