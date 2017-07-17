@@ -78,7 +78,7 @@
     "soap-everywhere": "^1.0.7",
     "stats-webpack-plugin": "^0.6.0",
     "style-loader": "^0.18.2",
-    "tbirds": "^0.3.15",
+    "tbirds": "^0.3.19",
     "url-loader": "^0.5.9",
     "webpack": "^2.6.1",
     "webpack-dev-middleware": "^1.10.2",
@@ -87,6 +87,7 @@
     "xml2js-parseonly": "github:umeboshi2/node-xml2js"
   },
   "dependencies": {
+    "asyncawait": "^1.0.6",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.2",
@@ -120,7 +121,7 @@
     "request": "^2.81.0",
     "serve-favicon": "^2.4.3",
     "sqlite3": "^3.1.8",
-    "teacup": "^2.0.0",
+    "teacup": "github:umeboshi2/teacup#aria-states-props",
     "underscore": "^1.8.3",
     "yamljs": "^0.3.0"
   }
