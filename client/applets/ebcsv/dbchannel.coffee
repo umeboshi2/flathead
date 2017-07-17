@@ -107,31 +107,61 @@ dbclzpage = new DbCollection _.extend defaultOptions,
   modelClass: ClzPage
   collectionClass: ClzPageCollection
   
+# get all except content
+dbComicColumns = ['id', 'comic_id', 'list_id', 'bpcomicid',
+  'bpseriesid', 'rare', 'publisher', 'releasedate',
+  'seriesgroup', 'series', 'issue', 'issueext', 'quantity',
+  'currentprice', 'url', 'image_src', 'created_at', 'updated_at']
+
+AppChannel.reply 'dbComicColumns', ->
+  dbComicColumns
+  
 class ClzComic extends AuthModel
   urlRoot: "#{apiroot}/ebclzcomic"
   parse: (response, options) ->
     if typeof(response.content) is 'string'
       response.content = JSON.parse response.content
     super response, options
-
+  fetch: (options) ->
+    # FIXME this is messy, do we need to go through this
+    # trouble?  We hardly ever set fetch options on a
+    # single model.
+    options = options or {}
+    options.data = options.data or {}
+    if not options.data?.withRelated
+      options.data.withRelated = ['collectionStatus']
+    super options
+  save: (attrs, options) ->
+    if @has 'collectionStatus'
+      @unset 'collectionStatus'
+    super attrs, options
+    
 class ClzComicCollection extends AuthCollection
   url: "#{apiroot}/ebclzcomic"
   model: ClzComic
-
+  fetch: (options) ->
+    options = options or {}
+    options.data = options.data or {}
+    if not options.data?.withRelated
+      options.data.withRelated = ['collectionStatus']
+    super
+    
 dbclzcomic = new DbCollection _.extend defaultOptions,
   modelName: 'clzcomic'
   modelClass: ClzComic
   collectionClass: ClzComicCollection
 
-# get all except content
-dbComicColumns = ['id', 'comic_id', 'list_id', 'bpcomicid',
-  'bpseriesid', 'rare', 'publisher', 'releasedate',
-  'seriesgroup', 'series', 'issue', 'quantity', 'currentprice',
-  'url', 'image_src', 'created_at', 'updated_at']
+class ClzCollectionStatus extends AuthModel
+  urlRoot: "#{apiroot}/clzcollectionstatus"
 
-AppChannel.reply 'dbComicColumns', ->
-  dbComicColumns
+class ClzCollectionStatusCollection extends AuthCollection
+  url: "#{apiroot}/clzcollectionstatus"
+  model: ClzCollectionStatus
   
+dbclzcomic = new DbCollection _.extend defaultOptions,
+  modelName: 'clzcollectionstatus'
+  modelClass: ClzCollectionStatus
+  collectionClass: ClzCollectionStatusCollection
 
 AppletLocals = {}
 AppChannel.reply 'locals:get', (name) ->
