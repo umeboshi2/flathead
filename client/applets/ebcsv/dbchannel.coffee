@@ -132,37 +132,6 @@ AppChannel.reply 'locals:delete', (name) ->
   delete AppletLocals[name]
   
   
-
-current_csv_action = undefined
-AppChannel.reply 'set-current-csv-action', (action) ->
-  #current_csv_action = action
-  console.warn "deprecated"
-  AppChannel.request 'locals:set', 'currentCsvAction', action
-AppChannel.reply 'get-current-csv-action', ->
-  #current_csv_action
-  console.warn "deprecated"
-  AppChannel.request 'locals:get', 'currentCsvAction'
-  
-current_csv_cfg = undefined
-AppChannel.reply 'set-current-csv-cfg', (cfg) ->
-  #current_csv_cfg = cfg
-  console.warn "deprecated"
-  AppChannel.request 'locals:set', 'currentCsvCfg', cfg
-AppChannel.reply 'get-current-csv-cfg', ->
-  #current_csv_cfg
-  console.warn "deprecated"
-  AppChannel.request 'locals:get', 'currentCsvCfg'
-  
-current_csv_dsc = undefined
-AppChannel.reply 'set-current-csv-dsc', (dsc) ->
-  #current_csv_dsc = dsc
-  console.warn "deprecated"
-  AppChannel.request 'locals:set', 'currentCsvDsc', dsc
-AppChannel.reply 'get-current-csv-dsc', ->
-  #current_csv_dsc
-  console.warn "deprecated"
-  AppChannel.request 'locals:get', 'currentCsvDsc'
-
 module.exports =
   EbConfigCollection: EbConfigCollection
   EbDescCollection: EbDescCollection

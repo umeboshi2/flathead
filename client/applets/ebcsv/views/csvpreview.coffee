@@ -197,8 +197,8 @@ class CsvMainView extends Backbone.Marionette.View
 class ComicsView extends Backbone.Marionette.View
   templateContext: ->
     options = @options
-    options.ebcfg_collection = AppChannel.request 'ebcfg-collection'
-    options.ebdsc_collection = AppChannel.request 'ebdsc-collection'
+    options.ebcfg_collection = AppChannel.request 'db:ebcfg:collection'
+    options.ebdsc_collection = AppChannel.request 'db:ebdsc:collection'
     options
   regions:
     body: '.body'
@@ -239,9 +239,9 @@ class ComicsView extends Backbone.Marionette.View
     MainChannel.request 'export-to-file', options
     
   createCsvRows: ->
-    action = AppChannel.request 'get-current-csv-action'
-    cfg = AppChannel.request 'get-current-csv-cfg'
-    dsc = AppChannel.request 'get-current-csv-dsc'
+    action = AppChannel.request 'locals:get', 'currentCsvAction'
+    cfg = AppChannel.request 'locals:get', 'currentCsvCfg'
+    dsc = AppChannel.request 'locals:get', 'currentCsvDsc'
     rows = []
     for comic in @collection.toJSON()
       options =
@@ -264,9 +264,7 @@ class ComicsView extends Backbone.Marionette.View
     view = new CsvMainView
       collection: csvrows
     @showChildView 'body', view
-    
-      
-    
+
 module.exports = ComicsView
 
 
