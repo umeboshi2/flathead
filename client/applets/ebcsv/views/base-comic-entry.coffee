@@ -3,6 +3,7 @@ Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 Masonry = require 'masonry-layout'
 tc = require 'teacup'
+#require 'jquery-ui/ui/widgets/draggable'
 
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 { make_field_input
@@ -73,6 +74,9 @@ class BaseComicEntryView extends Marionette.View
       context.series = atts.mainsection.series.displayname
     unless atts?.issue
       context.issue = atts.issue
+    unless atts?.issueext
+      if atts?.issueext
+        context.issueext = atts.issueext
     unless atts?.url
       url = atts?.links?.link?.url
       if url
@@ -86,6 +90,9 @@ class BaseComicEntryView extends Marionette.View
   mouse_leave_item: (event) ->
     @ui.info_btn.hide()
   template: tc.renderable (model) ->
+    issue = model.issue
+    if model?.issueext
+      issue = "#{model.issue}#{model.issueext}"
     tc.div "#{model.entryClasses}.#{model.columnClass}", ->
       tc.div ".comic-image", ->
         tc.i ".fa.fa-spinner.fa-spin"
@@ -94,7 +101,7 @@ class BaseComicEntryView extends Marionette.View
         tc.span ->
           tc.i ".info-button#{model.infoButtonClasses}"
           tc.h5 style:"text-overflow: ellipsis;",
-          "#{model.series} ##{model.issue}"
+          "#{model.series} ##{issue}"
         if model.url isnt 'UNAVAILABLE'
           tc.a '.clz-link',
           href:"#{model.url}", target:'_blank', 'cloud link'
@@ -104,7 +111,8 @@ class BaseComicEntryView extends Marionette.View
           
   onDomRefresh: ->
     @ui.info_btn.hide()
-
+    #@$el.draggable()
+    
   show_comic_page: (event) ->
     event.preventDefault()
     target = event.target

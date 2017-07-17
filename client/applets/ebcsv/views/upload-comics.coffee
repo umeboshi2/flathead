@@ -136,13 +136,22 @@ class UploadView extends Marionette.View
       releasedate: comic.releasedate.date
       seriesgroup: comic.seriesgroup.displayname
       series: comic.mainsection.series.displayname
-      issue: comic.issue
       quantity: comic.quantity
       currentprice: comic.currentpricefloat
       content: comic
     url = comic?.links?.link?.url
     if url
       attributes.url = url
+    issue = comic.issue
+    if comic.issueext
+      attributes.issueext = comic.issueext
+      issue = comic.issue
+      if not issue.endsWith comic.issueext
+        console.warn "THIS IS BAD", issue, comic.issueext
+      else
+        console.log "THIS IS GOOD", issue, comic.issueext
+        issue = issue.split(comic.issueext)[0]
+    attributes.issue = issue
     return attributes
     
   createComicDbItem: (comic) ->
