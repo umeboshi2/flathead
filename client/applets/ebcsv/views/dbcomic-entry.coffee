@@ -47,29 +47,17 @@ class ComicEntryView extends BaseComicEntryView
       Model = AppChannel.request "db:clzcomic:modelClass"
       response = @model.fetch()
       response.done =>
-        console.log "FETCHED COMIC", @model
-        #view = new JsonView
-        #  model: new Model @model.get('content')
         view = new JsonView
           model: @model
         MainChannel.request 'show-modal', view
 
-  show_comic_page: (event) ->
-    event.preventDefault()
-    target = event.target
-    if target.tagName is "A"
-      view = new IFrameModalView
-        model: new Backbone.Model src:target.href
-      MainChannel.request 'show-modal', view
-      
   onDomRefresh: ->
-    @ui.info_btn.hide()
+    super
     url = @model.get 'url'
     if url isnt 'UNAVAILABLE'
       image_src = @model.get 'image_src'
       if image_src is 'UNSET' or image_src is undefined
-        console.log "_get_image_src"
-        @_get_comic_from_db()
+        @_get_comic_data url, @_scrapeAndSetImageSrc
       else
         model = new Backbone.Model
           image_src: image_src
@@ -95,10 +83,7 @@ class ComicEntryView extends BaseComicEntryView
     xhr.fail ->
       MessageChannel.request 'warning', "Couldn't get the info"
           
-  _add_comic_to_db: (url, content) =>
-    #console.log "_add_comic_to_db", @model
-    #model = AppChannel.request 'db:clzpage:new'
-    #model.set 'url', url
+  _scrapeAndSetImageSrc: (url, content) =>
     cdoc = $.parseHTML content
     links = []
     for e in cdoc
@@ -113,12 +98,6 @@ class ComicEntryView extends BaseComicEntryView
       @_show_comic_image @model
       
     
-  _get_comic_from_db: ->
-    console.log "_get_comic_from_db:MODEL", @model
-    url = @model.get 'url'
-    @_get_comic_data url, @_add_comic_to_db
-
-
   _show_unavailable_image: ->
     view = new Marionette.View
       template: tc.renderable ->
@@ -129,23 +108,8 @@ class ComicEntryView extends BaseComicEntryView
     image_src = @model.get 'image_src'
     console.log "show_comic image_src", image_src
 
-    #if not collection.length
-    #  @_get_comic_data url, @_add_comic_to_db
       
 
-  get_comic_data: (url) ->
-    u = new URL url
-    xhr = Backbone.ajax
-      type: 'GET'
-      dataType: 'html'
-      url: "/clzcore#{u.pathname}"
-    xhr.done =>
-      view = new Backbone.Marionette.View
-        template: xhr.responseText
-      @showChildView 'info', view
-    xhr.fail ->
-      MessageChannel.request 'warning', "Couldn't get the info"
-  
 module.exports = ComicEntryView
 
 
