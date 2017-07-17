@@ -1,4 +1,5 @@
 $ = require 'jquery'
+_ = require 'underscore'
 Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 tc = require 'teacup'
@@ -38,6 +39,13 @@ class ToolbarAppletLayout extends Backbone.Marionette.View
 button_style = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
 
 defaultColumns = ['id', 'name']
+
+# get all except content
+dbComicColumns = ['id', 'comic_id', 'list_id', 'bpcomicid',
+  'bpseriesid', 'rare', 'publisher', 'releasedate',
+  'seriesgroup', 'series', 'issue', 'quantity', 'currentprice',
+  'url', 'image_src']
+
 
 class EbCsvToolbar extends ToolbarView
   options:
@@ -104,12 +112,17 @@ class Controller extends MainController
     options =
       data:
         columns: defaultColumns
+    # FIXME find out why PageableCollection.fetch
+    # mutates the options object
+    # https://github.com/backbone-paginator/backbone.paginator/issues/347
+    dscopts = _.clone options
     cfgs.fetch(options).then =>
-      dscs.fetch(options).then =>
+      dscs.fetch(dscopts).then =>
         @_need_comics_view @_show_create_csv_view
     
   preview_csv: ->
     @setup_layout_if_needed()
+    console.log "preview_csv"
     cfg = AppChannel.request 'locals:get', 'currentCsvCfg'
     dsc = AppChannel.request 'locals:get', 'currentCsvDsc'
     hlist = AppChannel.request 'get-superheroes-model'
@@ -117,23 +130,51 @@ class Controller extends MainController
       @navigate_to_url '#ebcsv'
       return
     else
-      cfg.fetch().then =>
+      console.log "fetching cfg", cfg
+      cfg.fetch().then (foo) =>
+        console.log 'dsc is', dsc
+        console.log "foo is", foo
         dsc.fetch().then =>
           hlist.fetch().then =>
             @_need_comics_view @_show_preview_csv_view
     
   main_view: ->
     @setup_layout_if_needed()
-    @_show_main_view()
-
+    if __DEV__
+      comics = AppChannel.request 'get-comics'
+      if not comics.length
+        xml_url = '/assets/dev/comics.xml'
+        xhr = Backbone.ajax
+          type: 'GET'
+          dataType: 'text'
+          url: xml_url
+        xhr.done =>
+          content = xhr.responseText
+          AppChannel.request 'parse-comics-xml', content, (err, json) =>
+            @_show_main_view()
+        xhr.fail =>
+          @navigate_to_url '#ebcsv/xml/upload'
+      else
+        @_show_main_view()
+      
   dbcomics_main: ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      comics = AppChannel.request 'get-comics'
-      View = require './views/mainview'
-      view = new View
-        collection: comics
-      @layout.showChildView 'content', view
+      collection = AppChannel.request "db:clzcomic:collection"
+      if __DEV__
+        window.dbcomics = collection
+      collection.state.sortColumn = ['seriesgroup', 'series', 'issue']
+      response = collection.fetch
+        data:
+          columns: dbComicColumns
+      response.done =>
+        #collection._check_state()
+        View = require './views/dbcomicsview'
+        view = new View
+          collection: collection
+        @layout.showChildView 'content', view
+      response.fail ->
+        MessageChannel.request 'danger', "Failed to get comics."
     # name the chunk
     , 'ebcsv:views:mainview'
 
