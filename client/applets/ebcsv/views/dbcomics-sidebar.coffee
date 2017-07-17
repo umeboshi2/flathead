@@ -19,6 +19,9 @@ default_entry_template = tc.renderable (model) ->
 dbComicColumns = AppChannel.request 'dbComicColumns'
 defaultComicSort = ['seriesgroup', 'series', 'issue']
 
+currentQueryWhere = {}
+
+
 sortbyInput = tc.renderable (sortColumn) ->
   tc.span '.input-group', ->
     tc.label '.control-label', for:'select_sortby', 'Sort by'
@@ -34,38 +37,101 @@ sortbyInput = tc.renderable (sortColumn) ->
         if sortColumn is col
           opts.selected = ''
         tc.option opts, col
-            
+
+class CollectionStatusSelect extends Marionette.View
+  ui:
+    collectionStatus: 'select[name="select_collectionstatus"]'
+  events:
+    'change @ui.collectionStatus': 'selectionChanged'
+  templateContext: ->
+    collection: @collection
+  template: tc.renderable (model) ->
+    tc.span '.input-group', ->
+      tc.label '.control-label', for:'select_collectionstatus',
+      'Collection Status'
+      tc.select '.form-control', name:'select_collectionstatus', ->
+        tc.option value:'ALL', selected:'', 'All Status'
+        for item in model.items
+          opts =
+            value: item.id
+          tc.option opts, item.name
+  selectionChanged: (event) ->
+    collectionStatus = @ui.collectionStatus.val()
+    comicCollection = @getOption 'comicCollection'
+    where = currentQueryWhere
+    if collectionStatus is 'ALL'
+      delete where.list_id
+    else
+      where.list_id = collectionStatus
+    currentQueryWhere = where
+    response = comicCollection.fetch
+      data:
+        where: where
+    response.done ->
+      comicCollection.state.currentPage = 0
+      comicCollection.trigger 'pageable:state:change'
+      
+class SortBySelect extends Marionette.View
+  ui:
+    sort_by: 'select[name="select_sortby"]'
+  events:
+    'change @ui.sort_by': 'sort_collection'
+  templateContext: ->
+    collection: @collection
+  template: tc.renderable (model) ->
+    sortColumn = model.collection.state.sortColumn
+    sortbyInput sortColumn
+  sort_collection: ->
+    sort = @ui.sort_by.val()
+    if sort is 'default'
+      sort = defaultComicSort
+    @collection.state.sortColumn = sort
+    @collection.state.currentPage = 0
+    response = @collection.fetch
+      data:
+        where: currentQueryWhere
+    response.done =>
+      @collection.trigger 'pageable:state:change'
+    #response.done =>
+    #  @collection.getFirstPage()
+
+    
 class DbComicsSidebar extends Marionette.View
   ui:
     prev_li: '.previous'
     next_li: '.next'
     prev_button: '.prev-page-button'
+    dir_button: '.direction-button'
+    dir_icon: '.direction-icon'
     next_button: '.next-page-button'
-    sort_by: 'select[name="select_sortby"]'
-    forsale_cbox: '.forsale-cbox'
+    sortByBox: '.sort-by-box'
+    collectionStatusFilterBox: '.collection-status-filter-box'
+  regions:
+    sortByBox: '@ui.sortByBox'
+    collectionStatusFilterBox: '@ui.collectionStatusFilterBox'
   templateContext: ->
     collection: @collection
   template: tc.renderable (model) ->
     sortColumn = model.collection.state.sortColumn
-    tc.ul '.pager', ->
+    tc.ul '.pager.listview-list-entry', ->
       tc.li '.previous', ->
-        tc.span '.prev-page-button.btn.btn-default', ->
+        # just .btn changes cursor to pointer
+        tc.span '.prev-page-button.btn', ->
           tc.i '.fa.fa-arrow-left'
           tc.text '-previous'
+      tc.li '.direction', ->
+        tc.span '.direction-button.btn', ->
+          tc.i '.direction-icon.fa.fa-arrow-up'
       tc.li '.next', ->
-        tc.span '.next-page-button.btn.btn-default', ->
+        tc.span '.next-page-button.btn', ->
           tc.text 'next-'
           tc.i '.fa.fa-arrow-right'
-    sortbyInput sortColumn
-    tc.div '.checkbox', ->
-      tc.label ->
-        tc.input '.forsale-cbox.checkbox', type:'checkbox'
-        tc.text  "only for sale."
+    tc.div '.sort-by-box.listview-list-entry'
+    tc.div '.collection-status-filter-box.listview-list-entry'
   events:
     'click @ui.prev_button': 'get_prev_page'
+    'click @ui.dir_button': 'toggle_sort_direction'
     'click @ui.next_button': 'get_next_page'
-    'change @ui.sort_by': 'sort_collection'
-    'change @ui.forsale_cbox': 'forsale_changed'
   update_nav_buttons: ->
     currentPage = @collection.state.currentPage
     if currentPage
@@ -76,38 +142,9 @@ class DbComicsSidebar extends Marionette.View
       @ui.next_li.show()
     else
       @ui.next_li.hide()
-    totalPages = @collection.state.totalPages
-    totalRecords = @collection.state.totalRecords
-    
-  sort_collection: ->
-    sort = @ui.sort_by.val()
-    console.log "sort collection", sort
-    if sort is 'default'
-      sort = defaultComicSort
-    state =
-      sortColumn: sort
-      currentPage: 0
-    @collection.state.sortColumn = sort
-    @collection.state.currentPage = 0
-    #response = @collection.fetch()
-    #response.done =>
-    @collection.getFirstPage()
-
-  forsale_changed: (event) ->
-    console.log "forsale_changed", event.target
-    console.log "forsale_changed val", @ui.forsale_cbox
-    window.cbox = @ui.forsale_cbox
-    if @ui.forsale_cbox.is ':checked'
-      response = @collection.fetch
-        data:
-          where:
-            list_id: 4
-      response.done =>
-        @collection.getFirstPage()
-    else
-      response = @collection.fetch()
-      response.done =>
-        @collection.getFirstPage()
+    if @collection.state.totalRecords is 0
+      @ui.prev_li.hide()
+      @ui.next_li.hide()
   keycommands:
     prev: 37
     next: 39
@@ -122,9 +159,34 @@ class DbComicsSidebar extends Marionette.View
       if event_object.keyCode == value
         @handle_key_command key
 
-
-
+  toggle_sort_direction: (event) ->
+    icon = @ui.dir_icon
+    if icon.hasClass 'fa-arrow-up'
+      icon.removeClass 'fa-arrow-up'
+      icon.addClass 'fa-arrow-down'
+      @collection.state.sortDirection = 'desc'
+    else
+      icon.removeClass 'fa-arrow-down'
+      icon.addClass 'fa-arrow-up'
+      @collection.state.sortDirection = 'asc'
+    console.log "toggle_sort_direction", @collection
+    response = @collection.fetch
+      data:
+        where: currentQueryWhere
+    response.done =>
+      @collection.trigger 'pageable:state:change'
+    
   onRender: ->
+    selections = AppChannel.request 'db:clzcollectionstatus:collection'
+    response = selections.fetch()
+    response.done =>
+      view = new CollectionStatusSelect
+        collection: selections
+        comicCollection: @collection
+      @showChildView 'collectionStatusFilterBox', view
+    view = new SortBySelect
+      collection: @collection
+    @showChildView 'sortByBox', view
     @update_nav_buttons()
     @collection.on 'pageable:state:change', =>
       @update_nav_buttons()
