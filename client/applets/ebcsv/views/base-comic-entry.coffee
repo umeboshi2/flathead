@@ -3,7 +3,6 @@ Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 Masonry = require 'masonry-layout'
 tc = require 'teacup'
-#require 'jquery-ui/ui/widgets/draggable'
 
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 { make_field_input
@@ -38,7 +37,7 @@ class IFrameModalView extends BaseModalView
 class ComicImageView extends Backbone.Marionette.View
   template: tc.renderable (model) ->
     img = AppChannel.request 'fix-image-url', model.image_src
-    tc.img src:img
+    tc.img '.thumb.media-object', src:img
   ui:
     image: 'img'
   triggers:
@@ -111,7 +110,6 @@ class BaseComicEntryView extends Marionette.View
           
   onDomRefresh: ->
     @ui.info_btn.hide()
-    #@$el.draggable()
     
   show_comic_page: (event) ->
     event.preventDefault()
