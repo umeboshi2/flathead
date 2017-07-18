@@ -32,14 +32,14 @@ make_entry_buttons = tc.renderable (model) ->
     tc.i '.fa.fa-info', 'Info'
     
 dtFields = ['seriesgroup', 'series', 'issue', 'currentprice',
-  'publisher', 'releasedate', 'quantity']
+  'publisher', 'ReleaseDate', 'quantity']
 
 bstableclasses = [
   'table'
   'table-striped'
   'table-bordered'
   'table-hover'
-  'table-condensed'
+  #'table-condensed'
   ]
   
 make_comics_row = tc.renderable (model) ->
@@ -69,25 +69,20 @@ class ComicEntryView extends BaseComicEntryView
         context.url = 'UNAVAILABLE'
     return context
 
-  template:  tc.renderable (model) ->
+  template: tc.renderable (model) ->
     issue = model.issue
     if model?.issueext
       issue = "#{model.issue}#{model.issueext}"
     # .panel.panel-info
     tc.div "#{model.entryClasses}.#{model.columnClass}", ->
-      tc.div '.panel-content.media', ->
-        tc.div '.comic-image.media-left.col-sm-3'
-        tc.div '.media-body.panel-body', ->
-          tc.h4 "#{model.series} ##{issue}"
-          make_comics_row model
-          if model.url isnt 'UNAVAILABLE'
-            tc.a '.clz-link',
-            href:"#{model.url}", target:'_blank', 'cloud link'
-          else
-            console.log "MODEL.URL", model.url
-            tc.span ".alert.alert-danger", "URL UNAVAILABLE"
+      tc.p '.text-center', -> tc.strong "#{model.series} ##{issue}"
+      tc.div '.row', ->
+        tc.div '.col-sm-2', ->
+          tc.div '.comic-image.thumb'
           make_entry_buttons model
-
+        tc.div '.col-sm-3.col-sm-offset-1', ->
+          make_comics_row model
+      
   # don't hide info button
   mouse_leave_item: (event) ->
     @ui.info_btn.show()
@@ -150,12 +145,12 @@ class ComicEntryView extends BaseComicEntryView
     response = @model.save()
     response.done =>
       @_show_comic_image @model
-      
     
   _show_unavailable_image: ->
     view = new Marionette.View
       template: tc.renderable ->
-        tc.i '.fa.fa-exclamation-triangle'
+        tc.i '.fa.fa-exclamation-triangle.fa-4x',
+        style:"width:74px;height:115px;"
     @showChildView 'image', view
     
   show_comic: ->

@@ -92,7 +92,8 @@ class ComicsView extends Marionette.View
       tc.text "DbComics"
     tc.div '.row', ->
       tc.div '.sidebar.col-sm-4', style:'height: calc(100% - 50px);'
-      tc.div '.body.col-sm-7.col-sm-offset-1'
+      #tc.div '.body.col-sm-7.col-sm-offset-1'
+      tc.div '.body.col-sm-8'
   ui:
     body: '.body'
     sidebar: '.sidebar'
