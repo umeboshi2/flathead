@@ -5,6 +5,8 @@ Marionette = require 'backbone.marionette'
 Masonry = require 'masonry-layout'
 tc = require 'teacup'
 
+parseReleaseDate = require '../ebutils/parse-releasedate'
+
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'sofi'
@@ -17,16 +19,18 @@ class ProgressModel extends Backbone.Model
 
 class ProgressView extends Marionette.View
   template: tc.renderable (model) ->
-    tc.div '.progress.listview-list-entry', ->
+    tc.div '.progress', ->
       aria =
         valuemin: model.valuemin
         valuemax: model.valuemax
         valuenow: model.valuenow
       width = Math.floor model.valuenow / model.valuemax * 100 + 0.5
-      tc.div '.progress-bar.progress-bar-striped.progress-bar-info',
+      tc.div '.progress-bar.progress-bar-striped',
       #role:'progressbar', aria: aria,
       role:'progressbar',
-      style:"width: #{width}%"
+      style:"width: #{width}%", ->
+        tc.span style:"color:black;",
+        "#{model.valuenow} of #{model.valuemax}."
   modelEvents:
     'change': 'render'
     
@@ -113,17 +117,16 @@ class UploadView extends Marionette.View
     @uploadModel = new ProgressModel
     view = new ProgressView
       model: @uploadModel
-    window.upmodel = @uploadModel
     @showChildView 'uploadProgress', view
 
   showCreateProgressBar: ->
     @createModel = new ProgressModel
     view = new ProgressView
       model: @createModel
-    window.crmodel = @createModel
     @showChildView 'createProgress', view
 
   _createAttributes: (comic) ->
+    #console.log "COMIC", comic
     attributes =
       comic_id: comic.id
       index: comic.index
@@ -132,9 +135,9 @@ class UploadView extends Marionette.View
       bpseriesid: comic.bpseriesid
       # FIXME
       rare: false
-      publisher: comic.publisher.displayname
-      releasedate: comic.releasedate.date
-      seriesgroup: comic.seriesgroup.displayname
+      publisher: comic?.publisher?.displayname
+      releasedate: parseReleaseDate comic.releasedate.date
+      seriesgroup: comic?.seriesgroup?.displayname or 'UNGROUPED'
       series: comic.mainsection.series.displayname
       quantity: comic.quantity
       currentprice: comic.currentpricefloat
@@ -161,7 +164,8 @@ class UploadView extends Marionette.View
     if @currentItems.length != @comics.length
       setTimeout =>
         @createAnotherItem()
-      , 10
+      , 5
+      #@createAnotherItem()
     else
       console.log "FINISHED CREATING"
       @uploadItems()
@@ -199,8 +203,12 @@ class UploadView extends Marionette.View
   onRender: ->
     @showCreateProgressBar()
     @showUploadProgressBar()
-    @createItems()
-    
+
+  onDomRefresh: ->
+    console.log "onDomRefresh UploadView"
+    setTimeout =>
+      @createItems()
+    , 10
 module.exports = UploadView
 
 

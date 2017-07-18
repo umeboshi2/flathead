@@ -1,5 +1,6 @@
 _ = require 'underscore'
 Backbone = require 'backbone'
+moment = require 'moment'
 DbCollection = require 'tbirds/dbcollection'
 
 MainChannel = Backbone.Radio.channel 'global'
@@ -94,11 +95,16 @@ dbdsc = new DbCollection _.extend defaultOptions,
 class ClzPage extends AuthModel
   urlRoot: "#{apiroot}/ebclzpage"
   parse: (response, options) ->
+    console.warn "ClzPage is deprecated"
     if typeof(response.clzdata) is 'string'
       response.clzdata = JSON.parse response.clzdata
     super response, options
 
 class ClzPageCollection extends AuthCollection
+  fetch: (options) ->
+    console.warn "ClzPageCollection is deprecated"
+    super options
+    
   url: "#{apiroot}/ebclzpage"
   model: ClzPage
 
@@ -121,6 +127,9 @@ class ClzComic extends AuthModel
   parse: (response, options) ->
     if typeof(response.content) is 'string'
       response.content = JSON.parse response.content
+    if typeof(response.releasedate) is 'string'
+      m = moment(response.releasedate)
+      response.ReleaseDate = m.format('ddd MMM DD, YYYY')
     super response, options
   fetch: (options) ->
     # FIXME this is messy, do we need to go through this
@@ -163,6 +172,18 @@ dbclzcomic = new DbCollection _.extend defaultOptions,
   modelClass: ClzCollectionStatus
   collectionClass: ClzCollectionStatusCollection
 
+class WorkspaceComic extends AuthModel
+  urlRoot: "#{apiroot}/ebcomicworkspace"
+
+class WorkspaceComics extends AuthCollection
+  url: "#{apiroot}/ebcomicworkspace"
+  model: WorkspaceComic
+
+dbwscomic = new DbCollection _.extend defaultOptions,
+  modelName: 'ebcomicworkspace'
+  modelClass: WorkspaceComic
+  collectionClass: WorkspaceComics
+  
 AppletLocals = {}
 AppChannel.reply 'locals:get', (name) ->
   AppletLocals[name]
