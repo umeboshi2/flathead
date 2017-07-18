@@ -81,8 +81,8 @@ app.on 'before:start', ->
   MainChannel.request 'main:app:switch-theme', theme
 
 app.on 'start', ->
-  show_footer()
-  setInterval show_footer, ms '5s'
+  #show_footer()
+  #setInterval show_footer, ms '5s'
   setInterval keep_token_fresh, ms '10s'
   
   
