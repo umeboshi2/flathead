@@ -85,9 +85,6 @@ class ComicEntryView extends BaseComicEntryView
       MessageChannel.request 'warning', "Couldn't get the info"
           
   _add_comic_to_db: (url, content) =>
-    #console.log "_add_comic_to_db", @model
-    model = AppChannel.request 'db:clzpage:new'
-    model.set 'url', url
     cdoc = $.parseHTML content
     links = []
     for e in cdoc
@@ -96,19 +93,19 @@ class ComicEntryView extends BaseComicEntryView
     if links.length > 1
       MessageChannel.request 'warning', 'Too many links for this comic.'
     link = links[0]
-    model.set 'image_src', link.href
-    collection = AppChannel.request 'db:clzpage:collection'
-    collection.add model
-    response = model.save()
-    response.done =>
-      @_show_comic_image model
+    image_src = link.href
+    AppChannel.request 'add-comic-image-url', url, image_src
+    model = new Backbone.Model
+      url: url
+      image_src: image_src
+    @_show_comic_image model
       
     
   _get_comic_from_db: ->
     links = @model.get 'links'
     url = links.link.url
     u = new URL url
-    collection = AppChannel.request 'db:clzpage:collection'
+    collection = AppChannel.request 'db:clzcomic:collection'
     response = collection.fetch
       data:
         where:
@@ -122,9 +119,10 @@ class ComicEntryView extends BaseComicEntryView
       if not collection.length
         @_get_comic_data url, @_add_comic_to_db
       else
-        clzpage = collection.models[0]
-        @_set_local_images_url clzpage
-        @_show_comic_image clzpage
+        model = collection.models[0]
+        @_show_comic_image model
+
+
 
   _set_local_images_url: (clzpage) ->
     url = clzpage.get 'url'
@@ -134,7 +132,7 @@ class ComicEntryView extends BaseComicEntryView
   show_comic: ->
     links = @model.get 'links'
     url = links.link.url
-    collection = AppChannel.request 'db:clzpage:collection'
+    collection = AppChannel.request 'db:clzcomic:collection'
     response = collection.fetch
       data:
         where:
