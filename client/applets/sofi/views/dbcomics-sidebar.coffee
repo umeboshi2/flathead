@@ -9,6 +9,7 @@ dateFormat = require 'dateformat'
 DbComicEntry = require './dbcomic-entry'
 HasHeader = require './has-header'
 SeriesGroupSelect = require './dbcomics-sidebar-seriesgroup'
+PublisherSelect = require './dbcomics-sidebar-publisher'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
@@ -98,14 +99,20 @@ class SeriesGroupCollection extends AuthCollection
   model: AppChannel.request 'db:clzcomic:modelClass'
   state:
     firstPage: 0
-    pageSize: 100
-    sortColumn: ['seriesgroup']
+    # FIXME
+    pageSize: 10000
+    sortColumn: 'seriesgroup'
     sortDirection: 'asc'
-  queryParams: ->
-    qp = super
-    console.log 'queryParams', qp
-    qp
   
+class PublisherCollection extends AuthCollection
+  url: "#{apiroot}/ebclzcomic"
+  model: AppChannel.request 'db:clzcomic:modelClass'
+  state:
+    firstPage: 0
+    # FIXME
+    pageSize: 10000
+    sortColumn: 'publisher'
+    sortDirection: 'asc'
   
 class WorkspaceDrop extends Marionette.View
   events:
@@ -123,11 +130,6 @@ class WorkspaceDrop extends Marionette.View
     console.log "event", event
     dt = event.originalEvent.dataTransfer
     console.log 'dt', dt
-    #file = dt.files[0]
-    #console.log 'file is', file
-    #@ui.status_msg.text "File: #{file.name}"
-    #@droppedFile = file
-    #@ui.parse_btn.show()
     
   handle_dragOver: (event) ->
     event.preventDefault()
@@ -148,12 +150,14 @@ class DbComicsSidebar extends Marionette.View
     next_button: '.next-page-button'
     sortByBox: '.sort-by-box'
     collectionStatusFilterBox: '.collection-status-filter-box'
+    publisherFilterBox: '.publisher-filter-box'
     seriesgroupFilterBox: '.seriesgroup-filter-box'
     workspaceDrop: '.workspace-drop'
   regions:
     sortByBox: '@ui.sortByBox'
     collectionStatusFilterBox: '@ui.collectionStatusFilterBox'
     seriesgroupFilterBox: '@ui.seriesgroupFilterBox'
+    publisherFilterBox: '@ui.publisherFilterBox'
     workspaceDrop: '@ui.workspaceDrop'
   templateContext: ->
     collection: @collection
@@ -174,9 +178,9 @@ class DbComicsSidebar extends Marionette.View
           tc.i '.fa.fa-arrow-right'
     tc.div '.sort-by-box.listview-list-entry'
     tc.div '.collection-status-filter-box.listview-list-entry'
+    tc.div '.publisher-filter-box.listview-list-entry'
     tc.div '.seriesgroup-filter-box.listview-list-entry'
-    tc.div '.workspace-drop.listview-list-entry',
-    style:'min-height: calc(100% - 50px);'
+    tc.div '.workspace-drop.listview-list-entry'
     
   events:
     'click @ui.prev_button': 'get_prev_page'
@@ -223,8 +227,8 @@ class DbComicsSidebar extends Marionette.View
         where: AppChannel.request 'locals:get', 'currentQueryWhere'
     response.done =>
       @collection.trigger 'pageable:state:change'
-    
-  onRender: ->
+
+  showCollectionStatus: ->
     selections = AppChannel.request 'db:clzcollectionstatus:collection'
     response = selections.fetch()
     response.done =>
@@ -232,24 +236,45 @@ class DbComicsSidebar extends Marionette.View
         collection: selections
         comicCollection: @collection
       @showChildView 'collectionStatusFilterBox', view
-    #sgcollClass = AppChannel.request 'db:clzcomic:collectionClass'
-    sgcoll = new SeriesGroupCollection
-    response = sgcoll.fetch
+  showSeriesGroupSelect: ->
+    coll = new SeriesGroupCollection
+    response = coll.fetch
       data:
-        #columns: ['id', 'seriesgroup']
         distinct: 'seriesgroup'
+        sort: 'seriesgroup'
     response.done =>
-      sgview = new SeriesGroupSelect
-        collection: sgcoll
+      view = new SeriesGroupSelect
+        collection: coll
         comicCollection: @collection
-      @showChildView 'seriesgroupFilterBox', sgview
+      @showChildView 'seriesgroupFilterBox', view
+      window.sgview = view
+  showPublisherSelect: ->
+    coll = new PublisherCollection
+    response = coll.fetch
+      data:
+        distinct: 'publisher'
+        sort: 'publisher'
+    response.done =>
+      view = new PublisherSelect
+        collection: coll
+        comicCollection: @collection
+      @showChildView 'publisherFilterBox', view
+  showSortBySelect: ->
     sortbyview = new SortBySelect
       collection: @collection
     @showChildView 'sortByBox', sortbyview
+  showWorkspaceBox: ->
     wsview = new WorkspaceDrop
     @showChildView 'workspaceDrop', wsview
-    #@ui.workspaceDrop.css 'height', 'calc(100% - 50px)'
-    @ui.workspaceDrop.css 'height', '300px'
+    
+  onRender: ->
+    # show child views
+    @showCollectionStatus()
+    @showPublisherSelect()
+    @showSeriesGroupSelect()
+    @showSortBySelect()
+    @showWorkspaceBox()
+    # do setup
     @update_nav_buttons()
     @collection.on 'pageable:state:change', =>
       @update_nav_buttons()

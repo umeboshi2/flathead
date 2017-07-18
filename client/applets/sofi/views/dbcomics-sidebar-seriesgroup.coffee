@@ -1,3 +1,4 @@
+_ = require 'underscore'
 $ = require 'jquery'
 Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
@@ -12,6 +13,9 @@ AppChannel = Backbone.Radio.channel 'sofi'
 
 
 class SeriesGroupSelect extends Marionette.View
+  initialize: (options) ->
+    comicCollection = @getOption 'comicCollection'
+    comicCollection.on 'pageable:state:change', @onComicCollectionChanged
   ui:
     seriesgroup: 'select[name="select_seriesgroup"]'
   events:
@@ -44,5 +48,22 @@ class SeriesGroupSelect extends Marionette.View
     response.done ->
       comicCollection.state.currentPage = 0
       comicCollection.trigger 'pageable:state:change'
-      
+  onComicCollectionChanged: (event) =>
+    seriesgroup = @ui.seriesgroup.val()
+    where = AppChannel.request 'locals:get', 'currentQueryWhere'
+    where = _.clone where
+    if where?.seriesgroup
+      delete where.seriesgroup
+    response = @collection.fetch
+      data:
+        distinct: 'seriesgroup'
+        sort: 'seriesgroup'
+        where: where
+    response.done =>
+      @render()
+      @ui.seriesgroup.val seriesgroup
+      if @ui.seriesgroup.val() is null
+        @ui.seriesgroup.val 'ALL'
+        
+    
 module.exports = SeriesGroupSelect
