@@ -68,6 +68,14 @@ class BaseComicEntryView extends Marionette.View
       columnClass: "col-sm-2"
       infoButtonClasses: ".fa.fa-info.fa-pull-left.btn.btn-default.btn-sm"
     # do something if necessary
+    if @model.has 'inDatabase'
+      inDatabase = @model.get 'inDatabase'
+      if inDatabase
+        console.log "MODEL IN DATABASE"
+        context.entryClasses = '.item.alert.alert-success'
+      else
+        context.entryClasses = '.item.alert.alert-danger'
+
     atts = @model.toJSON()
     unless atts?.series
       context.series = atts.mainsection.series.displayname
