@@ -43,6 +43,11 @@ misc_menu =
       url: '#todos'
       needUser: true
     }
+    {
+      label: 'TestUpload'
+      url: '#frontdoor/upload'
+      needUser: true
+    }
   ]
 
 ebcsv_menu =

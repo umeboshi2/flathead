@@ -31,8 +31,15 @@ make_entry_buttons = tc.renderable (model) ->
   tc.span ".info-button#{btn_style}", ->
     tc.i '.fa.fa-info', 'Info'
     
-dtFields = ['seriesgroup', 'series', 'issue', 'currentprice',
-  'publisher', 'ReleaseDate', 'quantity']
+dtFields = [
+  'issue',
+  'currentprice'
+  'ReleaseDate'
+  'publisher'
+  'seriesgroup'
+  'series'
+  'quantity'
+  ]
 
 bstableclasses = [
   'table'

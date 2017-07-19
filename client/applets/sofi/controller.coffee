@@ -135,7 +135,7 @@ class Controller extends MainController
     
   main_view: ->
     @setup_layout_if_needed()
-    if __DEV__ and false
+    if __DEV__ and true
       comics = AppChannel.request 'get-comics'
       if not comics.length
         xml_url = '/assets/dev/comics.xml'

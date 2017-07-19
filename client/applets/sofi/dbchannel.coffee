@@ -121,7 +121,10 @@ dbComicColumns = ['id', 'comic_id', 'list_id', 'bpcomicid',
 
 AppChannel.reply 'dbComicColumns', ->
   dbComicColumns
-  
+
+clzComicRelated = ['collectionStatus', 'photos']
+clzComicExtra = ['ReleaseDate']
+
 class ClzComic extends AuthModel
   urlRoot: "#{apiroot}/ebclzcomic"
   parse: (response, options) ->
@@ -138,11 +141,13 @@ class ClzComic extends AuthModel
     options = options or {}
     options.data = options.data or {}
     if not options.data?.withRelated
-      options.data.withRelated = ['collectionStatus']
+      options.data.withRelated = clzComicRelated
     super options
   save: (attrs, options) ->
-    if @has 'collectionStatus'
-      @unset 'collectionStatus'
+    pruneFields = clzComicRelated.concat clzComicExtra
+    pruneFields.forEach (attribute) =>
+      if @has attribute
+        @unset attribute
     super attrs, options
     
 class ClzComicCollection extends AuthCollection
@@ -152,7 +157,7 @@ class ClzComicCollection extends AuthCollection
     options = options or {}
     options.data = options.data or {}
     if not options.data?.withRelated
-      options.data.withRelated = ['collectionStatus']
+      options.data.withRelated = clzComicRelated
     super
     
 dbclzcomic = new DbCollection _.extend defaultOptions,
