@@ -97,6 +97,7 @@ if BuildEnvironment is 'dev'
     #proxy: proxy
     proxy:
       #'/assets/*': 'http://localhost:8081'
+      '/photos': 'http://localhost:8081'
       '/api/*': 'http://localhost:8081'
       '/auth/*': 'http://localhost:8081'
       '/clzcore/*': 'http://localhost:8081'
