@@ -6,10 +6,10 @@ tc = require 'teacup'
 dateFormat = require 'dateformat'
 #require('editable-table/mindmup-editabletable')
 
-DbComicEntry = require './dbcomic-entry'
-HasHeader = require './has-header'
-SeriesGroupSelect = require './dbcomics-sidebar-seriesgroup'
-PublisherSelect = require './dbcomics-sidebar-publisher'
+DbComicEntry = require '../dbcomic-entry'
+HasHeader = require '../has-header'
+SeriesGroupSelect = require './seriesgroup'
+PublisherSelect = require './publisher'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'

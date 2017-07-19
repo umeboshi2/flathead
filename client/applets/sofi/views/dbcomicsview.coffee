@@ -8,7 +8,7 @@ dateFormat = require 'dateformat'
 require 'jquery-ui/ui/widgets/droppable'
 
 DbComicEntry = require './dbcomic-entry'
-DbComicsSidebar = require './dbcomics-sidebar'
+DbComicsSidebar = require './sidebar'
 HasHeader = require './has-header'
 
 MainChannel = Backbone.Radio.channel 'global'
