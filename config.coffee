@@ -1,13 +1,27 @@
 path = require 'path'
 
-dbfile = path.join __dirname, '/flathead.sqlite'
+project = 'flathead'
+dbfile = path.join __dirname, "#{project}.sqlite"
+pgDev =
+  client: 'pg'
+  connection:
+    host: 'localhost'
+    user: process.env.PGUSER
+    database: project
+  debug: false
+  
+sqliteDev =
+  client: 'sqlite3'
+  connection:
+    filename: dbfile
+  debug: false
+  
+databaseDev = pgDev
+
 #postgresql://$OPENSHIFT_POSTGRESQL_DB_HOST:$OPENSHIFT_POSTGRESQL_DB_PORT
 module.exports =
   development:
-    database:
-      client: 'sqlite3'
-      connection: filename: dbfile
-      debug: false
+    database: databaseDev
     brand: 'Flathead'
     apipath: '/api/dev'
     middleware:
