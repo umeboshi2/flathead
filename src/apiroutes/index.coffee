@@ -3,7 +3,6 @@ jwtAuth = require 'express-jwt'
 
 mpath = path.resolve __dirname, '..', 'models'
 BSapi = require('bookshelf-api')
-  path: mpath
 
 #Promise = require 'bluebird'
 
@@ -21,11 +20,16 @@ setup = (app) ->
   config = app.locals.config
   jwtOptions = config.jwtOptions
   authOpts = secret: jwtOptions.secret
+  bsapi = BSapi
+    models: app.locals.bsmodels
   app.use "#{APIPATH}/bapi", jwtAuth authOpts
-  app.use "#{APIPATH}/bapi", BSapi
+  app.use "#{APIPATH}/bapi", bsapi
 
   app.use "#{APIPATH}/booky", jwtAuth authOpts
   app.use "#{APIPATH}/booky", bookroutes
+
+  app.use "#{APIPATH}/misc", jwtAuth authOpts
+  app.use "#{APIPATH}/misc", misc
   
 module.exports =
   setup: setup

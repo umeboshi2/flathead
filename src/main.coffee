@@ -40,12 +40,11 @@ app.get '/health', (req, res, next) ->
   bookshelf
   models } = require './kmodels'
       
-
-
 app.locals.config = config
 app.locals.knex = knex
 app.locals.bookshelf = bookshelf
 app.locals.models = models
+app.locals.bsmodels = require './bsmodels'
 
 Middleware.setup app
 UserAuth.setup app
