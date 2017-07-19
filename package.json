@@ -78,7 +78,7 @@
     "soap-everywhere": "^1.0.7",
     "stats-webpack-plugin": "^0.6.0",
     "style-loader": "^0.18.2",
-    "tbirds": "^0.3.19",
+    "tbirds": "^0.3.21",
     "url-loader": "^0.5.9",
     "webpack": "^2.6.1",
     "webpack-dev-middleware": "^1.10.2",

@@ -9,7 +9,7 @@ ms = require 'ms'
 moment = require 'moment'
 
 { ProgressModel
-  ProgressView } = require './simple-progress'
+  ProgressView } = require 'tbirds/views/simple-progress'
   
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
