@@ -39,7 +39,7 @@ exports.up = (knex, Promise) ->
       return
     )
     knex.schema.createTable('general_uploads', (table) ->
-      table.integer('id').primary()
+      table.increments('id').primary()
       table.text 'fieldname'
       table.text 'originalname'
       table.text 'encoding'
@@ -52,8 +52,8 @@ exports.up = (knex, Promise) ->
       return
     )
     knex.schema.createTable('comic_photos', (table) ->
-      table.integer('id').primary()
-      table.integer('comic_id').references('comic_id').inTable('ebcsv_clz_comics').unique()
+      table.increments('id').primary()
+      table.integer('comic_id').references('comic_id').inTable('ebcsv_clz_comics')
       table.text 'name'
       table.text 'filename'
       table.text 'encoding'
