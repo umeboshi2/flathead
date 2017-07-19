@@ -1,3 +1,4 @@
+_ = require 'underscore'
 $ = require 'jquery'
 Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
@@ -27,10 +28,16 @@ make_simple_dl = tc.renderable (dt, dd) ->
     tc.dd dd
     
 make_entry_buttons = tc.renderable (model) ->
+  
   btn_style = '.btn.btn-default'
   tc.span ".info-button#{btn_style}", ->
-    tc.i '.fa.fa-info', 'Info'
-    
+    tc.i '.fa.fa-info', ' Info'
+  tc.span ".photos-button#{btn_style}", ->
+    text = ' Photos'
+    if model.photos.length
+      text = " #{model.photos.length} Photos"
+    tc.i '.fa.fa-photo', text
+  
 dtFields = [
   'issue',
   'currentprice'
@@ -59,8 +66,18 @@ make_comics_row = tc.renderable (model) ->
       
 ########################################
 class ComicEntryView extends BaseComicEntryView
+  ui: ->
+    _.extend super,
+      photos_btn: '.photos-button'
+  events: ->
+    _.extend super,
+      'click @ui.photos_btn': 'managePhotos'
+  # relay show:image event to parent
+  childViewTriggers:
+    'show:image': 'show:image'
   templateContext: ->
     context = super
+    #console.warn 'templateContext', context
     context.columnClass = 'col-sm-5'
     # do something if necessary
     atts = @model.toJSON()
@@ -106,6 +123,10 @@ class ComicEntryView extends BaseComicEntryView
           model: @model
         MainChannel.request 'show-modal', view
 
+  managePhotos: ->
+    MessageChannel.request 'warning', 'Manage Photos'
+    comic_id = @model.get 'comic_id'
+    navigate_to_url "#sofi/comics/photos/#{comic_id}"
   onDomRefresh: ->
     @$el.draggable()
     @$el.droppable()

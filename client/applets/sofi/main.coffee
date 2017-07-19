@@ -18,6 +18,8 @@ class Router extends Marionette.AppRouter
     'sofi/comics': 'dbcomics_main'
     'sofi/comics/local': 'view_local_comics'
 
+    'sofi/comics/photos/:comic_id': 'manageComicPhotos'
+
     'sofi/xml/upload': 'upload_xml'
     'sofi/csv/create': 'create_csv'
     'sofi/csv/preview': 'preview_csv'

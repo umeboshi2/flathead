@@ -208,6 +208,27 @@ class Controller extends MainController
       @layout.showChildView 'content', view
     # name the chunk
     , 'sofi-view-cached-comics-view'
+
+  manageComicPhotos: (comic_id) ->
+    @setup_layout_if_needed()
+    require.ensure [], () =>
+      collection = AppChannel.request "db:clzcomic:collection"
+      #model = AppChannel.request "db:clzcomic:get", comic_id
+      #model = AppChannel.request "db:clzcomic:new"
+      if __DEV__
+        window.dbcomcs = collection
+      response = collection.fetch
+        data:
+          where:
+            comic_id: comic_id
+      response.done =>
+        View = require './views/upload-comic-photos'
+        view = new View
+          model: collection.pop()
+        @layout.showChildView 'content', view
+    # name the chunk
+    , 'sofi-manage-comic-photos-view'
+
     
     
 module.exports = Controller

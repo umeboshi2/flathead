@@ -28,9 +28,23 @@ router.get '/all-models', (req, res) ->
   .then ->
     res.json res.locals.models
 
-router.post '/upload/photo', upload.single('comicphoto'), (req, res) ->
+router.post '/upload-photo', upload.single('comicphoto'), (req, res) ->
+  data =
+    comic_id: req.body.comic_id
+    name: req.body.name
+    filename: req.file.filename
+    encoding: req.file.encoding
+    mimetype: req.file.mimetype
+  model = new res.app.locals.bsmodels.comicphoto data
+  model.save()
+  .then (result) ->
+    # successful create gets a 201 status
+    res.status 201
+    # and a location header pointing to new object
+    res.header 'Location', "/fake/path/to/#{result.id}"
+    res.json result
   
-router.post '/upload-photos', upload.array('zathras', 12), (req, res) ->
+router.post '/upload-photos', upload.array('comicphoto', 12), (req, res) ->
   console.log req.file
   model = new res.app.locals.bsmodels.uploads
   #res.app.locals.bsmodels.uploads.bulkCreate req.files
