@@ -47,20 +47,20 @@ class ComicImageView extends Backbone.Marionette.View
     @trigger 'show:image'
 
 class BaseComicEntryView extends Marionette.View
-  ui:
+  ui: ->
     info_btn: '.info-button'
     clz_link: '.clz-link'
     item: '.item'
     image: '.comic-image'
-  regions:
+  regions: ->
     image: '@ui.image'
-  events:
+  events: ->
     'click @ui.info_btn': 'show_comic_json'
     'click @ui.clz_link': 'show_comic_page'
     'mouseenter @ui.item': 'mouse_enter_item'
     'mouseleave @ui.item': 'mouse_leave_item'
   # relay show:image event to parent
-  childViewTriggers:
+  childViewTriggers: ->
     'show:image': 'show:image'
   templateContext: ->
     context =
