@@ -5,7 +5,7 @@ exports.up = (knex, Promise) ->
       t.text('name').unique()
       )
     knex.schema.createTable('ebcsv_clz_comics', (t) ->
-      t.integer('id').primary()
+      t.increments('id').primary()
       t.integer('comic_id').unique()
       # I don't know what this is
       t.integer 'index'
@@ -31,17 +31,34 @@ exports.up = (knex, Promise) ->
       t.timestamps()
       return
     )
-    knex.schema.createTable('ebcsv_comic_data', (t) ->
+    knex.schema.createTable('ebcomics_workspace', (t) ->
       t.increments('id').primary()
-      t.text('name').unique()
-      t.text 'content'
-      # this is usually stock image
-      t.text 'image_src'
-      # parsed xml object
-      t.text 'clzdata'
-      # hosted image
-      t.boolean('stock_image').defaultTo(false)
+      t.integer('comic_id').references('comic_id').inTable('ebcsv_clz_comics').unique()
+      t.text('name')
       t.timestamps()
+      return
+    )
+    knex.schema.createTable('general_uploads', (table) ->
+      table.integer('id').primary()
+      table.text 'fieldname'
+      table.text 'originalname'
+      table.text 'encoding'
+      table.text 'mimetype'
+      table.text 'destination'
+      table.text 'filename'
+      table.text 'path'
+      table.bigint 'size'
+      table.timestamps()
+      return
+    )
+    knex.schema.createTable('comic_photos', (table) ->
+      table.integer('id').primary()
+      table.integer('comic_id').references('comic_id').inTable('ebcsv_clz_comics').unique()
+      table.text 'name'
+      table.text 'filename'
+      table.text 'encoding'
+      table.text 'mimetype'
+      table.timestamps()
       return
     )
   ]
@@ -50,7 +67,10 @@ exports.up = (knex, Promise) ->
 
 exports.down = (knex, Promise) ->
   Promise.all [
-    knex.schema.dropTable 'ebcsv_cl'
-    knex.schema.dropTable 'ebcsv_comic_data'
+    knex.schema.dropTable 'clz_collection_status'
+    knex.schema.dropTable 'ebcsv_clz_comics'
+    knex.schema.dropTable 'ebcomics_workspace'
+    knex.schema.dropTable 'general_uploads'
+    knex.schema.dropTable 'comic_photos'
   ]
 
