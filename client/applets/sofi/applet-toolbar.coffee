@@ -31,6 +31,12 @@ toolbarEntries = [
     icon: '.fa.fa-list'
   }
   {
+    id: 'workspace'
+    label: 'Workspace'
+    url: '#sofi/comics/workspace'
+    icon: '.fa.fa-dashboard'
+  }
+  {
     id: 'cfglist'
     label: 'Configs'
     url: '#sofi/cfg/list'

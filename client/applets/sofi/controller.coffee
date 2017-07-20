@@ -230,5 +230,26 @@ class Controller extends MainController
     , 'sofi-manage-comic-photos-view'
 
     
+  showWorkspaceView: ->
+    @setup_layout_if_needed()
+    require.ensure [], () =>
+      collection = AppChannel.request "db:clzcomic:collection"
+      if __DEV__
+        window.dbcomics = collection
+      collection.state.sortColumn = ['seriesgroup', 'series', 'issue']
+      response = collection.fetch
+        data:
+          columns: dbComicColumns
+      response.done =>
+        #collection._check_state()
+        View = require './views/dbcomicsview'
+        view = new View
+          collection: collection
+        @layout.showChildView 'content', view
+      response.fail ->
+        MessageChannel.request 'danger', "Failed to get comics."
+    # name the chunk
+    , 'sofi:views:mainview'
+
     
 module.exports = Controller
