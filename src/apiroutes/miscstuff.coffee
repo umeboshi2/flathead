@@ -55,4 +55,19 @@ router.post '/upload-photos', upload.array('comicphoto', 12), (req, res) ->
   console.log "FILES", req.files
   res.json result:'something happened'
 
+router.get '/unattached-comics', (req, res) ->
+  knex = res.app.locals.knex
+  wstable = 'ebcomics_workspace'
+  ctable = 'ebcsv_clz_comics'
+  wscomics = knex.table(wstable).select('comic_id')
+  wscomics = knex.select('comic_id').from(wscomics)
+  wscomics = knex.table(wstable).select('comic_id')
+  comics = knex.select('*').from(ctable).whereNotIn('comic_id', wscomics)
+  comics.then (results) ->
+    data =
+      total: results.length
+      items: results
+    res.json data
+  
+
 module.exports = router
