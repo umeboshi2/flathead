@@ -5,6 +5,9 @@ _ = require 'underscore'
 Promise = require 'bluebird'
 express = require 'express'
 
+asyncfun = require 'asyncawait/async'
+awaitfun = require 'asyncawait/await'
+
 router = express.Router()
 
 
@@ -55,17 +58,34 @@ router.post '/upload-photos', upload.array('comicphoto', 12), (req, res) ->
   console.log "FILES", req.files
   res.json result:'something happened'
 
-router.get '/unattached-comics', (req, res) ->
+router.get '/unattached-comics', asyncfun (req, res) ->
   knex = res.app.locals.knex
   wstable = 'ebcomics_workspace'
   ctable = 'ebcsv_clz_comics'
-  wscomics = knex.table(wstable).select('comic_id')
-  wscomics = knex.select('comic_id').from(wscomics)
-  wscomics = knex.table(wstable).select('comic_id')
-  comics = knex.select('*').from(ctable).whereNotIn('comic_id', wscomics)
+  wscomics = knex.select('comic_id').from(wstable)
+  comics = knex.select().from(ctable).whereNotIn('comic_id', wscomics)
+  totalClone = comics.clone()#.groupBy('comic_id')
+  total = awaitfun totalClone.count('comic_id')
+  console.log "total", total
+  if req.query
+    if req.query.sort or req.query.offset
+      direction = req.query.direction or 'ASC'
+      direction = direction.toLowerCase()
+      if Array.isArray req.query.sort
+        orderExpression = []
+        req.query.sort.forEach (col) ->
+          orderExpression.push "#{col} #{direction}"
+        comics = comics.orderByRaw(orderExpression.join(', '))
+      else
+        comics = comics.orderBy(req.query.sort, direction)
+    if req.query.offset
+      comics = comics.offset(req.query.offset)
+    if req.query.limit
+      comics = comics.limit(req.query.limit)
+
   comics.then (results) ->
     data =
-      total: results.length
+      total: total[0].count
       items: results
     res.json data
   
