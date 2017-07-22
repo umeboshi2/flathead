@@ -143,7 +143,7 @@ class ComicEntryView extends BaseComicEntryView
         # FIXME
         # we don't need the "false" when we get the
         # comics from the db
-        @_show_comic_image model, false
+        @showComicImage model, false
     else
       # FIXME use replacement "missing image"
       console.warn "NO IMAGE"
@@ -173,7 +173,7 @@ class ComicEntryView extends BaseComicEntryView
     @model.set 'image_src', link.href
     response = @model.save()
     response.done =>
-      @_show_comic_image @model
+      @showComicImage @model
     
   _show_unavailable_image: ->
     view = new Marionette.View

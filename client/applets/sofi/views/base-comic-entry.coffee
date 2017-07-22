@@ -9,9 +9,6 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
   make_field_select } = require 'tbirds/templates/forms'
 { modal_close_button } = require 'tbirds/templates/buttons'
 
-JsonView = require './comicjson'
-HasImageModal = require './has-image-modal'
-IFrameModalView = require './comic-entry/iframe-modal'
 ComicImageView = require './comic-entry/comic-image'
 BaseEntryView = require './comic-entry/base'
 
@@ -72,10 +69,6 @@ class BaseComicEntryView extends BaseEntryView
           console.log "MODEL.URL", model.url
           tc.span ".alert.alert-danger", "URL UNAVAILABLE"
           
-  _show_comic_image: (clzpage) ->
-    view = new ComicImageView
-      model: clzpage
-    @showChildView 'image', view
     
         
 module.exports = BaseComicEntryView

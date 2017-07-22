@@ -28,7 +28,7 @@ class ComicEntryView extends BaseComicEntryView
       model = new Backbone.Model
         image_src: urls[url]
         url: url
-      @_show_comic_image model
+      @showComicImage model
     else
       @_get_comic_from_db()
     
@@ -57,7 +57,7 @@ class ComicEntryView extends BaseComicEntryView
     model = new Backbone.Model
       url: url
       image_src: image_src
-    @_show_comic_image model
+    @showComicImage model
       
     
   _get_comic_from_db: ->
@@ -79,7 +79,7 @@ class ComicEntryView extends BaseComicEntryView
         @_get_comic_data url, @parseContentShowImage
       else
         model = collection.models[0]
-        @_show_comic_image model
+        @showComicImage model
 
 
 

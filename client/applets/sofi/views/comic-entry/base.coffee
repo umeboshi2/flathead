@@ -43,6 +43,11 @@ class BaseEntryView extends Marionette.View
       model: @model
     MainChannel.request 'show-modal', view
 
+  showComicImage: (clzpage) ->
+    view = new ComicImageView
+      model: clzpage
+    @showChildView 'image', view
+    
 
 
 class BaseComicEntryView extends Marionette.View
