@@ -1,6 +1,7 @@
 Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
 tc = require 'teacup'
+marked = require 'marked'
 
 { navigate_to_url } = require 'tbirds/util/navigate-to-url'
 
@@ -12,7 +13,7 @@ view_template = tc.renderable (model) ->
     tc.br()
     tc.span "Description"
     tc.br()
-    tc.div model.description
+    tc.div -> tc.raw marked model.description
     tc.span ".glyphicon.glyphicon-grain"
     
 class MainView extends Backbone.Marionette.View
