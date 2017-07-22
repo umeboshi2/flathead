@@ -33,7 +33,7 @@ exports.up = (knex, Promise) ->
     )
     knex.schema.createTable('ebcomics_workspace', (t) ->
       t.increments('id').primary()
-      t.integer('comic_id').references('comic_id').inTable('ebcsv_clz_comics').unique()
+      t.integer('comic_id').references('comic_id').inTable('ebcsv_clz_comics').unique() #noqa
       t.text('name')
       t.timestamps()
       return
@@ -53,7 +53,7 @@ exports.up = (knex, Promise) ->
     )
     knex.schema.createTable('comic_photos', (table) ->
       table.increments('id').primary()
-      table.integer('comic_id').references('comic_id').inTable('ebcsv_clz_comics')
+      table.integer('comic_id').references('comic_id').inTable('ebcsv_clz_comics') #noqa
       table.text 'name'
       table.text 'filename'
       table.text 'encoding'
