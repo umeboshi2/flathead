@@ -242,7 +242,7 @@ class Controller extends MainController
           columns: dbComicColumns
       response.done =>
         #collection._check_state()
-        View = require './views/dbcomicsview'
+        View = require './views/wsview'
         view = new View
           collection: collection
         @layout.showChildView 'content', view

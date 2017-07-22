@@ -1,15 +1,14 @@
 $ = require 'jquery'
 Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
-Masonry = require 'masonry-layout'
 tc = require 'teacup'
 dateFormat = require 'dateformat'
-#require('editable-table/mindmup-editabletable')
 
 DbComicEntry = require '../dbcomic-entry'
 HasHeader = require '../has-header'
 SeriesGroupSelect = require './seriesgroup'
 PublisherSelect = require './publisher'
+WorkspaceView = require './workspace'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
@@ -113,33 +112,17 @@ class PublisherCollection extends AuthCollection
     pageSize: 10000
     sortColumn: 'publisher'
     sortDirection: 'asc'
-  
-class WorkspaceDrop extends Marionette.View
-  events:
-    'dragover': 'handle_dragOver'
-    'dragenter': 'handle_dragEnter'
-    'drop': 'handle_drop'
-  templateContext: ->
-    collection: @collection
-  template: tc.renderable (model) ->
-    tc.div 'workspace'
-    
-  handle_drop: (event) ->
-    event.preventDefault()
-    @$el.css 'border', '0px'
-    console.log "event", event
-    dt = event.originalEvent.dataTransfer
-    console.log 'dt', dt
-    
-  handle_dragOver: (event) ->
-    event.preventDefault()
-    event.stopPropagation()
-    
-  handle_dragEnter: (event) ->
-    event.stopPropagation()
-    event.preventDefault()
-    @$el.css 'border', '2px dotted'
 
+class WorkspaceCollection extends AuthCollection
+  url: "#{apiroot}/ebcomicworkspace"
+  model: AppChannel.request 'db:clzcomic:modelClass'
+  state:
+    firstPage: 0
+    # FIXME
+    pageSize: 10000
+    sortColumn: 'name'
+    sortDirection: 'asc'
+    
 class DbComicsSidebar extends Marionette.View
   ui:
     prev_li: '.previous'
@@ -163,6 +146,7 @@ class DbComicsSidebar extends Marionette.View
     collection: @collection
   template: tc.renderable (model) ->
     sortColumn = model.collection.state.sortColumn
+    tc.div '.workspace-drop'
     tc.ul '.pager.listview-list-entry', ->
       tc.li '.previous', ->
         # just .btn changes cursor to pointer
@@ -180,7 +164,6 @@ class DbComicsSidebar extends Marionette.View
     tc.div '.collection-status-filter-box.listview-list-entry'
     tc.div '.publisher-filter-box.listview-list-entry'
     tc.div '.seriesgroup-filter-box.listview-list-entry'
-    tc.div '.workspace-drop.listview-list-entry'
     
   events:
     'click @ui.prev_button': 'get_prev_page'
@@ -248,6 +231,7 @@ class DbComicsSidebar extends Marionette.View
         comicCollection: @collection
       @showChildView 'seriesgroupFilterBox', view
       window.sgview = view
+      
   showPublisherSelect: ->
     coll = new PublisherCollection
     response = coll.fetch
@@ -259,13 +243,28 @@ class DbComicsSidebar extends Marionette.View
         collection: coll
         comicCollection: @collection
       @showChildView 'publisherFilterBox', view
+      
   showSortBySelect: ->
     sortbyview = new SortBySelect
       collection: @collection
     @showChildView 'sortByBox', sortbyview
+    
   showWorkspaceBox: ->
-    wsview = new WorkspaceDrop
-    @showChildView 'workspaceDrop', wsview
+    console.log "In showWorkspaceBox"
+    #collection = AppChannel.request 'db:ebcomicworkspace:collection'
+    collection = new WorkspaceCollection
+    console.log "collection", collection
+    window.wscollection = collection
+    data =
+      distinct: 'name'
+      sort: 'name'
+    window.fdata = data
+    response = collection.fetch data: data
+    console.log "RESPONSE", response
+    response.done =>
+      wsview = new WorkspaceView
+        collection: collection
+      @showChildView 'workspaceDrop', wsview
     
   onRender: ->
     # show child views
@@ -273,7 +272,9 @@ class DbComicsSidebar extends Marionette.View
     @showPublisherSelect()
     @showSeriesGroupSelect()
     @showSortBySelect()
-    @showWorkspaceBox()
+    if @getOption 'workspaceSidebar'
+      console.log "workspaceSidebar!!!!!!!!"
+      @showWorkspaceBox()
     # do setup
     @update_nav_buttons()
     @collection.on 'pageable:state:change', =>

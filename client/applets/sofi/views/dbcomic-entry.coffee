@@ -28,7 +28,6 @@ make_simple_dl = tc.renderable (dt, dd) ->
     tc.dd dd
     
 make_entry_buttons = tc.renderable (model) ->
-  
   btn_style = '.btn.btn-default'
   tc.span ".info-button#{btn_style}", ->
     tc.i '.fa.fa-info', ' Info'
@@ -37,7 +36,11 @@ make_entry_buttons = tc.renderable (model) ->
     if model.photos.length
       text = " #{model.photos.length} Photos"
     tc.i '.fa.fa-photo', text
-  
+  if model.workspaceView
+    tc.span ".workspace-button#{btn_style}", ->
+      text = ' Add'
+      tc.i '.fa.fa-plus-square', style:'text-overflow:ellipsis;', text
+      
 dtFields = [
   'issue',
   'currentprice'
@@ -69,14 +72,17 @@ class ComicEntryView extends BaseComicEntryView
   ui: ->
     _.extend super,
       photos_btn: '.photos-button'
+      workspace_btn: '.workspace-button'
   events: ->
     _.extend super,
       'click @ui.photos_btn': 'managePhotos'
+      'click @ui.workspace_btn': 'addToWorkspace'
   # relay show:image event to parent
   childViewTriggers:
     'show:image': 'show:image'
   templateContext: ->
     context = super
+    context.workspaceView = @getOption 'workspaceView'
     #console.warn 'templateContext', context
     context.columnClass = 'col-sm-5'
     # do something if necessary
@@ -124,9 +130,14 @@ class ComicEntryView extends BaseComicEntryView
         MainChannel.request 'show-modal', view
 
   managePhotos: ->
-    MessageChannel.request 'warning', 'Manage Photos'
     comic_id = @model.get 'comic_id'
     navigate_to_url "#sofi/comics/photos/#{comic_id}"
+
+  addToWorkspace: ->
+    comic_id = @model.get 'comic_id'
+    MessageChannel.request 'warning', "addToWorkspace #{comic_id}"
+    @trigger "workspace:add:comic", comic_id
+    
   onDomRefresh: ->
     @$el.draggable()
     @$el.droppable()

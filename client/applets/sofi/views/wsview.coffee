@@ -40,12 +40,17 @@ sortbyInput = tc.renderable (sortColumn) ->
 
 class DbComicEntryCollectionView extends Marionette.NextCollectionView
   childView: DbComicEntry
+  childViewOptions:
+    workspaceView: true
+  # bubble event up to workspaceView
+  childViewTriggers:
+    'workspace:add:comic': 'workspace:add:comic'
 
 directionLabel =
   asc: 'ascending'
   desc: 'descending'
 
-class DbComicsView extends Marionette.View
+class WorkspaceView extends Marionette.View
   behaviors: [HasHeader]
   ui:
     header: '.listview-header'
@@ -55,6 +60,9 @@ class DbComicsView extends Marionette.View
   template: tc.renderable (model) ->
     tc.div '.listview-header'
     tc.div '.dbcomics-entries.row'
+  # bubble event up to main view
+  childViewTriggers:
+    'workspace:add:comic': 'workspace:add:comic'
     
   updateHeader: ->
     currentPage = @collection.state.currentPage
@@ -83,16 +91,15 @@ class DbComicsView extends Marionette.View
 ############################################
 # Main view
 ############################################
-class ComicsView extends Marionette.View
+class MainView extends Marionette.View
   templateContext: ->
     options = @options
     options
   template: tc.renderable (model) ->
     tc.div '.listview-header', ->
-      tc.text "DbComics"
+      tc.text "Workspace"
     tc.div '.row', ->
       tc.div '.sidebar.col-sm-4', style:'height: calc(100% - 50px);'
-      #tc.div '.body.col-sm-7.col-sm-offset-1'
       tc.div '.body.col-sm-8'
   ui:
     body: '.body'
@@ -100,11 +107,38 @@ class ComicsView extends Marionette.View
   regions:
     body: '@ui.body'
     sidebar: '@ui.sidebar'
+    
+  childViewEvents:
+    'workspace:add:comic': 'onWorkspaceAddComic'
+
+  onWorkspaceAddComic: (comic_id) ->
+    console.log "onWorkspaceAddComic", comic_id
+    sidebar = @getChildView 'sidebar'
+    console.log "SIDEBAR", sidebar
+    workspaceDrop = sidebar.getChildView 'workspaceDrop'
+    workspace = workspaceDrop.ui.name_input.val() or 'current'
+    console.log 'workspaceDrop', workspace
+    MessageChannel.request 'warning', "addToWorkspace #{comic_id} #{workspace}"
+    collection = AppChannel.request 'db:ebcomicworkspace:collection'
+    collection.on 'add', =>
+      MessageChannel.request "warning",
+      "It should have been added to collection."
+      @render()
+      collection.off 'add'
+      
+    data =
+      comic_id: comic_id
+      name: workspace
+    model = collection.create data, wait:true
+    
+
+    
   onRender: ->
     sidebar = new DbComicsSidebar
       collection: @collection
+      workspaceSidebar: true
     @showChildView 'sidebar', sidebar
-    view = new DbComicsView
+    view = new WorkspaceView
       collection: @collection
     @showChildView 'body', view
     #@ui.sidebar.css 'height', 'calc(100% - 50px)'
@@ -114,6 +148,6 @@ class ComicsView extends Marionette.View
     
       
     
-module.exports = ComicsView
+module.exports = MainView
 
 
