@@ -22,7 +22,7 @@ ebcomicworkspace = bookshelf.Model.extend
   tableName: 'ebcomics_workspace'
   hasTimestamps: true
   comic: ->
-    @belongsTo ebclzcomic, 'comic_id'
+    @belongsTo ebclzcomic, 'comic_id', 'comic_id'
 
 ebcsvcfg = bookshelf.Model.extend
   tableName: 'ebcsv_configs'
@@ -46,7 +46,7 @@ comicphoto = bookshelf.Model.extend
   tableName: 'comic_photos'
   hasTimestamps: true
   comic: ->
-    @belongsTo ebclzcomic, 'comic_id'
+    @belongsTo ebclzcomic, 'comic_id', 'comic_id'
   
 yadayada = bookshelf.Model.extend
   tableName: 'flathead_todos'
