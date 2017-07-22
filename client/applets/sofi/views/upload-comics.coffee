@@ -30,12 +30,18 @@ class UploadManager extends Marionette.Object
   insert_item: (item) ->
     if @collection.length
       throw new Error "We cannot insert!!!!"
-    @channel.request "#{@dbPrefix}:add", item
+    response = @channel.request "#{@dbPrefix}:add", item
+    response.fail ->
+      title = "#{item.series} #{item.issue} id:#{item.comic_id}"
+      MessageChannel.request 'danger', "Unable to insert #{title}"
   update_item: (item) ->
     if @collection.length != 1
       throw new Error "Not unique error!!!"
     model = @collection.models[0]
-    @channel.request "#{@dbPrefix}:updatePassed", model, item
+    response = @channel.request "#{@dbPrefix}:updatePassed", model, item
+    response.fail ->
+      title = "#{item.series} #{item.issue} id:#{item.comic_id}"
+      MessageChannel.request 'danger', "Unable to update #{title}"
     
   restore_item: (item) ->
     # reset collection to help check for multiples
@@ -129,8 +135,10 @@ class UploadView extends Marionette.View
       if not issue.endsWith comic.issueext
         console.warn "THIS IS BAD", issue, comic.issueext
       else
-        console.log "THIS IS GOOD", issue, comic.issueext
+        #console.log "THIS IS GOOD", issue, comic.issueext
         issue = issue.split(comic.issueext)[0]
+    if not issue
+      issue = 0
     attributes.issue = issue
     return attributes
     
