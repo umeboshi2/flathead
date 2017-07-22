@@ -12,6 +12,8 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
   make_field_select } = require 'tbirds/templates/forms'
 { modal_close_button } = require 'tbirds/templates/buttons'
 
+JsonView = require './comicjson'
+HasImageModal = require './has-image-modal'
 BaseComicEntryView = require './base-comic-entry'
 
 MainChannel = Backbone.Radio.channel 'global'
@@ -31,7 +33,7 @@ make_entry_buttons = tc.renderable (model) ->
     tc.i '.fa.fa-info', ' Info'
   tc.span ".photos-button#{btn_style}", ->
     text = ' Photos'
-    if model?.photos?.length
+    if model.photos.length
       text = " #{model.photos.length} Photos"
     tc.i '.fa.fa-photo', text
   if model.workspaceView
@@ -115,6 +117,18 @@ class ComicEntryView extends BaseComicEntryView
   mouse_leave_item: (event) ->
     @ui.info_btn.show()
           
+  show_comic_json: (event) ->
+    target = event.target
+    if target.tagName is "A"
+      return
+    else
+      Model = AppChannel.request "db:clzcomic:modelClass"
+      response = @model.fetch()
+      response.done =>
+        view = new JsonView
+          model: @model
+        MainChannel.request 'show-modal', view
+
   managePhotos: ->
     comic_id = @model.get 'comic_id'
     navigate_to_url "#sofi/comics/photos/#{comic_id}"
@@ -123,11 +137,7 @@ class ComicEntryView extends BaseComicEntryView
     comic_id = @model.get 'comic_id'
     MessageChannel.request 'warning', "addToWorkspace #{comic_id}"
     @trigger "workspace:add:comic", comic_id
-
-  showJsonView: ->
-    response = @model.fetch()
-    response.done =>
-      super
+    
   onDomRefresh: ->
     @$el.draggable()
     @$el.droppable()

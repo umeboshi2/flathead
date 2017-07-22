@@ -11,17 +11,57 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 
 JsonView = require './comicjson'
 HasImageModal = require './has-image-modal'
-IFrameModalView = require './comic-entry/iframe-modal'
-ComicImageView = require './comic-entry/comic-image'
-BaseEntryView = require './comic-entry/base'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'sofi'
 
+BaseModalView = MainChannel.request 'main:app:BaseModalView'
+
+class IFrameModalView extends BaseModalView
+  template: tc.renderable (model) ->
+    main = model.mainsection
+    tc.div '.modal-dialog.modal-lg', ->
+      tc.div '.modal-content', ->
+        tc.div '.modal-body', ->
+          src = model.src.replace 'http://', '//'
+          tc.iframe style:"width:97%;height:75vh;", src: src
+        tc.div '.modal-footer', ->
+          tc.ul '.list-inline', ->
+            btnclass = 'btn.btn-default.btn-sm'
+            tc.li "#close-modal", ->
+              modal_close_button 'Close', 'check'
+              
 
 ########################################
-class BaseComicEntryView extends BaseEntryView
+class ComicImageView extends Backbone.Marionette.View
+  template: tc.renderable (model) ->
+    img = AppChannel.request 'fix-image-url', model.image_src
+    tc.img '.thumb.media-object', src:img
+  ui:
+    image: 'img'
+  triggers:
+    'click @ui.image': 'show:image:modal'
+  behaviors: [HasImageModal]
+  onDomRefresh: ->
+    @trigger 'show:image'
+
+class BaseComicEntryView extends Marionette.View
+  ui: ->
+    info_btn: '.info-button'
+    clz_link: '.clz-link'
+    item: '.item'
+    image: '.comic-image'
+  regions: ->
+    image: '@ui.image'
+  events: ->
+    'click @ui.info_btn': 'show_comic_json'
+    'click @ui.clz_link': 'show_comic_page'
+    'mouseenter @ui.item': 'mouse_enter_item'
+    'mouseleave @ui.item': 'mouse_leave_item'
+  # relay show:image event to parent
+  childViewTriggers: ->
+    'show:image': 'show:image'
   templateContext: ->
     context =
       entryClasses: ".item.listview-list-entry.thumbnail"
@@ -52,6 +92,10 @@ class BaseComicEntryView extends BaseEntryView
         context.url = 'UNAVAILABLE'
     return context
     
+  mouse_enter_item: (event) ->
+    @ui.info_btn.show()
+  mouse_leave_item: (event) ->
+    @ui.info_btn.hide()
   template: tc.renderable (model) ->
     issue = model.issue
     if model?.issueext
@@ -72,6 +116,17 @@ class BaseComicEntryView extends BaseEntryView
           console.log "MODEL.URL", model.url
           tc.span ".alert.alert-danger", "URL UNAVAILABLE"
           
+  onDomRefresh: ->
+    @ui.info_btn.hide()
+    
+  show_comic_page: (event) ->
+    event.preventDefault()
+    target = event.target
+    if target.tagName is "A"
+      view = new IFrameModalView
+        model: new Backbone.Model src:target.href
+      MainChannel.request 'show-modal', view
+      
   _show_comic_image: (clzpage) ->
     view = new ComicImageView
       model: clzpage

@@ -9,14 +9,55 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
   make_field_select } = require 'tbirds/templates/forms'
 { modal_close_button } = require 'tbirds/templates/buttons'
 
+JsonView = require './comicjson'
+HasImageModal = require './has-image-modal'
 BaseComicEntryView = require './base-comic-entry'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'sofi'
 
-class ComicEntryView extends BaseComicEntryView
+BaseModalView = MainChannel.request 'main:app:BaseModalView'
+
+class IFrameModalView extends BaseModalView
+  template: tc.renderable (model) ->
+    main = model.mainsection
+    tc.div '.modal-dialog.modal-lg', ->
+      tc.div '.modal-content', ->
+        tc.div '.modal-body', ->
+          src = model.src.replace 'http://', '//'
+          tc.iframe style:"width:97%;height:75vh;", src: src
+        tc.div '.modal-footer', ->
+          tc.ul '.list-inline', ->
+            btnclass = 'btn.btn-default.btn-sm'
+            tc.li "#close-modal", ->
+              modal_close_button 'Close', 'check'
+              
+
+########################################
+class ComicImageView extends Backbone.Marionette.View
+  template: tc.renderable (model) ->
+    img = AppChannel.request 'fix-image-url', model.image_src
+    tc.img src:img
+  ui:
+    image: 'img'
+  triggers:
+    'click @ui.image': 'show:image:modal'
+  behaviors: [HasImageModal]
   onDomRefresh: ->
+    @trigger 'show:image'
+    
+class ComicEntryView extends BaseComicEntryView
+  show_comic_json: (event) ->
+    target = event.target
+    if target.tagName is "A"
+      return
+    view = new JsonView
+      model: @model
+    MainChannel.request 'show-modal', view
+
+  onDomRefresh: ->
+    super
     links = @model.get 'links'
     url = links?.link?.url
     if url
@@ -43,7 +84,7 @@ class ComicEntryView extends BaseComicEntryView
     xhr.fail ->
       MessageChannel.request 'warning', "Couldn't get the info"
           
-  parseContentShowImage: (url, content) =>
+  _add_comic_to_db: (url, content) =>
     cdoc = $.parseHTML content
     links = []
     for e in cdoc
@@ -76,7 +117,7 @@ class ComicEntryView extends BaseComicEntryView
       if collection.length > 1
         MessageChannel.request 'warning', "#{url} is not unique!"
       if not collection.length
-        @_get_comic_data url, @parseContentShowImage
+        @_get_comic_data url, @_add_comic_to_db
       else
         model = collection.models[0]
         @_show_comic_image model
@@ -103,7 +144,7 @@ class ComicEntryView extends BaseComicEntryView
       if collection.length > 1
         MessageChannel.request 'warning', "#{url} is not unique!"
       if not collection.length
-        @_get_comic_data url, @parseContentShowImage
+        @_get_comic_data url, @_add_comic_to_db
       
 
   get_comic_data: (url) ->

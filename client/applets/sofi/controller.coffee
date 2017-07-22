@@ -233,23 +233,11 @@ class Controller extends MainController
   showWorkspaceView: ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      collection = AppChannel.request "db:clzcomic:collection"
-      if __DEV__
-        window.dbcomics = collection
-      collection.state.sortColumn = ['seriesgroup', 'series', 'issue']
-      response = collection.fetch
-        data:
-          columns: dbComicColumns
-      response.done =>
-        #collection._check_state()
-        View = require './views/wsview'
-        view = new View
-          collection: collection
-        @layout.showChildView 'content', view
-      response.fail ->
-        MessageChannel.request 'danger', "Failed to get comics."
+      View = require './views/wsview'
+      view = new View
+      @layout.showChildView 'content', view
     # name the chunk
-    , 'sofi:views:mainview'
+    , 'sofi:views:showWorkspaceView'
 
     
 module.exports = Controller

@@ -143,9 +143,11 @@ class MainView extends Marionette.View
       collection: collection
       workspaceSidebar: true
     @showChildView 'sidebar', sidebar
-    view = new WorkspaceView
-      collection: collection
-    @showChildView 'body', view
+    r = uc.fetch()
+    r.done =>
+      view = new WorkspaceView
+        collection: uc
+      @showChildView 'body', view
     
       
     
