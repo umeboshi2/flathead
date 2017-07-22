@@ -177,12 +177,26 @@ dbclzcomic = new DbCollection _.extend defaultOptions,
   modelClass: ClzCollectionStatus
   collectionClass: ClzCollectionStatusCollection
 
+workspaceRelated = ['comic']
+workspaceExtra = []
 class WorkspaceComic extends AuthModel
   urlRoot: "#{apiroot}/ebcomicworkspace"
+  save: (attrs, options) ->
+    pruneFields = workspaceRelated.concat workspaceExtra
+    pruneFields.forEach (attribute) =>
+      if @has attribute
+        @unset attribute
+    super attrs, options
 
 class WorkspaceComics extends AuthCollection
   url: "#{apiroot}/ebcomicworkspace"
   model: WorkspaceComic
+  fetch: (options) ->
+    options = options or {}
+    options.data = options.data or {}
+    if not options.data?.withRelated
+      options.data.withRelated = workspaceRelated
+    super
 
 dbwscomic = new DbCollection _.extend defaultOptions,
   modelName: 'ebcomicworkspace'
