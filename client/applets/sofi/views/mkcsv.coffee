@@ -23,14 +23,14 @@ mkInputData = (field, label, placeholder) ->
     name: field
     placeholder: placeholder
 
-csv_action_select = tc.renderable () ->
+csvActionSelect = tc.renderable () ->
   tc.div '.form-group', ->
     tc.label '.control-label', for:'select_action', 'Action'
   tc.select '.form-control', name:'select_action', ->
     for action in ['Add', 'VerifyAdd']
       tc.option selected:null, value:action, action
     
-csv_cfg_select = tc.renderable (collection) ->
+csvCfgSelect = tc.renderable (collection) ->
   tc.div '.form-group', ->
     tc.label '.control-label', for:'select_cfg', 'Config'
   tc.select '.form-control', name:'select_cfg', ->
@@ -42,7 +42,7 @@ csv_cfg_select = tc.renderable (collection) ->
         options.selected = ''
       tc.option options, name
     
-csv_dsc_select = tc.renderable (collection) ->
+csvDscSelect = tc.renderable (collection) ->
   tc.div '.form-group', ->
     tc.label '.control-label', for:'select_dsc', 'Description'
   tc.select '.form-control', name:'select_dsc', ->
@@ -60,8 +60,8 @@ csv_dsc_select = tc.renderable (collection) ->
 class ComicsView extends Backbone.Marionette.View
   templateContext: ->
     options = @options
-    options.ebcfg_collection = AppChannel.request 'db:ebcfg:collection'
-    options.ebdsc_collection = AppChannel.request 'db:ebdsc:collection'
+    options.ebcfgCollection = AppChannel.request 'db:ebcfg:collection'
+    options.ebdscCollection = AppChannel.request 'db:ebdsc:collection'
     options
   regions:
     body: '.body'
@@ -69,9 +69,9 @@ class ComicsView extends Backbone.Marionette.View
     tc.div '.listview-header', ->
       tc.text "Create CSV"
     tc.div '.mkcsv-form', ->
-      csv_action_select()
-      csv_cfg_select model.ebcfg_collection
-      csv_dsc_select model.ebdsc_collection
+      csvActionSelect()
+      csvCfgSelect model.ebcfgCollection
+      csvDscSelect model.ebdscCollection
     tc.div '.mkcsv-button.btn.btn-default', "Preview CSV Data"
     tc.div '.show-comics-button.btn.btn-default', "Show Comics"
     tc.div '.body'
@@ -82,10 +82,10 @@ class ComicsView extends Backbone.Marionette.View
     cfg_sel: 'select[name="select_cfg"]'
     dsc_sel: 'select[name="select_dsc"]'
   events:
-    'click @ui.mkcsv_btn': 'make_csv'
-    'click @ui.show_btn': 'show_comics'
+    'click @ui.mkcsv_btn': 'makeCsv'
+    'click @ui.show_btn': 'showComics'
 
-  make_csv: ->
+  makeCsv: ->
     action = @ui.action_sel.val()
     cfg = AppChannel.request 'db:ebcfg:get', @ui.cfg_sel.val()
     dsc = AppChannel.request 'db:ebdsc:get', @ui.dsc_sel.val()
@@ -94,7 +94,7 @@ class ComicsView extends Backbone.Marionette.View
     AppChannel.request 'locals:set', 'currentCsvDsc', dsc
     navigate_to_url '#sofi/csv/preview'
     
-  show_comics: ->
+  showComics: ->
     view = new ComicListView
       collection: @collection
     @showChildView 'body', view
