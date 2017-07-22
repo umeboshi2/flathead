@@ -21,13 +21,27 @@ class WorkspaceCollection extends AuthCollection
     sortColumn: 'name'
     sortDirection: 'asc'
     
-class DbComicsSidebar extends Marionette.View
 class WorkspaceView extends Marionette.View
+  initialize: ->
+    @collection = new WorkspaceCollection
+    response = @collection.fetch
+      data:
+        distinct: 'name'
+        sort: 'name'
+    response.done => @render()
+    
   className: 'listview-list-entry'
   ui:
-    name_input: 'input[name="name"]'
+    name_input: 'select[name="select_workspace"]'
+  #events:
+  #  'change @ui.name_input': 'theWorkspaceChanged'
+  triggers:
+    'change @ui.name_input': 'workspace:changed'
   templateContext: ->
     collection: @collection
+  theWorkspaceChanged: (event) ->
+    console.log 'theWorkspaceChanged', event
+    
   template: tc.renderable (model) ->
     form_group_input_div
       input_id: "input_wsname"
@@ -38,8 +52,10 @@ class WorkspaceView extends Marionette.View
       tc.label '.control-label', for:'select_workspace',
       'Workspace'
       tc.select '.form-control', name:'select_workspace', ->
+        tc.option value:"UNATTACHED", 'Unattached Comics'
         if not model.items.length
-          tc.option value:'current', selected:'', 'Current'
+          #tc.option value:'current', selected:'', 'Current'
+          console.log "No workspaces!"
         else
           for item in model.items
             opts = value: item.name

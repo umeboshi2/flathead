@@ -20,24 +20,6 @@ default_entry_template = tc.renderable (model) ->
 
 dbComicColumns = AppChannel.request 'dbComicColumns'
 
-sortbyInput = tc.renderable (sortColumn) ->
-  default_sort = ['seriesgroup', 'series', 'issue']
-  tc.span '.input-group', ->
-    tc.label '.control-label', for:'select_sortby', 'Sort by'
-    tc.select '.form-control', name:'select_sortby', ->
-      opts =
-        value: 'default'
-      if sortColumn is default_sort
-        opts.selected = ''
-      tc.option opts, 'default'
-      for col in dbComicColumns
-        opts =
-          value: col
-        if sortColumn is col
-          opts.selected = ''
-        tc.option opts, col
-            
-
 class DbComicEntryCollectionView extends Marionette.NextCollectionView
   childView: DbComicEntry
   childViewOptions:
@@ -49,6 +31,13 @@ class DbComicEntryCollectionView extends Marionette.NextCollectionView
 directionLabel =
   asc: 'ascending'
   desc: 'descending'
+
+AuthCollection = MainChannel.request 'main:app:AuthCollection'
+class UnattachedCollection extends AuthCollection
+  url: "/api/dev/misc/unattached-comics"
+  
+uc = new UnattachedCollection
+window.uc = uc
 
 class WorkspaceView extends Marionette.View
   behaviors: [HasHeader]
@@ -65,15 +54,19 @@ class WorkspaceView extends Marionette.View
     'workspace:add:comic': 'workspace:add:comic'
     
   updateHeader: ->
-    currentPage = @collection.state.currentPage
-    totalPages = @collection.state.totalPages
-    totalRecords = @collection.state.totalRecords
-    direction = directionLabel[@collection.state.sortDirection]
-    msg = "Page #{currentPage + 1} of #{totalPages}, #{direction}"
-    msg = msg + " pages, with #{totalRecords} comics total."
-    @triggerMethod 'set:header', msg
-    
-    
+    state = @collection.state
+    totalRecords = state.totalRecords
+    unless totalRecords is null
+      currentPage = state.currentPage
+      totalPages = state.totalPages
+      direction = directionLabel[state.sortDirection]
+      msg = "Page #{currentPage + 1} of #{totalPages}, #{direction}"
+      msg = msg + " pages, with #{totalRecords} comics total."
+      @triggerMethod 'set:header', msg
+    else
+      msg = "No comics in workspace"
+      @triggerMethod 'set:header', msg
+      
   onRender: ->
     entryTemplate = @options.entryTemplate or default_entry_template
     @collectionView = new DbComicEntryCollectionView
@@ -87,11 +80,16 @@ class WorkspaceView extends Marionette.View
   onBeforeDestroy: ->
     @collection.off 'pageable:state:change'
 
-
 ############################################
 # Main view
 ############################################
 class MainView extends Marionette.View
+  initialize: (options) ->
+    options = options or {}
+    cclass = AppChannel.request 'db:ebcomicworkspace:collectionClass'
+    console.log "cclass", cclass
+    options.collection = options?.collection or new cclass
+    console.log "options.collection", options.collection
   templateContext: ->
     options = @options
     options
@@ -107,10 +105,10 @@ class MainView extends Marionette.View
   regions:
     body: '@ui.body'
     sidebar: '@ui.sidebar'
-    
   childViewEvents:
     'workspace:add:comic': 'onWorkspaceAddComic'
-
+    'workspace:changed': 'onWorkspaceChanged'
+    
   onWorkspaceAddComic: (comic_id) ->
     console.log "onWorkspaceAddComic", comic_id
     sidebar = @getChildView 'sidebar'
@@ -123,28 +121,31 @@ class MainView extends Marionette.View
     collection.on 'add', =>
       MessageChannel.request "warning",
       "It should have been added to collection."
-      @render()
       collection.off 'add'
-      
     data =
       comic_id: comic_id
       name: workspace
     model = collection.create data, wait:true
-    
 
-    
+  onWorkspaceChanged: (view) ->
+    workspace = view.ui.name_input.val()
+    console.log "onWorkspaceChanged", workspace
+    unless workspace is 'UNATTACHED'
+      collection = @getOption 'collection'
+      response = collection.fetch
+        data:
+          where:
+            name: workspace
+        
   onRender: ->
+    collection = @getOption 'collection'
     sidebar = new DbComicsSidebar
-      collection: @collection
+      collection: collection
       workspaceSidebar: true
     @showChildView 'sidebar', sidebar
     view = new WorkspaceView
-      collection: @collection
+      collection: collection
     @showChildView 'body', view
-    #@ui.sidebar.css 'height', 'calc(100% - 50px)'
-    @ui.sidebar.css 'height', '300px'
-    @ui.sidebar.droppable()
-    
     
       
     

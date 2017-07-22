@@ -9,6 +9,7 @@ HasHeader = require '../has-header'
 SeriesGroupSelect = require './seriesgroup'
 PublisherSelect = require './publisher'
 WorkspaceView = require './workspace'
+NavigateBox = require './navigate'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
@@ -113,104 +114,34 @@ class PublisherCollection extends AuthCollection
     sortColumn: 'publisher'
     sortDirection: 'asc'
 
-class WorkspaceCollection extends AuthCollection
-  url: "#{apiroot}/ebcomicworkspace"
-  model: AppChannel.request 'db:clzcomic:modelClass'
-  state:
-    firstPage: 0
-    # FIXME
-    pageSize: 10000
-    sortColumn: 'name'
-    sortDirection: 'asc'
-    
-class DbComicsSidebar extends Marionette.View
-  ui:
-    prev_li: '.previous'
-    next_li: '.next'
-    prev_button: '.prev-page-button'
-    dir_button: '.direction-button'
-    dir_icon: '.direction-icon'
-    next_button: '.next-page-button'
+uiRegions =
+    navigatorBox: '.navigator-box'
     sortByBox: '.sort-by-box'
     collectionStatusFilterBox: '.collection-status-filter-box'
     publisherFilterBox: '.publisher-filter-box'
     seriesgroupFilterBox: '.seriesgroup-filter-box'
     workspaceDrop: '.workspace-drop'
-  regions:
-    sortByBox: '@ui.sortByBox'
-    collectionStatusFilterBox: '@ui.collectionStatusFilterBox'
-    seriesgroupFilterBox: '@ui.seriesgroupFilterBox'
-    publisherFilterBox: '@ui.publisherFilterBox'
-    workspaceDrop: '@ui.workspaceDrop'
+    
+class DbComicsSidebar extends Marionette.View
+  ui: uiRegions
+  regions: ->
+    regions = {}
+    Object.keys(uiRegions).forEach (r) ->
+      regions[r] = "@ui.#{r}"
+    regions
   templateContext: ->
     collection: @collection
   template: tc.renderable (model) ->
-    sortColumn = model.collection.state.sortColumn
     tc.div '.workspace-drop'
-    tc.ul '.pager.listview-list-entry', ->
-      tc.li '.previous', ->
-        # just .btn changes cursor to pointer
-        tc.span '.prev-page-button.btn', ->
-          tc.i '.fa.fa-arrow-left'
-          tc.text '-previous'
-      tc.li '.direction', ->
-        tc.span '.direction-button.btn', ->
-          tc.i '.direction-icon.fa.fa-arrow-up'
-      tc.li '.next', ->
-        tc.span '.next-page-button.btn', ->
-          tc.text 'next-'
-          tc.i '.fa.fa-arrow-right'
+    tc.div '.navigator-box.listview-list-entry'
     tc.div '.sort-by-box.listview-list-entry'
     tc.div '.collection-status-filter-box.listview-list-entry'
     tc.div '.publisher-filter-box.listview-list-entry'
     tc.div '.seriesgroup-filter-box.listview-list-entry'
+  # relay show:image event to parent
+  childViewTriggers:
+    "workspace:changed" : "workspace:changed"
     
-  events:
-    'click @ui.prev_button': 'get_prev_page'
-    'click @ui.dir_button': 'toggle_sort_direction'
-    'click @ui.next_button': 'get_next_page'
-  update_nav_buttons: ->
-    currentPage = @collection.state.currentPage
-    if currentPage
-      @ui.prev_li.show()
-    else
-      @ui.prev_li.hide()
-    if currentPage != @collection.state.lastPage
-      @ui.next_li.show()
-    else
-      @ui.next_li.hide()
-    if @collection.state.totalRecords is 0
-      @ui.prev_li.hide()
-      @ui.next_li.hide()
-  keycommands:
-    prev: 37
-    next: 39
-    
-  handle_key_command: (command) ->
-    if command in ['prev', 'next']
-      @get_another_page command
-
-  keydownHandler: (event_object) =>
-    for key, value of @keycommands
-      if event_object.keyCode == value
-        @handle_key_command key
-
-  toggle_sort_direction: (event) ->
-    icon = @ui.dir_icon
-    if icon.hasClass 'fa-arrow-up'
-      icon.removeClass 'fa-arrow-up'
-      icon.addClass 'fa-arrow-down'
-      @collection.state.sortDirection = 'desc'
-    else
-      icon.removeClass 'fa-arrow-down'
-      icon.addClass 'fa-arrow-up'
-      @collection.state.sortDirection = 'asc'
-    response = @collection.fetch
-      data:
-        where: AppChannel.request 'locals:get', 'currentQueryWhere'
-    response.done =>
-      @collection.trigger 'pageable:state:change'
-
   showCollectionStatus: ->
     selections = AppChannel.request 'db:clzcollectionstatus:collection'
     response = selections.fetch()
@@ -219,6 +150,7 @@ class DbComicsSidebar extends Marionette.View
         collection: selections
         comicCollection: @collection
       @showChildView 'collectionStatusFilterBox', view
+      
   showSeriesGroupSelect: ->
     coll = new SeriesGroupCollection
     response = coll.fetch
@@ -252,61 +184,35 @@ class DbComicsSidebar extends Marionette.View
   showWorkspaceBox: ->
     console.log "In showWorkspaceBox"
     #collection = AppChannel.request 'db:ebcomicworkspace:collection'
-    collection = new WorkspaceCollection
-    console.log "collection", collection
-    window.wscollection = collection
-    data =
-      distinct: 'name'
-      sort: 'name'
-    window.fdata = data
-    response = collection.fetch data: data
-    console.log "RESPONSE", response
-    response.done =>
-      wsview = new WorkspaceView
-        collection: collection
-      @showChildView 'workspaceDrop', wsview
+    #collection = new WorkspaceCollection
+    #console.log "collection", collection
+    #window.wscollection = collection
+    #data =
+    #  distinct: 'name'
+    #  sort: 'name'
+    #window.fdata = data
+    #response = collection.fetch(data: data)
+    #response.done =>
+    #  console.log "RESPONSE", response
+    wsview = new WorkspaceView
+    @showChildView 'workspaceDrop', wsview
+
+  showNavigatorBox: ->
+    view = new NavigateBox
+      collection: @collection
+    @showChildView 'navigatorBox', view
     
   onRender: ->
     # show child views
+    @showNavigatorBox()
     @showCollectionStatus()
     @showPublisherSelect()
     @showSeriesGroupSelect()
     @showSortBySelect()
     if @getOption 'workspaceSidebar'
-      console.log "workspaceSidebar!!!!!!!!"
+      #console.log "workspaceSidebar!!!!!!!!"
       @showWorkspaceBox()
-    # do setup
-    @update_nav_buttons()
-    @collection.on 'pageable:state:change', =>
-      @update_nav_buttons()
-    $('html').keydown @keydownHandler
-    
-  onBeforeDestroy: ->
-    @collection.off 'pageable:state:change'
-    $('html').unbind 'keydown', @keydownHandler
 
-  get_another_page: (direction) ->
-    # we need to add the where clause
-    where = AppChannel.request 'locals:get', 'currentQueryWhere'
-    @collection.queryParams.where = where
-    currentPage = @collection.state.currentPage
-    onLastPage = currentPage is @collection.state.lastPage
-    response = undefined
-    if direction is 'prev' and currentPage
-      response = @collection.getPreviousPage()
-    else if direction is 'next' and not onLastPage
-      response = @collection.getNextPage()
-    if response
-      response.done =>
-        # remove the where clause when done
-        delete @collection.queryParams.where
-    
-  get_prev_page: () ->
-    @get_another_page 'prev'
-  get_next_page: () ->
-    @get_another_page 'next'
-      
-    
 module.exports = DbComicsSidebar
 
 
