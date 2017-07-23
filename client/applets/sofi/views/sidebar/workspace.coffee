@@ -27,8 +27,6 @@ class WorkspaceView extends Marionette.View
   className: 'listview-list-entry'
   ui:
     name_input: 'select[name="select_workspace"]'
-  #events:
-  #  'change @ui.name_input': 'theWorkspaceChanged'
   triggers:
     'change @ui.name_input': 'workspace:changed'
   templateContext: ->

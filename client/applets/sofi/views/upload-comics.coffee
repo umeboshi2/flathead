@@ -20,9 +20,9 @@ class UploadManager extends Marionette.Object
     @modelId = options.modelId or 'comic_id'
     @dbPrefix = "db:#{@modelName}"
     @collection = AppChannel.request "#{@dbPrefix}:collection"
-    @curentItems = _.clone options.items
+    @currentItems = _.clone options.items
     @progressModel = options.progressModel
-    @progressModel.set 'valuemax', @curentItems.length
+    @progressModel.set 'valuemax', @currentItems.length
     @channel = @getChannel()
     @channel.on "#{@dbPrefix}:inserted", @restore_items_now
     @channel.on "#{@dbPrefix}:updated", @restore_items_now
@@ -62,10 +62,10 @@ class UploadManager extends Marionette.Object
         @update_item item
       
   restore_items: =>
-    position = @progressModel.get('valuemax') - @curentItems.length
+    position = @progressModel.get('valuemax') - @currentItems.length
     @progressModel.set 'valuenow', position
-    if @curentItems.length
-      item = @curentItems.pop()
+    if @currentItems.length
+      item = @currentItems.pop()
       @restore_item item
     else
       MessageChannel.request 'success', "Restoration Successful"
