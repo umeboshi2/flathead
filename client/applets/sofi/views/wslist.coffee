@@ -93,6 +93,11 @@ class MainView extends Marionette.View
       collection: collection
     firstResponse = collection.fetch()
     firstResponse.done =>
+      # FIXME
+      # we need to do the first fetch, since
+      # if the collection is empty, the next
+      # fetch will produce an error on the
+      # server
       if collection.length
         response = collection.fetch
           data:
