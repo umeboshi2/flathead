@@ -30,6 +30,7 @@ class AuthModel extends Backbone.Model
     options = auth_sync_options options
     super method, model, options
 
+pageSize = MainChannel.request 'main:app:get-pagesize'
 class BasicPageableCollection extends PageableCollection
   queryParams:
     sort: ->
@@ -42,7 +43,7 @@ class BasicPageableCollection extends PageableCollection
       @state.currentPage * @state.pageSize
   state:
     firstPage: 0
-    pageSize: 10
+    pageSize: parseInt pageSize
     sortColumn: 'id'
     sortDirection: 'asc'
   parse: (response) ->

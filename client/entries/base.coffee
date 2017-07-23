@@ -10,12 +10,24 @@ if __DEV__
 require 'tbirds/applet-router'
 IsEscapeModal = require 'tbirds/behaviors/is-escape-modal'
 
+MainChannel = Backbone.Radio.channel 'global'
+MessageChannel = Backbone.Radio.channel 'messages'
+
+# set pagesize before requiring authmodels
+if localStorage.getItem('page-size') is null
+  localStorage.setItem 'page-size', 10
+
+MainChannel.reply 'main:app:set-pagesize', (pagesize) ->
+  localStorage.setItem 'page-size', pagesize
+
+MainChannel.reply 'main:app:get-pagesize', ->
+  localStorage.getItem 'page-size'
+
+
 require '../authmodels'
 require '../crudcontroller'
 require '../static-documents'
 
-MainChannel = Backbone.Radio.channel 'global'
-MessageChannel = Backbone.Radio.channel 'messages'
 
 MainChannel.reply 'main:app:switch-theme', (theme) ->
   href = "assets/stylesheets/bootstrap-#{theme}.css"
@@ -27,6 +39,7 @@ MainChannel.reply 'main:app:set-theme', (theme) ->
 
 MainChannel.reply 'main:app:get-theme', ->
   localStorage.getItem 'main-theme'
+
   
 export_to_file = (options) ->
   data = encodeURIComponent(options.data)
