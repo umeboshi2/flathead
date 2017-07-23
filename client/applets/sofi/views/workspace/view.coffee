@@ -9,9 +9,9 @@ require 'jquery-ui/ui/widgets/droppable'
 
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 
-DbComicEntry = require './dbcomic-entry'
-DbComicsSidebar = require './sidebar'
-HasHeader = require './has-header'
+DbComicEntry = require '../dbcomic-entry'
+DbComicsSidebar = require '../sidebar'
+HasHeader = require '../has-header'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
@@ -90,7 +90,7 @@ class MainView extends Marionette.View
     workspace: @getOption 'workspace'
   template: tc.renderable (model) ->
     tc.div '.listview-header', ->
-      tc.text "Create workspace #{model.workspace}"
+      tc.text "View workspace #{model.workspace}"
     tc.div '.row', ->
       tc.div '.sidebar.col-sm-4', style:'height: calc(100% - 50px);'
       tc.div '.body.col-sm-8'
@@ -131,10 +131,15 @@ class MainView extends Marionette.View
     response.done =>
       @showSidebar collection
       @showBody collection
-      
-  onWorkspaceAddComic: (comic_id) ->
+    
+  # FIXME this needs to be renamed somewhere
+  # This deletes the comic
+  onWorkspaceAddComic: (model) ->
+    response = model.destroy()
+    
+  fooey: (model) ->
+    console.log "MODEL", model
     workspace = @getOption 'workspace'
-    console.log "handle onWorkspaceAddComic", workspace, comic_id
     collectionClass = AppChannel.request 'db:ebcomicworkspace:collectionClass'
     collection = new collectionClass
     response = collection.fetch
@@ -144,10 +149,10 @@ class MainView extends Marionette.View
     response.done =>
       model = collection.models[0]
       r2 = model.destroy()
-      r2.done =>
-        @getRegion('body').empty()
-        @getRegion('sidebar').empty()
-        @renderView()
+      #r2.done =>
+      #  @getRegion('body').empty()
+      #  @getRegion('sidebar').empty()
+      #  @renderView()
     
     
 module.exports = MainView

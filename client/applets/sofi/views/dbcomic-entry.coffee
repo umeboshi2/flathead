@@ -35,7 +35,6 @@ make_entry_buttons = tc.renderable (model) ->
       text = " #{model.photos.length} Photos"
     tc.i '.fa.fa-photo', text
   if model?.workspaceView
-    console.warn "model.workspaceView", model.workspaceView
     if model.workspaceView is 'add'
       tc.span ".workspace-button#{btn_style}", ->
         text = ' Add'
@@ -87,8 +86,6 @@ class ComicEntryView extends BaseComicEntryView
   templateContext: ->
     context = super
     context.workspaceView = @getOption 'workspaceView'
-    console.warn "context.workspaceView", context.workspaceView
-    #console.warn 'templateContext', context
     context.columnClass = 'col-sm-5'
     # do something if necessary
     atts = @model.toJSON()
@@ -127,8 +124,7 @@ class ComicEntryView extends BaseComicEntryView
     navigate_to_url "#sofi/comics/photos/#{comic_id}"
 
   addToWorkspace: ->
-    comic_id = @model.get 'comic_id'
-    @trigger "workspace:add:comic", comic_id
+    @trigger "workspace:add:comic", @model
 
   showJsonView: ->
     response = @model.fetch()

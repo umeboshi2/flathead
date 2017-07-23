@@ -234,7 +234,7 @@ class Controller extends MainController
   showWorkspaceMainView: ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      View = require './views/wslist'
+      View = require './views/workspace/list'
       view = new View
       @layout.showChildView 'content', view
     # name the chunk
@@ -243,7 +243,7 @@ class Controller extends MainController
   showWorkspaceView: (name) ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      View = require './views/wsview'
+      View = require './views/workspace/view'
       view = new View
         workspace: name
       @layout.showChildView 'content', view
@@ -253,7 +253,7 @@ class Controller extends MainController
   createWorkspaceView: (name) ->
     @setup_layout_if_needed()
     require.ensure [], () =>
-      View = require './views/wscreate'
+      View = require './views/workspace/create'
       view = new View
         workspace: name
       @layout.showChildView 'content', view

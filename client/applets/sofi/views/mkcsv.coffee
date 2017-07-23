@@ -67,15 +67,10 @@ class WorkspaceSelect extends Marionette.View
     response.done => @render()
   ui:
     name_input: 'select[name="select_workspace"]'
-  #events:
-  #  'change @ui.name_input': 'theWorkspaceChanged'
   triggers:
     'change @ui.name_input': 'workspace:changed'
   templateContext: ->
     collection: @collection
-  theWorkspaceChanged: (event) ->
-    console.log 'theWorkspaceChanged', event
-    
   template: tc.renderable (model) ->
     tc.span '.input-group', ->
       tc.label '.control-label', for:'select_workspace',
@@ -83,7 +78,6 @@ class WorkspaceSelect extends Marionette.View
       tc.select '.form-control', name:'select_workspace', ->
         tc.option value:"UNATTACHED", 'Unattached Comics'
         if not model.items.length
-          #tc.option value:'current', selected:'', 'Current'
           console.log "No workspaces!"
         else
           for item in model.items

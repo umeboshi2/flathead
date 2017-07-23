@@ -23,6 +23,7 @@ class Router extends Marionette.AppRouter
     'sofi/comics/workspace': 'showWorkspaceMainView'
     'sofi/comics/workspace/view/:name': 'showWorkspaceView'
     'sofi/comics/workspace/create/:name': 'createWorkspaceView'
+    'sofi/comics/workspace/add/:name': 'createWorkspaceView'
 
     'sofi/xml/upload': 'upload_xml'
     'sofi/csv/create': 'create_csv'

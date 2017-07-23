@@ -9,9 +9,9 @@ require 'jquery-ui/ui/widgets/droppable'
 
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 
-DbComicEntry = require './dbcomic-entry'
-DbComicsSidebar = require './sidebar'
-HasHeader = require './has-header'
+DbComicEntry = require '../dbcomic-entry'
+DbComicsSidebar = require '../sidebar'
+HasHeader = require '../has-header'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
@@ -122,15 +122,17 @@ class MainView extends Marionette.View
     response.done =>
       @showSidebar collection
       @showBody collection
+    @collection = collection
+    
       
-  onWorkspaceAddComic: (comic_id) ->
+  onWorkspaceAddComic: (model) ->
     workspace = @getOption 'workspace'
+    console.log "MODEL", model
+    comic_id = model.get 'comic_id'
     console.log "handle onWorkspaceAddComic", workspace, comic_id
     collection = AppChannel.request 'db:ebcomicworkspace:collection'
     collection.on 'add', =>
-      @getRegion('body').empty()
-      @getRegion('sidebar').empty()
-      @renderView()
+      @collection.fetch()
       collection.off 'add'
     data =
       comic_id: comic_id

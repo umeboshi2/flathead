@@ -9,9 +9,9 @@ require 'jquery-ui/ui/widgets/droppable'
 
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 
-DbComicEntry = require './dbcomic-entry'
-DbComicsSidebar = require './sidebar'
-HasHeader = require './has-header'
+DbComicEntry = require '../dbcomic-entry'
+DbComicsSidebar = require '../sidebar'
+HasHeader = require '../has-header'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
@@ -46,13 +46,20 @@ class SimpleWorkspaceList extends Marionette.View
   ui:
     workspace_input: "input[name='workspace']"
     newworkspace_btn: '.new-workspace-button'
+    add_btn: '.add-button'
   events:
     'click @ui.newworkspace_btn': 'createNewWorkspace'
+    'click @ui.add_btn': 'addClicked'
+
   createNewWorkspace: ->
     workspace = @ui.workspace_input.val()
     if workspace
       navigate_to_url "#sofi/comics/workspace/create/#{workspace}"
-      
+
+  addClicked: (event) ->
+    workspace = event.target.getAttribute 'data-workspace'
+    navigate_to_url "#sofi/comics/workspace/create/#{workspace}"
+    
   template: tc.renderable (collection) ->
     tc.div '.listview-header', 'Workspaces'
     tc.div '.input-group', ->
@@ -62,9 +69,12 @@ class SimpleWorkspaceList extends Marionette.View
       tc.input '.form-control', type:'text', name:'workspace'
     tc.div '.workspaces', ->
       for item in collection.items
-        tc.div '.listview-list-entry', ->
-          tc.a href:"#sofi/comics/workspace/view/#{item.name}", item.name
-        
+        tc.div '.panel', ->
+          tc.div '.panel-body', ->
+            tc.a href:"#sofi/comics/workspace/view/#{item.name}", item.name
+            tc.button '.add-button.btn.btn-default.btn-xs.pull-right',
+            'data-workspace':item.name, 'Add Comics'
+          
   
 ############################################
 # Main view
