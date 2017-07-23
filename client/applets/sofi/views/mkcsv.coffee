@@ -54,17 +54,64 @@ csvDscSelect = tc.renderable (collection) ->
         options.selected = ''
       tc.option options, name
 
+WorkspaceCollection = AppChannel.request(
+  'db:ebcomicworkspace:WorkspaceCollection')
 
-
+class WorkspaceSelect extends Marionette.View
+  initialize: ->
+    @collection = new WorkspaceCollection
+    response = @collection.fetch
+      data:
+        distinct: 'name'
+        sort: 'name'
+    response.done => @render()
+  ui:
+    name_input: 'select[name="select_workspace"]'
+  #events:
+  #  'change @ui.name_input': 'theWorkspaceChanged'
+  triggers:
+    'change @ui.name_input': 'workspace:changed'
+  templateContext: ->
+    collection: @collection
+  theWorkspaceChanged: (event) ->
+    console.log 'theWorkspaceChanged', event
+    
+  template: tc.renderable (model) ->
+    tc.span '.input-group', ->
+      tc.label '.control-label', for:'select_workspace',
+      'Workspace'
+      tc.select '.form-control', name:'select_workspace', ->
+        tc.option value:"UNATTACHED", 'Unattached Comics'
+        if not model.items.length
+          #tc.option value:'current', selected:'', 'Current'
+          console.log "No workspaces!"
+        else
+          for item in model.items
+            opts = value: item.name
+            tc.option opts, item.name
+      
+  
 ########################################
 class ComicsView extends Backbone.Marionette.View
+  ui:
+    mkcsv_btn: '.mkcsv-button'
+    show_btn: '.show-comics-button'
+    action_sel: 'select[name="select_action"]'
+    cfg_sel: 'select[name="select_cfg"]'
+    dsc_sel: 'select[name="select_dsc"]'
+    workspaceSelect: '.workspace-select'
+    body: '.body'
+  regions:
+    body: '@ui.body'
+    workspaceSelect: '@ui.workspaceSelect'
+  events:
+    'click @ui.mkcsv_btn': 'makeCsv'
+    'click @ui.show_btn': 'showComics'
   templateContext: ->
     options = @options
     options.ebcfgCollection = AppChannel.request 'db:ebcfg:collection'
     options.ebdscCollection = AppChannel.request 'db:ebdsc:collection'
     options
-  regions:
-    body: '.body'
   template: tc.renderable (model) ->
     tc.div '.listview-header', ->
       tc.text "Create CSV"
@@ -72,19 +119,15 @@ class ComicsView extends Backbone.Marionette.View
       csvActionSelect()
       csvCfgSelect model.ebcfgCollection
       csvDscSelect model.ebdscCollection
+      tc.div '.workspace-select'
+    tc.hr()
     tc.div '.mkcsv-button.btn.btn-default', "Preview CSV Data"
     tc.div '.show-comics-button.btn.btn-default', "Show Comics"
     tc.div '.body'
-  ui:
-    mkcsv_btn: '.mkcsv-button'
-    show_btn: '.show-comics-button'
-    action_sel: 'select[name="select_action"]'
-    cfg_sel: 'select[name="select_cfg"]'
-    dsc_sel: 'select[name="select_dsc"]'
-  events:
-    'click @ui.mkcsv_btn': 'makeCsv'
-    'click @ui.show_btn': 'showComics'
-
+  onRender: ->
+    view = new WorkspaceSelect
+    @showChildView 'workspaceSelect', view
+    
   makeCsv: ->
     action = @ui.action_sel.val()
     cfg = AppChannel.request 'db:ebcfg:get', @ui.cfg_sel.val()

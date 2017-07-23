@@ -113,7 +113,8 @@ class Controller extends MainController
     dscopts = _.clone options
     cfgs.fetch(options).then =>
       dscs.fetch(dscopts).then =>
-        @_need_comics_view @_show_create_csv_view
+        @_show_create_csv_view()
+        #@_need_comics_view @_show_create_csv_view
     
   preview_csv: ->
     @setup_layout_if_needed()
