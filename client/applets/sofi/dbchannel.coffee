@@ -122,7 +122,7 @@ dbComicColumns = ['id', 'comic_id', 'list_id', 'bpcomicid',
 AppChannel.reply 'dbComicColumns', ->
   dbComicColumns
 
-clzComicRelated = ['collectionStatus', 'photos']
+clzComicRelated = ['collectionStatus', 'photos', 'workspace']
 clzComicExtra = ['ReleaseDate']
 
 class ClzComic extends AuthModel

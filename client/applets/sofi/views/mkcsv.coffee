@@ -76,7 +76,6 @@ class WorkspaceSelect extends Marionette.View
       tc.label '.control-label', for:'select_workspace',
       'Workspace'
       tc.select '.form-control', name:'select_workspace', ->
-        tc.option value:"UNATTACHED", 'Unattached Comics'
         if not model.items.length
           console.log "No workspaces!"
         else
@@ -126,6 +125,10 @@ class ComicsView extends Backbone.Marionette.View
     action = @ui.action_sel.val()
     cfg = AppChannel.request 'db:ebcfg:get', @ui.cfg_sel.val()
     dsc = AppChannel.request 'db:ebdsc:get', @ui.dsc_sel.val()
+    wsview = @getChildView 'workspaceSelect'
+    workspace = wsview.ui.name_input.val()
+    console.log "makeCsv workspace", workspace
+    AppChannel.request 'locals:set', 'currentCsvWorkspace', workspace
     AppChannel.request 'locals:set', 'currentCsvAction', action
     AppChannel.request 'locals:set', 'currentCsvCfg', cfg
     AppChannel.request 'locals:set', 'currentCsvDsc', dsc

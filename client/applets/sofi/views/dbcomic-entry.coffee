@@ -65,11 +65,15 @@ bstableclasses = [
 make_comics_row = tc.renderable (model) ->
   tc.div '.col-sm-8', ->
     tc.table ".#{bstableclasses.join('.')}", ->
+      if model?.workspace?.name
+        ws = "#sofi/comics/workspace/view/#{model.workspace.name}"
+        tc.tr ->
+          tc.td -> tc.strong "Workspace"
+          tc.td -> tc.a href:ws, model.workspace.name
       for field in dtFields
         tc.tr ->
           tc.td -> tc.strong field
           tc.td model[field]
-      
 ########################################
 class ComicEntryView extends BaseComicEntryView
   ui: ->
