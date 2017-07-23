@@ -84,8 +84,12 @@ router.get '/unattached-comics', asyncfun (req, res) ->
       comics = comics.limit(req.query.limit)
 
   comics.then (results) ->
+    if total.length
+      total = total[0].count
+    else
+      total = 0
     data =
-      total: total[0].count
+      total: total
       items: results
     res.json data
   
