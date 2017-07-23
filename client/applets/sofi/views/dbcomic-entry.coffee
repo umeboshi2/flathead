@@ -34,10 +34,16 @@ make_entry_buttons = tc.renderable (model) ->
     if model?.photos?.length
       text = " #{model.photos.length} Photos"
     tc.i '.fa.fa-photo', text
-  if model.workspaceView
-    tc.span ".workspace-button#{btn_style}", ->
-      text = ' Add'
-      tc.i '.fa.fa-plus-square', style:'text-overflow:ellipsis;', text
+  if model?.workspaceView
+    console.warn "model.workspaceView", model.workspaceView
+    if model.workspaceView is 'add'
+      tc.span ".workspace-button#{btn_style}", ->
+        text = ' Add'
+        tc.i '.fa.fa-plus-square', style:'text-overflow:ellipsis;', text
+    else
+      tc.span ".workspace-button#{btn_style}", ->
+        text = ' Remove'
+        tc.i '.fa.fa-minus-square', style:'text-overflow:ellipsis;', text
       
 dtFields = [
   'issue',
@@ -81,15 +87,16 @@ class ComicEntryView extends BaseComicEntryView
   templateContext: ->
     context = super
     context.workspaceView = @getOption 'workspaceView'
+    console.warn "context.workspaceView", context.workspaceView
     #console.warn 'templateContext', context
     context.columnClass = 'col-sm-5'
     # do something if necessary
     atts = @model.toJSON()
-    unless atts?.series
+    if not (context?.series? or atts?.series?)
       context.series = atts.mainsection.series.displayname
-    unless atts?.issue
+    if not context?.issue? or atts?.issue?
       context.issue = atts.issue
-    unless atts?.url
+    if not (context?.url or atts?.url?)
       url = atts?.links?.link?.url
       if url
         context.url = url
@@ -121,19 +128,27 @@ class ComicEntryView extends BaseComicEntryView
 
   addToWorkspace: ->
     comic_id = @model.get 'comic_id'
-    MessageChannel.request 'warning', "addToWorkspace #{comic_id}"
     @trigger "workspace:add:comic", comic_id
 
   showJsonView: ->
     response = @model.fetch()
     response.done =>
       super
+
+  getComicRow: ->
+    if @model.has 'comic'
+      return @model.get 'comic'
+    else
+      return @model.toJSON()
+      
   onDomRefresh: ->
     @$el.draggable()
     @$el.droppable()
-    url = @model.get 'url'
+    comic = @getComicRow()
+    url = comic.url
     if url isnt 'UNAVAILABLE'
-      image_src = @model.get 'image_src'
+      #image_src = @model.get 'image_src'
+      image_src = comic.image_src
       if image_src is 'UNSET' or image_src is undefined
         @_get_comic_data url, @_scrapeAndSetImageSrc
       else
@@ -151,6 +166,7 @@ class ComicEntryView extends BaseComicEntryView
       
     
   _get_comic_data: (url, cb) ->
+    console.warn "_get_comic_data", url
     u = new URL url
     xhr = Backbone.ajax
       type: 'GET'

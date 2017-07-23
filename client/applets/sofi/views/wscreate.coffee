@@ -29,7 +29,7 @@ directionLabel =
 class DbComicEntryCollectionView extends Marionette.NextCollectionView
   childView: DbComicEntry
   childViewOptions:
-    workspaceView: 'remove'
+    workspaceView: 'add'
   # bubble event up to workspaceView
   childViewTriggers:
     'workspace:add:comic': 'workspace:add:comic'
@@ -70,10 +70,6 @@ class WorkspaceView extends Marionette.View
     @collectionView = new DbComicEntryCollectionView
       collection: @collection
       entryTemplate: entryTemplate
-      workspace: @getOption 'workspace'
-      childViewOptions:
-        workspaceView: 'remove'
-        workspace: @getOption 'workspace'
     @showChildView 'entries', @collectionView
     @updateHeader()
     @collection.on 'pageable:state:change', =>
@@ -114,20 +110,15 @@ class MainView extends Marionette.View
   showBody: (collection) ->
     view = new WorkspaceView
       collection: collection
-      workspace: @getOption 'workspace'
     @showChildView 'body', view
     
   onRender: ->
     @renderView()
     
   renderView: ->
-    WsCollection = AppChannel.request 'db:ebcomicworkspace:collectionClass'
-    workspace = @getOption 'workspace'
-    collection = new WsCollection
-    response = collection.fetch
-      data:
-        where:
-          name: workspace
+    UnattachedCollection = AppChannel.request 'db:unattached:collectionClass'
+    collection = new UnattachedCollection
+    response = collection.fetch()
     response.done =>
       @showSidebar collection
       @showBody collection
@@ -135,19 +126,17 @@ class MainView extends Marionette.View
   onWorkspaceAddComic: (comic_id) ->
     workspace = @getOption 'workspace'
     console.log "handle onWorkspaceAddComic", workspace, comic_id
-    collectionClass = AppChannel.request 'db:ebcomicworkspace:collectionClass'
-    collection = new collectionClass
-    response = collection.fetch
-      data:
-        where:
-          comic_id: comic_id
-    response.done =>
-      model = collection.models[0]
-      r2 = model.destroy()
-      r2.done =>
-        @getRegion('body').empty()
-        @getRegion('sidebar').empty()
-        @renderView()
+    collection = AppChannel.request 'db:ebcomicworkspace:collection'
+    collection.on 'add', =>
+      @getRegion('body').empty()
+      @getRegion('sidebar').empty()
+      @renderView()
+      collection.off 'add'
+    data =
+      comic_id: comic_id
+      name: workspace
+    model = collection.create data, wait:true
+    
     
     
 module.exports = MainView

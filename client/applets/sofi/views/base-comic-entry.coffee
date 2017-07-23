@@ -32,8 +32,13 @@ class BaseComicEntryView extends BaseEntryView
         context.entryClasses = '.item.alert.alert-success'
       else
         context.entryClasses = '.item.alert.alert-danger'
-
+    workspace = @getOption 'workspace'
+    #console.log "workspace", workspace
+    if workspace
+      return @workspaceContext context
+      
     atts = @model.toJSON()
+    #console.log "ATTS", atts
     unless atts?.series
       context.series = atts.mainsection.series.displayname
     unless atts?.issue
@@ -47,6 +52,14 @@ class BaseComicEntryView extends BaseEntryView
         context.url = url
       else
         context.url = 'UNAVAILABLE'
+    return context
+    
+  workspaceContext: (context) ->
+    comic = @model.get 'comic'
+    context.series = comic.series
+    context.issue = comic.issue
+    context.issueext = comic.issueext
+    context.url = comic.url
     return context
     
   template: tc.renderable (model) ->

@@ -19,7 +19,10 @@ class Router extends Marionette.AppRouter
     'sofi/comics/local': 'view_local_comics'
 
     'sofi/comics/photos/:comic_id': 'manageComicPhotos'
-    'sofi/comics/workspace': 'showWorkspaceView'
+
+    'sofi/comics/workspace': 'showWorkspaceMainView'
+    'sofi/comics/workspace/view/:name': 'showWorkspaceView'
+    'sofi/comics/workspace/create/:name': 'createWorkspaceView'
 
     'sofi/xml/upload': 'upload_xml'
     'sofi/csv/create': 'create_csv'

@@ -230,14 +230,34 @@ class Controller extends MainController
     , 'sofi-manage-comic-photos-view'
 
     
-  showWorkspaceView: ->
+  showWorkspaceMainView: ->
+    @setup_layout_if_needed()
+    require.ensure [], () =>
+      View = require './views/wslist'
+      view = new View
+      @layout.showChildView 'content', view
+    # name the chunk
+    , 'sofi:views:showWorkspaceMainView'
+    
+  showWorkspaceView: (name) ->
     @setup_layout_if_needed()
     require.ensure [], () =>
       View = require './views/wsview'
       view = new View
+        workspace: name
       @layout.showChildView 'content', view
     # name the chunk
     , 'sofi:views:showWorkspaceView'
+
+  createWorkspaceView: (name) ->
+    @setup_layout_if_needed()
+    require.ensure [], () =>
+      View = require './views/wscreate'
+      view = new View
+        workspace: name
+      @layout.showChildView 'content', view
+    # name the chunk
+    , 'sofi:views:createWorkspaceView'
 
     
 module.exports = Controller
