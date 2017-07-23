@@ -10,7 +10,7 @@ require 'jquery-ui/ui/widgets/droppable'
 navigate_to_url = require 'tbirds/util/navigate-to-url'
 
 DbComicEntry = require '../dbcomic-entry'
-DbComicsSidebar = require '../sidebar'
+DbComicsSidebar = require '../ws-sidebar'
 HasHeader = require '../has-header'
 
 MainChannel = Backbone.Radio.channel 'global'
