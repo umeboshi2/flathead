@@ -21,11 +21,6 @@ misc_menu =
       url: '#frontdoor/themes'
     }
     {
-      label: 'Sofi'
-      url: '#sofi'
-      needUser: true
-    }
-    {
       label: 'Ebcsv'
       url: '#ebcsv'
       needUser: true
@@ -50,38 +45,42 @@ misc_menu =
     }
   ]
 
-ebcsv_menu =
+sofi_menu =
   needUser: true
-  label: 'Ebcsv'
+  label: 'Sofi'
   menu: [
     {
       label: 'Main View'
-      url: '#ebcsv'
+      url: '#sofi'
     }
     {
-      label: 'List Configs'
-      url: '#ebcsv/cfg/list'
+      label: 'Database Comics'
+      url: '#sofi/comics'
     }
     {
-      label: 'List Descriptions'
-      url: '#ebcsv/dsc/list'
+      label: 'Workspaces'
+      url: '#sofi/comics/workspace'
     }
     {
       label: 'Upload Comic XML'
-      url: '#ebcsv/xml/upload'
+      url: '#sofi/xml/upload'
     }
     {
       label: 'Create CSV'
-      url: '#ebcsv/csv/create'
+      url: '#sofi/csv/create'
     }
     {
-      label: 'Create New Config'
-      url: '#ebcsv/cfg/add'
+      label: 'List Configs'
+      url: '#sofi/cfg/list'
+    }
+    {
+      label: 'List Descriptions'
+      url: '#sofi/dsc/list'
     }
   ]
 
 config.navbarEntries = [
-  ebcsv_menu
+  sofi_menu
   {
     label: 'File Exchange'
     url: fileexchange_upload_url
