@@ -20,9 +20,9 @@ class ComicEntryView extends BaseComicEntryView
     links = @model.get 'links'
     url = links?.link?.url
     if url
-      @_prepare_show_comic_image url
+      @_prepareShowComicImage url
 
-  _prepare_show_comic_image: (url) ->
+  _prepareShowComicImage: (url) ->
     urls = AppChannel.request 'get-comic-image-urls'
     if urls[url]
       model = new Backbone.Model
@@ -32,7 +32,7 @@ class ComicEntryView extends BaseComicEntryView
     else
       @_get_comic_from_db()
     
-  _get_comic_data: (url, cb) ->
+  _retrieveCloudPage: (url, cb) ->
     u = new URL url
     xhr = Backbone.ajax
       type: 'GET'
@@ -64,7 +64,8 @@ class ComicEntryView extends BaseComicEntryView
     links = @model.get 'links'
     url = links.link.url
     u = new URL url
-    collection = AppChannel.request 'db:clzcomic:collection'
+    collectionClass = AppChannel.request 'db:clzcomic:collectionClass'
+    collection = new collectionClass
     response = collection.fetch
       data:
         where:
@@ -76,18 +77,11 @@ class ComicEntryView extends BaseComicEntryView
       if collection.length > 1
         MessageChannel.request 'warning', "#{url} is not unique!"
       if not collection.length
-        @_get_comic_data url, @parseContentShowImage
+        @_retrieveCloudPage url, @parseContentShowImage
       else
         model = collection.models[0]
         @showComicImage model
 
-
-
-  _set_local_images_url: (clzpage) ->
-    url = clzpage.get 'url'
-    image_src = clzpage.get 'image_src'
-    AppChannel.request 'add-comic-image-url', url, image_src
-    
   show_comic: ->
     links = @model.get 'links'
     url = links.link.url
@@ -103,22 +97,9 @@ class ComicEntryView extends BaseComicEntryView
       if collection.length > 1
         MessageChannel.request 'warning', "#{url} is not unique!"
       if not collection.length
-        @_get_comic_data url, @parseContentShowImage
+        @_retrieveCloudPage url, @parseContentShowImage
       
 
-  get_comic_data: (url) ->
-    u = new URL url
-    xhr = Backbone.ajax
-      type: 'GET'
-      dataType: 'html'
-      url: "/clzcore#{u.pathname}"
-    xhr.done =>
-      view = new Backbone.Marionette.View
-        template: xhr.responseText
-      @showChildView 'info', view
-    xhr.fail ->
-      MessageChannel.request 'warning', "Couldn't get the info"
-  
 module.exports = ComicEntryView
 
 

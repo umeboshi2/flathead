@@ -48,50 +48,6 @@ class BaseEntryView extends Marionette.View
       model: clzpage
     @showChildView 'image', view
     
-
-
-class BaseComicEntryView extends Marionette.View
-  ui: ->
-    info_btn: '.info-button'
-    clz_link: '.clz-link'
-    item: '.item'
-    image: '.comic-image'
-  regions: ->
-    image: '@ui.image'
-    'mouseenter @ui.item': 'mouse_enter_item'
-    'mouseleave @ui.item': 'mouse_leave_item'
-  # relay show:image event to parent
-  childViewTriggers: ->
-    'show:image': 'show:image'
-  templateContext: ->
-    context =
-      entryClasses: ".item.listview-list-entry.thumbnail"
-      columnClass: "col-sm-2"
-      infoButtonClasses: ".fa.fa-info.fa-pull-left.btn.btn-default.btn-sm"
-    # do something if necessary
-    if @model.has 'inDatabase'
-      inDatabase = @model.get 'inDatabase'
-      if inDatabase
-        console.log "MODEL IN DATABASE"
-        context.entryClasses = '.item.alert.alert-success'
-      else
-        context.entryClasses = '.item.alert.alert-danger'
-    atts = @model.toJSON()
-    unless atts?.series
-      context.series = atts.mainsection.series.displayname
-    unless atts?.issue
-      context.issue = atts.issue
-    unless atts?.issueext
-      if atts?.issueext
-        context.issueext = atts.issueext
-    unless atts?.url
-      url = atts?.links?.link?.url
-      if url
-        context.url = url
-      else
-        context.url = 'UNAVAILABLE'
-    return context
-    
   template: tc.renderable (model) ->
     issue = model.issue
     if model?.issueext
@@ -113,12 +69,6 @@ class BaseComicEntryView extends Marionette.View
           tc.span ".alert.alert-danger", "URL UNAVAILABLE"
           
       
-  _show_comic_image: (clzpage) ->
-    view = new ComicImageView
-      model: clzpage
-    @showChildView 'image', view
-    
-        
 module.exports = BaseEntryView
 
 
