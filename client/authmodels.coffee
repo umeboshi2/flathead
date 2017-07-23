@@ -60,11 +60,21 @@ class AuthCollection extends BasicPageableCollection
     options = auth_sync_options options
     super method, model, options
 
+class AuthUnPaginated extends Backbone.Collection
+  sync: (method, model, options) ->
+    options = auth_sync_options options
+    super method, model, options
+  parse: (response) ->
+    super response.items
+    
+  
 MainChannel.reply 'main:app:AuthModel', ->
   AuthModel
 MainChannel.reply 'main:app:AuthCollection', ->
   AuthCollection
-
+MainChannel.reply 'main:app:AuthUnPaginated', ->
+  AuthUnPaginated
+  
 class AuthRefresh extends AuthModel
   url: '/auth/refresh'
 
