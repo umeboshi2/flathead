@@ -124,6 +124,7 @@
     "sqlite3": "^3.1.8",
     "teacup": "github:umeboshi2/teacup#aria-states-props",
     "underscore": "^1.8.3",
+    "uuid": "^3.1.0",
     "yamljs": "^0.3.0"
   }
 }
