@@ -165,6 +165,33 @@ dbclzcomic = new DbCollection _.extend defaultOptions,
   modelClass: ClzComic
   collectionClass: ClzComicCollection
 
+
+class SeriesGroupCollection extends AuthCollection
+  url: "#{apiroot}/ebclzcomic"
+  model: AppChannel.request 'db:clzcomic:modelClass'
+  state:
+    firstPage: 0
+    # FIXME
+    pageSize: 10000
+    sortColumn: 'seriesgroup'
+    sortDirection: 'asc'
+
+AppChannel.reply 'db:clzcomic:SeriesGroupCollection', ->
+  SeriesGroupCollection
+  
+class PublisherCollection extends AuthCollection
+  url: "#{apiroot}/ebclzcomic"
+  model: AppChannel.request 'db:clzcomic:modelClass'
+  state:
+    firstPage: 0
+    # FIXME
+    pageSize: 10000
+    sortColumn: 'publisher'
+    sortDirection: 'asc'
+
+AppChannel.reply 'db:clzcomic:PublisherCollection', ->
+  PublisherCollection
+  
 class ClzCollectionStatus extends AuthModel
   urlRoot: "#{apiroot}/clzcollectionstatus"
 
@@ -202,7 +229,35 @@ dbwscomic = new DbCollection _.extend defaultOptions,
   modelName: 'ebcomicworkspace'
   modelClass: WorkspaceComic
   collectionClass: WorkspaceComics
-  
+
+
+
+class WorkspaceCollection extends AuthCollection
+  url: "#{apiroot}/ebcomicworkspace"
+  model: AppChannel.request 'db:clzcomic:modelClass'
+  state:
+    firstPage: 0
+    # FIXME
+    pageSize: 10000
+    sortColumn: 'name'
+    sortDirection: 'asc'
+
+AppChannel.reply 'db:ebcomicworkspace:WorkspaceCollection', ->
+  WorkspaceCollection
+    
+
+class UnattachedCollection extends AuthCollection
+  url: "/api/dev/misc/unattached-comics"
+  model: ClzComic
+
+AppChannel.reply 'db:unattached:collectionClass', ->
+  UnattachedCollection
+
+
+
+
+
+
 AppletLocals = {}
 AppChannel.reply 'locals:get', (name) ->
   AppletLocals[name]

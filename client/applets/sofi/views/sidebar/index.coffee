@@ -8,7 +8,6 @@ DbComicEntry = require '../dbcomic-entry'
 HasHeader = require '../has-header'
 SeriesGroupSelect = require './seriesgroup'
 PublisherSelect = require './publisher'
-WorkspaceView = require './workspace'
 NavigateBox = require './navigate'
 
 MainChannel = Backbone.Radio.channel 'global'
@@ -94,25 +93,8 @@ class SortBySelect extends Marionette.View
 
 AuthCollection = MainChannel.request 'main:app:AuthCollection'
 apiroot = "/api/dev/bapi"
-class SeriesGroupCollection extends AuthCollection
-  url: "#{apiroot}/ebclzcomic"
-  model: AppChannel.request 'db:clzcomic:modelClass'
-  state:
-    firstPage: 0
-    # FIXME
-    pageSize: 10000
-    sortColumn: 'seriesgroup'
-    sortDirection: 'asc'
-  
-class PublisherCollection extends AuthCollection
-  url: "#{apiroot}/ebclzcomic"
-  model: AppChannel.request 'db:clzcomic:modelClass'
-  state:
-    firstPage: 0
-    # FIXME
-    pageSize: 10000
-    sortColumn: 'publisher'
-    sortDirection: 'asc'
+SeriesGroupCollection = AppChannel.request 'db:clzcomic:SeriesGroupCollection'
+PublisherCollection = AppChannel.request 'db:clzcomic:PublisherCollection'
 
 uiRegions =
     navigatorBox: '.navigator-box'
@@ -120,7 +102,6 @@ uiRegions =
     collectionStatusFilterBox: '.collection-status-filter-box'
     publisherFilterBox: '.publisher-filter-box'
     seriesgroupFilterBox: '.seriesgroup-filter-box'
-    workspaceDrop: '.workspace-drop'
     
 class DbComicsSidebar extends Marionette.View
   ui: uiRegions
@@ -132,15 +113,11 @@ class DbComicsSidebar extends Marionette.View
   templateContext: ->
     collection: @collection
   template: tc.renderable (model) ->
-    tc.div '.workspace-drop'
     tc.div '.navigator-box.listview-list-entry'
     tc.div '.sort-by-box.listview-list-entry'
     tc.div '.collection-status-filter-box.listview-list-entry'
     tc.div '.publisher-filter-box.listview-list-entry'
     tc.div '.seriesgroup-filter-box.listview-list-entry'
-  # relay show:image event to parent
-  childViewTriggers:
-    "workspace:changed" : "workspace:changed"
     
   showCollectionStatus: ->
     selections = AppChannel.request 'db:clzcollectionstatus:collection'
@@ -181,22 +158,6 @@ class DbComicsSidebar extends Marionette.View
       collection: @collection
     @showChildView 'sortByBox', sortbyview
     
-  showWorkspaceBox: ->
-    console.log "In showWorkspaceBox"
-    #collection = AppChannel.request 'db:ebcomicworkspace:collection'
-    #collection = new WorkspaceCollection
-    #console.log "collection", collection
-    #window.wscollection = collection
-    #data =
-    #  distinct: 'name'
-    #  sort: 'name'
-    #window.fdata = data
-    #response = collection.fetch(data: data)
-    #response.done =>
-    #  console.log "RESPONSE", response
-    wsview = new WorkspaceView
-    @showChildView 'workspaceDrop', wsview
-
   showNavigatorBox: ->
     view = new NavigateBox
       collection: @collection
@@ -210,8 +171,7 @@ class DbComicsSidebar extends Marionette.View
     @showSeriesGroupSelect()
     @showSortBySelect()
     if @getOption 'workspaceSidebar'
-      #console.log "workspaceSidebar!!!!!!!!"
-      @showWorkspaceBox()
+      console.warn "workspaceSidebar!!!!!!!!"
 
 module.exports = DbComicsSidebar
 

@@ -11,16 +11,10 @@ AppChannel = Backbone.Radio.channel 'sofi'
 
 AuthCollection = MainChannel.request 'main:app:AuthCollection'
 apiroot = "/api/dev/bapi"
-class WorkspaceCollection extends AuthCollection
-  url: "#{apiroot}/ebcomicworkspace"
-  model: AppChannel.request 'db:clzcomic:modelClass'
-  state:
-    firstPage: 0
-    # FIXME
-    pageSize: 10000
-    sortColumn: 'name'
-    sortDirection: 'asc'
-    
+
+WorkspaceCollection = AppChannel.request(
+  'db:ebcomicworkspace:WorkspaceCollection')
+
 class WorkspaceView extends Marionette.View
   initialize: ->
     @collection = new WorkspaceCollection
