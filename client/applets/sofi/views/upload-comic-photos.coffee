@@ -45,6 +45,8 @@ class FileInputView extends Marionette.View
       uploadExtraData:
         comic_id: comic_id
         name: @getOption 'photoName'
+      allowedFileTypes: ['image']
+      allowedFileExtensions: ['jpg', 'jpeg', 'png']
       ajaxSettings:
         beforeSend: MainChannel.request 'main:app:authBeforeSend'
     fi.on 'fileunlock', =>
@@ -97,6 +99,7 @@ class UploadMainView extends Marionette.View
       @showChildView 'fileInputRegion', view
     else
       @getRegion('fileInputRegion').empty()
+      
   onRender: ->
     @showPhotoList()
     
