@@ -132,11 +132,12 @@ class Controller extends MainController
         console.log "foo is", foo
         dsc.fetch().then =>
           hlist.fetch().then =>
-            @_need_comics_view @_show_preview_csv_view
+            #@_need_comics_view @_show_preview_csv_view
+            @_show_preview_csv_view()
     
   main_view: ->
     @setup_layout_if_needed()
-    if __DEV__ and true
+    if __DEV__ and false
       comics = AppChannel.request 'get-comics'
       if not comics.length
         xml_url = '/assets/dev/comics.xml'

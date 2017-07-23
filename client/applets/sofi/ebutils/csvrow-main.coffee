@@ -42,7 +42,18 @@ create_common_data = (options) ->
 # makeEbayInfo (config, comic, opts, mgr)
 #######################################################
 create_csv_row_object = (options) ->
+  #console.log "CREATE_CSV_ROW_OBJECT", options
   comic = options.comic
+  clzcomic = comic.content
+  if typeof clzcomic is 'string'
+    clzcomic = JSON.parse clzcomic
+  options.clzcomic = clzcomic
+  #console.log "CLZCOMIC", clzcomic
+  photos = {}
+  comic.photos.forEach (pRow) ->
+    photos[pRow.name] = pRow.filename
+  console.log "PHOTOS", photos, comic
+  options.photos = photos
   cfg = options.cfg.get 'content'
   # make common data
   # from required and optional fields
@@ -51,10 +62,10 @@ create_csv_row_object = (options) ->
 
   # quantity is from config(1) unless comic.quantity > 1
   # csv header should be *Quantity
-  if row.quantity != comic.quantity
-    row.quantity = comic.quantity
+  if row.quantity != clzcomic.quantity
+    row.quantity = clzcomic.quantity
 
-  # set startprice  
+  # set startprice
   set_startprice row, options
 
   # set scheduletime

@@ -3,7 +3,7 @@ set_startprice = (row, options) ->
   # csv header should be *Startprice
   # if comic.currentprice exists use
   # that instead
-  comic = options.comic
+  comic = options.clzcomic
   if comic?.currentprice
     currentprice = comic.currentprice
     while currentprice.startsWith '$'

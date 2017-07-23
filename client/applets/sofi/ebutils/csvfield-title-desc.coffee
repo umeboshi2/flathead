@@ -8,6 +8,8 @@ AppChannel = Backbone.Radio.channel 'sofi'
 
 set_title_and_desc = (row, options) ->
   comic = options.comic
+  clzcomic = options.clzcomic
+  photos = comic.photos
   dsc = options.desc
   # make title
   template = handlebars.compile dsc.get 'title'

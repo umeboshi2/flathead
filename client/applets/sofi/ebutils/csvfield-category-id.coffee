@@ -8,7 +8,7 @@ AppChannel = Backbone.Radio.channel 'sofi'
 
 
 set_category_id = (row, options) ->
-  comic = options.comic
+  comic = options.clzcomic
   #
   # get categoryID
   # csv header should be *Category

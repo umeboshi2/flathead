@@ -1,3 +1,4 @@
+_ = require 'underscore'
 $ = require 'jquery'
 Backbone = require 'backbone'
 Marionette = require 'backbone.marionette'
@@ -11,13 +12,19 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
   make_field_select } = require 'tbirds/templates/forms'
 { form_group_input_div } = require 'tbirds/templates/forms'
 { modal_close_button } = require 'tbirds/templates/buttons'
+{ ProgressModel
+  ProgressView } = require 'tbirds/views/simple-progress'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
 AppChannel = Backbone.Radio.channel 'sofi'
 
 BaseModalView = MainChannel.request 'main:app:BaseModalView'
+AuthUnPaginated = MainChannel.request 'main:app:AuthUnPaginated'
 
+class WsCollection extends AuthUnPaginated
+  url: "/api/dev/bapi/ebcomicworkspace"
+  
 fileexchange_upload_url = \
   "http://bulksell.ebay.com/ws/eBayISAPI.dll?FileExchangeUploadForm"
 
@@ -110,7 +117,7 @@ cell_styles = [
   ]
 cell_style = "#{cell_styles.join(';')};"
 
-class CsvTableRow extends Backbone.Marionette.View
+class CsvTableRow extends Marionette.View
   tagName: 'tr'
   templateContext: ->
     options = @options
@@ -144,7 +151,7 @@ class CsvTableRow extends Backbone.Marionette.View
     MainChannel.request 'show-modal', view
     
   
-class CsvTableBody extends Backbone.Marionette.CollectionView
+class CsvTableBody extends Marionette.CollectionView
   tagName: 'tbody'
   childView: CsvTableRow
 
@@ -156,7 +163,7 @@ bstableclasses = [
   'table-condensed'
   ]
   
-class CsvMainView extends Backbone.Marionette.View
+class CsvMainView extends Marionette.View
   tagName: 'table'
   className: bstableclasses.join ' '
   templateContext: ->
@@ -185,22 +192,64 @@ class CsvMainView extends Backbone.Marionette.View
       replaceElement: true
 
   onRender: ->
-    #console.log "CsvMainView onRender"
     collection = AppChannel.request 'get-csvrow-collection'
     view = new CsvTableBody
       collection: collection
     @showChildView 'body', view
-    
+
+
+class CsvCreator extends Marionette.Object
+  channelName: 'sofi'
+  initialize: (options) =>
+    @currentItems = _.clone options.items
+    @progressModel = options.progressModel
+    @progressModel.set 'valuemax', @currentItems.length
+    @channel = @getChannel()
+    @rowOptions =
+      action: options.action
+      cfg: options.cfg
+      desc: options.dsc
+
+  createCsvRow: (item) ->
+    #attributes = @_createAttributes comic
+    #@currentItems.push attributes
+    rowOpts = _.extend @rowOptions,
+      comic: item
+    cdata = AppChannel.request 'create-csv-row-object', rowOpts
+    @currentRows.push cdata
+    @progressModel.set 'valuenow', @currentRows.length
+    if @currentRows.length != @currentItems.length
+      setTimeout =>
+        @createAnotherRow()
+      , 5
+    else
+      @trigger "csv:rows:created"
+      
+  createAnotherRow: ->
+    if @currentClones.length
+      item = @currentClones.pop()
+      @createCsvRow item
+      
+  createCsvRows: ->
+    @currentClones = _.clone @currentItems
+    @progressModel.set 'valuemax', @currentClones.length
+    @progressModel.set 'valuenow', 0
+    @currentRows = []
+    @createAnotherRow()
+
+      
 ############################################
 # Main view
 ############################################
-class ComicsView extends Backbone.Marionette.View
+class ComicsView extends Marionette.View
   templateContext: ->
     options = @options
     options.ebcfg_collection = AppChannel.request 'db:ebcfg:collection'
     options.ebdsc_collection = AppChannel.request 'db:ebdsc:collection'
+    options.workspace = AppChannel.request 'locals:get', 'currentCsvWorkspace'
     options
   regions:
+    createProgress: '.create-progress'
     body: '.body'
   template: tc.renderable (model) ->
     now = new Date()
@@ -209,10 +258,11 @@ class ComicsView extends Backbone.Marionette.View
     timestring = dateFormat now, sformat
     filename = "export-#{timestring}.csv"
     tc.div '.listview-header', ->
-      tc.text "Preview CSV"
+      tc.text "Preview #{model.workspace} CSV"
     tc.div '.fileexchange-button.btn.btn-default', "Ebay Upload"
     tc.div '.mkcsv-button.btn.btn-default', "Create CSV"
     tc.input '.form-control', value:filename, name:'csvfilename'
+    tc.div '.create-progress'
     tc.div '.body'
   ui:
     mkcsv_btn: '.mkcsv-button'
@@ -239,22 +289,47 @@ class ComicsView extends Backbone.Marionette.View
     MainChannel.request 'export-to-file', options
     
   createCsvRows: ->
+    @currentRows = []
     action = AppChannel.request 'locals:get', 'currentCsvAction'
     cfg = AppChannel.request 'locals:get', 'currentCsvCfg'
     dsc = AppChannel.request 'locals:get', 'currentCsvDsc'
-    rows = []
-    for comic in @collection.toJSON()
-      options =
-        action: action
-        comic: comic
-        cfg: cfg
-        desc: dsc
-      cdata = AppChannel.request 'create-csv-row-object', options
-      rows.push cdata
-    csvrows = AppChannel.request 'get-csvrow-collection'
-    csvrows.set rows
+    workspace = AppChannel.request 'locals:get', 'currentCsvWorkspace'
+    Coll = MainChannel.request 'main:app:AuthUnPaginated'
+    wscollection = new WsCollection
+    response = wscollection.fetch
+      data:
+        withRelated: ['comic', 'comic.photos']
+        where:
+          name: workspace
+    response.done =>
+      @parseRows wscollection
+
+      
+  parseRows: (wscollection) ->
+    items = wscollection.toJSON()
+    citems = []
+    wscollection.toJSON().forEach (item) ->
+      citems.push item.comic
+    cc = new CsvCreator
+      items: citems
+      progressModel: @createModel
+      action: AppChannel.request 'locals:get', 'currentCsvAction'
+      cfg: AppChannel.request 'locals:get', 'currentCsvCfg'
+      dsc: AppChannel.request 'locals:get', 'currentCsvDsc'
+      workspace: AppChannel.request 'locals:get', 'currentCsvWorkspace'
+    cc.createCsvRows()
+    cc.on "csv:rows:created", ->
+      csvrows = AppChannel.request 'get-csvrow-collection'
+      csvrows.set cc.currentRows
+      
+  showCreateProgressBar: ->
+    @createModel = new ProgressModel
+    view = new ProgressView
+      model: @createModel
+    @showChildView 'createProgress', view
 
   onRender: ->
+    @showCreateProgressBar()
     urls = AppChannel.request 'get-comic-image-urls'
     if not Object.keys(urls).length
       msg = "No pictures attached, please view comics, then create csv"
