@@ -31,7 +31,7 @@ class PhotosView extends Marionette.View
       for p in model.photos
         tc.div '.listview-list-entry.col-sm-2', ->
           tc.div '.listview-header', p.name
-          tc.img '.thumb', src:"/photos/#{p.filename}", style:"height:100px"
+          tc.img '.thumb', src:"/thumbs/#{p.filename}"
 
 class FileInputView extends Marionette.View
   template: tc.renderable (model) ->

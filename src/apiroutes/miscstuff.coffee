@@ -7,6 +7,19 @@ express = require 'express'
 
 asyncfun = require 'asyncawait/async'
 awaitfun = require 'asyncawait/await'
+thumb = require('node-thumbnail').thumb
+
+PHOTODIR = "#{process.env.OPENSHIFT_DATA_DIR}uploads"
+if !fs.existsSync PHOTODIR
+  fs.mkdirSync PHOTODIR
+THUMBDIR = "#{process.env.OPENSHIFT_DATA_DIR}thumbs"
+if !fs.existsSync THUMBDIR
+  fs.mkdirSync THUMBDIR
+ThumbData =
+  source: PHOTODIR
+  destination: THUMBDIR
+  width: 150
+  suffix: ''
 
 router = express.Router()
 
@@ -14,7 +27,7 @@ router = express.Router()
 multer = require 'multer'
 storage = multer.diskStorage
   destination: (req, file, cb) ->
-    cb null, "#{process.env.OPENSHIFT_DATA_DIR}uploads"
+    cb null, PHOTODIR
   filename: (req, file, cb) ->
     cb null, file.originalname
     
@@ -31,7 +44,8 @@ router.get '/all-models', (req, res) ->
   .then ->
     res.json res.locals.models
 
-router.post '/upload-photo', upload.single('comicphoto'), (req, res) ->
+router.post '/upload-photo',
+upload.single('comicphoto'), asyncfun (req, res) ->
   data =
     comic_id: req.body.comic_id
     name: req.body.name
@@ -46,6 +60,9 @@ router.post '/upload-photo', upload.single('comicphoto'), (req, res) ->
     # and a location header pointing to new object
     res.header 'Location', "/fake/path/to/#{result.id}"
     res.json result
+  # FIXME
+  # this promise doesn't go anywhere
+  tp = thumb ThumbData
   
 router.post '/upload-photos', upload.array('comicphoto', 12), (req, res) ->
   console.log req.file
