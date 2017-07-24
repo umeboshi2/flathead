@@ -15,7 +15,6 @@ AppChannel = Backbone.Radio.channel 'sofi'
 class JsonView extends Backbone.Marionette.View
   behaviors: [IsEscapeModal]
   template: tc.renderable (model) ->
-    console.log "JsonView", model
     model = model?.content or model
     main = model.mainsection
     tc.div '.modal-dialog', ->
@@ -47,13 +46,11 @@ class JsonView extends Backbone.Marionette.View
       @ui.expand_btn.text 'Collapse'
     
   onDomRefresh: ->
-    console.log 'onDomRefresh->jsonview'
     @expanded_view = false
     if @model.has 'content'
       content = @model.get 'content'
     else
       content = @model.toJSON()
-    console.log "CONTENT", content
     @json_view = new JView content
     @ui.body.prepend @json_view.dom
 

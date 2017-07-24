@@ -13,6 +13,7 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 { modal_close_button } = require 'tbirds/templates/buttons'
 
 BaseComicEntryView = require './base-comic-entry'
+JsonView = require './comic-entry/json-modal'
 
 MainChannel = Backbone.Radio.channel 'global'
 MessageChannel = Backbone.Radio.channel 'messages'
@@ -133,7 +134,13 @@ class ComicEntryView extends BaseComicEntryView
   showJsonView: ->
     response = @model.fetch()
     response.done =>
-      super
+      if @model.has 'comic'
+        content = JSON.parse(@model.get('comic').content)
+        view = new JsonView
+          model: new Backbone.Model content
+        MainChannel.request 'show-modal', view
+      else
+        super
 
   getComicRow: ->
     if @model.has 'comic'
@@ -147,7 +154,6 @@ class ComicEntryView extends BaseComicEntryView
     comic = @getComicRow()
     url = comic.url
     if url isnt 'UNAVAILABLE'
-      #image_src = @model.get 'image_src'
       image_src = comic.image_src
       if image_src is 'UNSET' or image_src is undefined
         @_get_comic_data url, @_scrapeAndSetImageSrc
@@ -201,6 +207,8 @@ class ComicEntryView extends BaseComicEntryView
   show_comic: ->
     image_src = @model.get 'image_src'
     console.log "show_comic image_src", image_src
+
+    
 
       
 
