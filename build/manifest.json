@@ -1,5 +1,5 @@
 {
-  "0-e2f6753d5eefcc05baa5.js": "0-e2f6753d5eefcc05baa5.js",
+  "0-87b9b92a7c439e3d46d2.js": "0-87b9b92a7c439e3d46d2.js",
   "1-49459d14aa44fe0399b9.js": "1-49459d14aa44fe0399b9.js",
   "2-77cf44d5cc17e8db1a1c.js": "2-77cf44d5cc17e8db1a1c.js",
   "3-20fbba013ea5d562609d.js": "3-20fbba013ea5d562609d.js",
@@ -13,8 +13,8 @@
   "ebcsv-view-list-configs.js": "21-6429d8482bf91b55620d.js",
   "hubby-list-meetings-view.js": "29-5f303aac0e150c536b51.js",
   "hubby-meetingview.js": "22-b235c532817f2f14f5d6.js",
-  "index.js": "index-a60c932171d9ebc84d51.js",
-  "sofi-manage-comic-photos-view.js": "19-834abc6148e4ccc98d5a.js",
+  "index.js": "index-42a5d45bdb5d32f17b8d.js",
+  "sofi-manage-comic-photos-view.js": "19-8794429e3739ea069ee9.js",
   "sofi-view-add-dsc.js": "12-4416567ebf90831e2be3.js",
   "sofi-view-cached-comics-view.js": "18-c77369758650b1ea0960.js",
   "sofi-view-csvpreview-view-helper.js": "15-b1547aaab6c76c9b8c2c.js",
@@ -22,12 +22,12 @@
   "sofi-view-list-descriptions.js": "25-466c4d10eba21d86a5fb.js",
   "sofi-view-main-view-helper.js": "14-678688f65e5fb24a81fe.js",
   "sofi:views:mainview.js": "16-2c1332a9623ad0934234.js",
-  "sofi:views:setPhotoNames.js": "28-a658fc56362a5a679344.js",
+  "sofi:views:setPhotoNames.js": "28-d1add3a8d2a6b765a25b.js",
   "todos-list-todos.js": "17-6557a35d3509836c273f.js",
   "todos-view-calendar.js": "20-80ba361de5b384a0b1d1.js",
   "userprofile-view-chpasswd.js": "13-aa7f35ee91dea2bb47ec.js",
   "userprofile-view-edit-config.js": "11-379b09894b8d4985ad32.js",
   "userprofile-view-map-view.js": "23-5195d0871c8e1916b980.js",
   "userprofile-view-show-profile.js": "27-2ee22bc09278cb27490d.js",
-  "vendor.js": "vendor-a29eb8d03a7428d202b5.js"
+  "vendor.js": "vendor-1a4dab3d481ed3e2a732.js"
 }
