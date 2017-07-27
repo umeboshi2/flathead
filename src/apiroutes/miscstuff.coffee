@@ -63,7 +63,22 @@ upload.single('comicphoto'), asyncfun (req, res) ->
   # FIXME
   # this promise doesn't go anywhere
   tp = thumb ThumbData
-  
+
+router.delete '/delete-photo/:id', (req, res) ->
+  model = new res.app.locals.bsmodels.comicphoto
+    id: req.params.id
+  model.fetch()
+  .then (result) ->
+    console.log "delete-photo", result
+    tname = path.join THUMBDIR, result.get 'filename'
+    pname = path.join PHOTODIR, result.get 'filename'
+    fs.unlinkSync tname
+    fs.unlinkSync pname
+  .then ->
+    model.destroy()
+  .then (result) ->
+    res.json result
+
 router.post '/upload-photos', upload.array('comicphoto', 12), (req, res) ->
   console.log req.file
   model = new res.app.locals.bsmodels.uploads
