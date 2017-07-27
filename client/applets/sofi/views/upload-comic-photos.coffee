@@ -18,12 +18,8 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 { make_field_input
   make_field_select } = require 'tbirds/templates/forms'
 
-mkInputData = (field, label, placeholder) ->
-  input_id: "input_#{field}"
-  label: label
-  input_attributes:
-    name: field
-    placeholder: placeholder
+makePhotosObject = require '../ebutils/make-photos-object'
+
 
 class PhotosView extends Marionette.View
   template: tc.renderable (model) ->
@@ -31,8 +27,8 @@ class PhotosView extends Marionette.View
       for p in model.photos
         tc.div '.listview-list-entry.col-sm-2', ->
           tc.div '.listview-header', p.name
-          tc.img '.thumb', src:"/thumbs/#{p.filename}"
-
+          tc.img '.img-responsive.img-thumbnail', src:"/thumbs/#{p.filename}"
+  
 class FileInputView extends Marionette.View
   template: tc.renderable (model) ->
     tc.input '.fileinput', name:'comicphoto', type:'file'
@@ -52,19 +48,42 @@ class FileInputView extends Marionette.View
     fi.on 'fileunlock', =>
       response = @model.fetch()
       response.done =>
-        #@render()
         @trigger 'photo:uploaded'
-    window.fi = fi
   onBeforeDestroy: ->
     @ui.fileinput.fileinput 'destroy'
-  
-class UploadMainView extends Marionette.View
+
+
+class NameSelectView extends Marionette.View
   template: tc.renderable (model) ->
+    tc.div '.form-group', ->
+      tc.label '.control-label', for:'select_name', 'Name'
+    tc.select '.form-control', name:'select_name', ->
+      for item in model.items
+        item_atts =
+          value: item.id
+        if item.id is 'front'
+          item_atts.selected = ''
+        tc.option item_atts, item.id
+  ui:
+    nameSelect: 'select[name="select_name"]'
+  triggers:
+    'change @ui.nameSelect': 'name:changed'
+    
+    
+class UploadMainView extends Marionette.View
+  initialize: (options) ->
+    ComicPhotoNames = AppChannel.request 'ComicPhotoNames'
+    @nameCollection = new ComicPhotoNames
+  templateContext: ->
+    nameCollection: @nameCollection
+  template: tc.renderable (model) ->
+    names = model.nameCollection.toJSON()
+    console.log "names", names
     tc.div '.listview-header', ->
       tc.text "Upload Photos for #{model.series} ##{model.issue}"
     tc.div '.row', ->
       tc.div '.col-sm-4', ->
-        make_field_input('name')(model)
+        tc.div '.name-select'
         tc.div '.file-div'
       tc.div '.col-sm-8', ->
         tc.div '.photo-list'
@@ -72,17 +91,18 @@ class UploadMainView extends Marionette.View
     fileinput: '.fileinput'
     photoList: '.photo-list'
     fileInputRegion: '.file-div'
-    nameInput: '[name="name"]'
+    nameSelectRegion: '.name-select'
   regions:
     photoList: '@ui.photoList'
     fileInputRegion: '@ui.fileInputRegion'
-  events:
-    'change @ui.nameInput': 'onNameChange'
+    nameSelectRegion: '@ui.nameSelectRegion'
   childViewEvents:
     'photo:uploaded': 'photoUploaded'
+    'name:changed': 'nameChanged'
+    
+    
   photoUploaded: ->
     @showPhotoList()
-    @ui.nameInput.val ''
     @getRegion('fileInputRegion').empty()
 
   showPhotoList: ->
@@ -90,9 +110,13 @@ class UploadMainView extends Marionette.View
       model: @model
     @showChildView 'photoList', view
     
-  onNameChange: ->
-    name = @ui.nameInput.val()
-    if name
+  nameChanged: ->
+    nsview = @getChildView 'nameSelectRegion'
+    name = nsview.ui.nameSelect.val()
+    console.log "nameChanged", name
+    comic = @model.toJSON()
+    photos = makePhotosObject @model.toJSON()
+    if name and name not in Object.keys photos
       view = new FileInputView
         model: @model
         photoName: name
@@ -101,8 +125,14 @@ class UploadMainView extends Marionette.View
       @getRegion('fileInputRegion').empty()
       
   onRender: ->
-    @showPhotoList()
-    
+    res = @nameCollection.fetch()
+    res.done =>
+      console.log "nameCollection", @nameCollection
+      @showPhotoList()
+      view = new NameSelectView
+        collection: @nameCollection
+      @showChildView 'nameSelectRegion', view
+       
         
 
     
