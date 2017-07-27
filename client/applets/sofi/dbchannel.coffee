@@ -262,6 +262,19 @@ AppChannel.reply 'db:unattached:collectionClass', ->
 
 
 
+class ComicPhotoName extends AuthModel
+  urlRoot: "#{apiroot}/comicphotoname"
+
+class ComicPhotoNameCollection extends AuthCollection
+  url: "#{apiroot}/comicphotoname"
+  model: ComicPhotoName
+  
+dbclzcomic = new DbCollection _.extend defaultOptions,
+  modelName: 'comicphotoname'
+  modelClass: ComicPhotoName
+  collectionClass: ComicPhotoNameCollection
+  
+
 
 
 

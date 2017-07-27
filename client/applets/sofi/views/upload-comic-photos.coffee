@@ -97,10 +97,10 @@ class NameSelectView extends Marionette.View
     tc.select '.form-control', name:'select_name', ->
       for item in model.items
         item_atts =
-          value: item.id
-        if item.id is 'front'
+          value: item.name
+        if item.name is 'front'
           item_atts.selected = ''
-        tc.option item_atts, item.id
+        tc.option item_atts, item.name
   ui:
     nameSelect: 'select[name="select_name"]'
   triggers:
@@ -108,14 +108,7 @@ class NameSelectView extends Marionette.View
     
     
 class UploadMainView extends Marionette.View
-  initialize: (options) ->
-    ComicPhotoNames = AppChannel.request 'ComicPhotoNames'
-    @nameCollection = new ComicPhotoNames
-  templateContext: ->
-    nameCollection: @nameCollection
   template: tc.renderable (model) ->
-    names = model.nameCollection.toJSON()
-    console.log "names", names
     tc.div '.listview-header', ->
       tc.text "Upload Photos for #{model.series} ##{model.issue}"
     tc.div '.row', ->
@@ -162,13 +155,13 @@ class UploadMainView extends Marionette.View
       @getRegion('fileInputRegion').empty()
       
   onRender: ->
-    res = @nameCollection.fetch()
-    res.done =>
-      console.log "nameCollection", @nameCollection
-      @showPhotoList()
+    collection = AppChannel.request 'db:comicphotoname:collection'
+    response = collection.fetch()
+    response.done =>
       view = new NameSelectView
-        collection: @nameCollection
+        collection:  collection
       @showChildView 'nameSelectRegion', view
+      @showPhotoList()
        
         
 

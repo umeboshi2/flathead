@@ -60,6 +60,11 @@ comicphoto = bookshelf.Model.extend
     @belongsTo ebclzcomic, 'comic_id', 'comic_id'
 MODELS.comicphoto = comicphoto
   
+comicphotoname = bookshelf.Model.extend
+  tableName: 'comic_photo_names'
+  hasTimestamps: false
+MODELS.comicphotoname = comicphotoname
+  
 yadayada = bookshelf.Model.extend
   tableName: 'flathead_todos'
   hasTimestamps: true

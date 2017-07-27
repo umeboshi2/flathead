@@ -9,7 +9,7 @@ AppChannel = Backbone.Radio.channel 'sofi'
 class PhotoNameEntry extends Marionette.View
   template: tc.renderable (model) ->
     tc.div '.listview-list-entry', ->
-      tc.text "#{model.id}  "
+      tc.text "#{model.name}  "
       tc.i '.remove-name-icon.fa.fa-minus-square'
   ui:
     removeNameIcon: '.remove-name-icon'
@@ -48,11 +48,11 @@ class MainView extends Marionette.View
     pname = @ui.photoNameInput.val()
     if pname
       console.log "Pname", pname
-      model = new Backbone.Model
-        id: pname
-      @collection.add model
-      model.save()
-    window.ccoll = @collection
+      @collection.create name:pname
+      #response.done => @showPhotoNames
+      @ui.photoNameInput.val ''
+      
+      
       
   showPhotoNames: ->
     view = new PhotoNameCollectionView
@@ -60,8 +60,9 @@ class MainView extends Marionette.View
     @showChildView 'photoNames', view
       
   onRender: ->
-    ComicPhotoNames = AppChannel.request 'ComicPhotoNames'
-    @collection = new ComicPhotoNames
+    @collection = AppChannel.request 'db:comicphotoname:collection'
+    #ComicPhotoNames = AppChannel.request 'ComicPhotoNames'
+    #@collection = new ComicPhotoNames
     response = @collection.fetch()
     response.done =>
       @showPhotoNames()
