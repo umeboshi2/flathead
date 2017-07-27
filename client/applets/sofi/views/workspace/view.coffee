@@ -92,8 +92,7 @@ class MainView extends Marionette.View
     tc.div '.listview-header', ->
       tc.text "View workspace #{model.workspace}"
     tc.div '.row', ->
-      tc.div '.sidebar.col-sm-4', style:'height: calc(100% - 50px);'
-      tc.div '.body.col-sm-8'
+      tc.div '.body.col-sm-12'
       tc.div '.body'
   ui:
     body: '.body'
@@ -124,36 +123,21 @@ class MainView extends Marionette.View
     WsCollection = AppChannel.request 'db:ebcomicworkspace:collectionClass'
     workspace = @getOption 'workspace'
     collection = new WsCollection
+    # FIXME
+    collection.setPageSize 100000
+    fetchdata =
+      where:
+        name: workspace
     response = collection.fetch
-      data:
-        where:
-          name: workspace
+      data: fetchdata
     response.done =>
-      @showSidebar collection
+      console.log "collection.length", collection.length
       @showBody collection
     
   # FIXME this needs to be renamed somewhere
   # This deletes the comic
   onWorkspaceAddComic: (model) ->
     response = model.destroy()
-    
-  fooey: (model) ->
-    console.log "MODEL", model
-    workspace = @getOption 'workspace'
-    collectionClass = AppChannel.request 'db:ebcomicworkspace:collectionClass'
-    collection = new collectionClass
-    response = collection.fetch
-      data:
-        where:
-          comic_id: comic_id
-    response.done =>
-      model = collection.models[0]
-      r2 = model.destroy()
-      #r2.done =>
-      #  @getRegion('body').empty()
-      #  @getRegion('sidebar').empty()
-      #  @renderView()
-    
     
 module.exports = MainView
 
