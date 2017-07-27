@@ -261,5 +261,14 @@ class Controller extends MainController
     # name the chunk
     , 'sofi:views:createWorkspaceView'
 
+  setPhotoNames: ->
+    @setup_layout_if_needed()
+    require.ensure [], () =>
+      View = require './views/set-photo-names'
+      view = new View
+      @layout.showChildView 'content', view
+    # name the chunk
+    , 'sofi:views:setPhotoNames'
+
     
 module.exports = Controller

@@ -2,6 +2,7 @@ _ = require 'underscore'
 Backbone = require 'backbone'
 moment = require 'moment'
 DbCollection = require 'tbirds/dbcollection'
+{ LocalStorage } = require 'backbone.localstorage'
 
 MainChannel = Backbone.Radio.channel 'global'
 AppChannel = Backbone.Radio.channel 'sofi'
@@ -44,7 +45,13 @@ class BaseLocalStorageModel extends Backbone.Model
 
 
 
-  
+class ComicPhotoNames extends Backbone.Collection
+  localStorage: new LocalStorage 'ComicPhotoNames'
+
+AppChannel.reply 'ComicPhotoNames', ->
+  ComicPhotoNames
+
+
   
 AppChannel.reply 'get-comic-image-urls', ->
   comic_image_urls = new BaseLocalStorageModel

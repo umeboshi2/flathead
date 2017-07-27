@@ -30,6 +30,7 @@ class Router extends Marionette.AppRouter
     'sofi/csv/preview': 'preview_csv'
 
     'sofi/clzpage' : 'view_cached_comics'
+    'sofi/comics/set-photo-names': 'setPhotoNames'
     
 
 class Applet extends TkApplet

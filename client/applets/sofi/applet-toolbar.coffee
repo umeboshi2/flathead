@@ -66,6 +66,12 @@ toolbarEntries = [
     url: '#sofi/clzpage'
     icon: '.fa.fa-image'
   }
+  {
+    id: 'setPhotoNames'
+    label: 'Set Photo Names'
+    url: '#sofi/comics/set-photo-names'
+    icon: '.fa.fa-photo'
+  }
   ]
 
 toolbarEntryCollection = new Backbone.Collection toolbarEntries
