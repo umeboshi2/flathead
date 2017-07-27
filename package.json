@@ -93,7 +93,7 @@
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.2",
     "bookshelf": "^0.10.3",
-    "bookshelf-api": "github:umeboshi2/bookshelf-api",
+    "bookshelf-csapi": "github:umeboshi2/bookshelf-api",
     "bookshelf-bcrypt": "github:umeboshi2/bookshelf-bcrypt",
     "bookshelf-json-columns": "^2.1.0",
     "coffee-script": "^1.12.6",

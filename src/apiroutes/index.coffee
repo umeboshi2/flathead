@@ -2,7 +2,7 @@ path = require 'path'
 jwtAuth = require 'express-jwt'
 
 mpath = path.resolve __dirname, '..', 'models'
-BSapi = require('bookshelf-api')
+BSapi = require('bookshelf-csapi')
 
 #Promise = require 'bluebird'
 
