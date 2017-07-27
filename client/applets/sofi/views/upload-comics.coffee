@@ -31,9 +31,9 @@ class UploadManager extends Marionette.Object
     if @collection.length
       throw new Error "We cannot insert!!!!"
     response = @channel.request "#{@dbPrefix}:add", item
-    response.fail ->
-      title = "#{item.series} #{item.issue} id:#{item.comic_id}"
-      MessageChannel.request 'danger', "Unable to insert #{title}"
+    #response.fail ->
+    #  title = "#{item.series} #{item.issue} id:#{item.comic_id}"
+    #  MessageChannel.request 'danger', "Unable to insert #{title}"
   update_item: (item) ->
     if @collection.length != 1
       throw new Error "Not unique error!!!"
