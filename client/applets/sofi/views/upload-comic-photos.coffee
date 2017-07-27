@@ -20,15 +20,52 @@ navigate_to_url = require 'tbirds/util/navigate-to-url'
 
 makePhotosObject = require '../ebutils/make-photos-object'
 
+class PhotoEntryView extends Marionette.View
+  template: tc.renderable (model) ->
+    tc.div '.col-sm-2', ->
+      tc.div '.listview-header', model.name
+      tc.div '.listview-list-entry', ->
+        tc.img '.img-responsive.img-thumbnail',
+        src:"/thumbs/#{model.filename}"
+        tc.button '.delete-btn.btn.btn-default',
+        data:photoid:model.id, 'Delete'
+  ui:
+    deleteButton: '.delete-btn'
+  events:
+    'click @ui.deleteButton': 'deleteClicked'
+  deleteClicked: ->
+    photoId = @ui.deleteButton
+    window.deleteButton = @ui.deleteButton
+    url = "/api/dev/misc/delete-photo/#{@model.id}"
+    console.log "URL", url
+    console.log "MODEL", @model
+    AuthModel = MainChannel.request 'main:app:AuthModel'
+    model = new AuthModel
+      id: @model.id
+    model.urlRoot = "/api/dev/misc/delete-photo/"
+    response = model.destroy()
+    response.done =>
+      console.log "done!", @model.collection.remove @model
+      
+      
+class PhotoCollectionView extends Marionette.NextCollectionView
+  childView: PhotoEntryView
+  
 
 class PhotosView extends Marionette.View
   template: tc.renderable (model) ->
-    tc.div '.row', ->
-      for p in model.photos
-        tc.div '.listview-list-entry.col-sm-2', ->
-          tc.div '.listview-header', p.name
-          tc.img '.img-responsive.img-thumbnail', src:"/thumbs/#{p.filename}"
-  
+    tc.div '.body.row'
+  ui:
+    body: '.body'
+    deleteButton: '.delete-btn'
+  regions:
+    body: '@ui.body'
+  onRender: ->
+    collection = new Backbone.Collection @model.get 'photos'
+    view = new PhotoCollectionView
+      collection: collection
+    @showChildView 'body', view
+    
 class FileInputView extends Marionette.View
   template: tc.renderable (model) ->
     tc.input '.fileinput', name:'comicphoto', type:'file'
